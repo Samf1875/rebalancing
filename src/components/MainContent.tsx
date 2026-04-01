@@ -19,6 +19,7 @@ import {
 import { mockRows } from '../data/mockAssortment';
 import { dropdownTriggerHoverBg } from '../lib/dropdownMenuClasses';
 import type { AssortmentRow } from '../types';
+import { MAIN_NAV_ASSORTMENT_BODY_IDS } from '../mainNavModuleIds';
 
 type AdvancedFiltersAnchorState = {
   rect: DOMRect;
@@ -110,7 +111,12 @@ const initRow = (r: AssortmentRow, isDraft = false): AssortmentRow => ({
   },
 });
 
-export function MainContent() {
+type MainContentProps = {
+  /** Primary sidebar selection — assortment UI only when Rebalancing (`refresh`) is active. */
+  activeMainNavId?: string;
+};
+
+export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
   const [rows, setRows] = useState<AssortmentRow[]>(() =>
     mockRows.slice(0, 5).map((r) => initRow(r, false))
   );
@@ -568,6 +574,19 @@ export function MainContent() {
       })
     );
   };
+
+  if (!MAIN_NAV_ASSORTMENT_BODY_IDS.has(activeMainNavId)) {
+    return (
+      <main className="flex-1 flex flex-col min-h-0 bg-slate-50">
+        <div className="flex flex-1 flex-col min-h-0 items-center justify-center bg-white px-6 py-4">
+          <p className="max-w-md text-center text-sm text-[#4b535c]">
+            Select <span className="font-medium text-[#00050a]">Rebalancing</span> in the sidebar to open
+            the assortment workspace.
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex-1 flex flex-col min-h-0 bg-slate-50">

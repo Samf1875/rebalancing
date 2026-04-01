@@ -611,13 +611,16 @@ const SECOND_NAV: {
   icon: LucideLike | null;
   active?: boolean;
 }[] = [
-  { id: 'assortment', label: 'Assortment', icon: null, active: true },
+  { id: 'assortment', label: 'Assortment', icon: null },
   { id: 'calendar', label: 'Events', icon: null },
   { id: 'settings', label: 'Parameters', icon: null },
 ];
 
 type SidebarProps = {
   className?: string;
+  /** Which primary (main) nav item is active — drives highlight and main panel routing. */
+  activeMainNavId?: string;
+  onMainNavChange?: (id: string) => void;
 };
 
 /** Filled vector from Figma Scratchpad 852:24160 (11×11); expand mirrors horizontally. */
@@ -653,7 +656,11 @@ function navRowClasses(active: boolean, expanded: boolean, alignExpanded: boolea
   return `${base} ${layout} text-white`;
 }
 
-export function Sidebar({ className = '' }: SidebarProps) {
+export function Sidebar({
+  className = '',
+  activeMainNavId = 'home',
+  onMainNavChange,
+}: SidebarProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -726,11 +733,12 @@ export function Sidebar({ className = '' }: SidebarProps) {
         >
           {MAIN_NAV.map((item) => {
             const Icon = item.icon;
-            const active = Boolean(item.active);
+            const active = item.id === activeMainNavId && item.id !== 'home';
             return (
               <button
                 key={item.id}
                 type="button"
+                onClick={() => onMainNavChange?.(item.id)}
                 className={navRowClasses(active, expanded, true)}
                 aria-label={item.label}
                 aria-current={active ? 'page' : undefined}
