@@ -1,22 +1,42 @@
 export interface AssortmentRow {
   id: string;
   productGroup: { name: string; productCount: number };
+  /** Product details sticky column: image, title, SKU row (+ copy / chevron), color, then location block. */
+  productCellDetail: {
+    imageSrc: string;
+    title: string;
+    sku: string;
+    colorLabel: string;
+  };
   locationCluster: { name: string; locationCount: number };
   whUnits: { value: number; sub: string };
   storeOh: number;
-  /** Last 7 days / last 30 days sales counts (table shows with L7D / L30D labels). */
-  sales: { l7d: number; l30d: number };
-  /** Assorted SKU × location pairs: current vs recommended (dual progress in table). */
-  assortedSkuLocs: {
-    now: { count: number; total: number };
-    rec: { count: number; total: number };
-  };
+  /** Sales column: two lines; `showPeriodLabels` appends " L7D" / " L30D" on each line. */
+  sales: { l7d: number; l30d: number; showPeriodLabels?: boolean };
+  /** Revenue increase in whole EUR; Revenue increase column shows €XK (e.g. €211.7K). */
+  revenueIncreaseEur: number;
+  /** Transfer counts in Transfers column (L7D primary line, L30D secondary). */
+  transfers: { l7d: number; l30d: number };
+  /** Recommended transfers column: stacked counts + VIS/REV actions. */
+  recommendedTransfers: { primary: number; secondary: number };
   sellThru: { percent: number };
   forecast: { value: number; sub: string };
-  /** Weekly forecast total (“Forecast per week” column, thousands separator in UI). */
+  /** Weekly forecast (“Forecast per week” column); shown with two decimal places. */
   forecastPerWeek: number;
-  /** Target coverage horizon (shown as “N week(s)”, right-aligned in table). */
+  /** Target coverage (weeks); used where drill / metrics need it. */
   targetCoverageWeeks: number;
+  /** Stockouts column: formatted as “from → to” with locale grouping. */
+  stockouts: { from: number; to: number };
+  /** Locations column: “from → to”. */
+  locationsTransition: { from: number; to: number };
+  /** Overstocks column: “from → to”. */
+  overstocksTransition: { from: number; to: number };
+  /** Understocks column: “from → to”. */
+  understocksTransition: { from: number; to: number };
+  /** Depth column: decimal “from → to” (one decimal place in UI). */
+  depthTransition: { from: number; to: number };
+  /** Warehouse units column: “from → to” (locale-formatted integers). */
+  warehouseUnitsTransition: { from: number; to: number };
   /** Main-table inventory total (thousands separator in UI). */
   inventoryCount: number;
   /** WH stock: primary total + PFP sub-line. */
