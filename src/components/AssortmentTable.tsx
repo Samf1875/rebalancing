@@ -8,6 +8,7 @@ import {
   Info,
 } from 'lucide-react';
 import type { AssortmentRow, ModalKind } from '../types';
+import { defaultTableColumnVisibility, type TableColumnVisibilityKey } from '../tableColumnCustomise';
 
 /** Body cell primary label — Inter 14px semibold #101828 */
 const tableCellPrimary =
@@ -60,6 +61,20 @@ export type GripColumnId =
 
 const DRILL_GRIP_ID_SET = new Set<string>(DRILL_GRIP_COLUMN_IDS);
 
+const GRIP_VISIBILITY_KEY: Partial<Record<GripColumnId, TableColumnVisibilityKey>> = {
+  transfers: 'transfers',
+  scheduleEnd: 'sales',
+  forecastPerWeek: 'forecastPerWk',
+  scheduleStart: 'recommendedTransfers',
+  sales: 'revenueIncrease',
+  targetCoverage: 'stockouts',
+  gripLocations: 'locations',
+  gripOverstocks: 'overstocks',
+  gripUnderstocks: 'understocks',
+  gripDepth: 'depth',
+  gripWarehouseUnits: 'warehouseUnits',
+};
+
 interface AssortmentTableProps {
   rows: AssortmentRow[];
   designOnly?: boolean;
@@ -78,6 +93,8 @@ interface AssortmentTableProps {
   onRequestRevert?: (row: AssortmentRow) => void;
   /** When true, show SKU / Min Qty / Inventory / drill columns (e.g. from parent breadcrumbs). */
   productDrillDownActive?: boolean;
+  /** Per-column visibility from the Customise columns drawer; omitted keys default to visible. */
+  columnVisibility?: Partial<Record<TableColumnVisibilityKey, boolean>>;
 }
 
 export function AssortmentTable({
@@ -96,8 +113,16 @@ export function AssortmentTable({
   onRequestCommit: _onRequestCommit,
   onRequestRevert: _onRequestRevert,
   productDrillDownActive = false,
+  columnVisibility: columnVisibilityProp,
 }: AssortmentTableProps) {
   const allSelected = rows.length > 0 && rows.every((r) => r.selected);
+
+  const mergedColumnVisibility = {
+    ...defaultTableColumnVisibility(),
+    ...columnVisibilityProp,
+  };
+
+  const showProductDetails = mergedColumnVisibility.productDetails;
 
   /** Extra columns once any row has generated recommendations (data set on generate). */
   const showRecommendationColumns = rows.some(
@@ -167,12 +192,19 @@ export function AssortmentTable({
     (id) => !DRILL_GRIP_ID_SET.has(id) || productDrillDownActive
   );
 
+  const filteredGripColumnOrder = visibleGripColumnOrder.filter((id) => {
+    if (DRILL_GRIP_ID_SET.has(id)) return true;
+    const key = GRIP_VISIBILITY_KEY[id];
+    if (!key) return true;
+    return mergedColumnVisibility[key];
+  });
+
   const renderGripColumnHeader = (columnId: GripColumnId): ReactNode => {
     const d = gripThDropProps(columnId);
     switch (columnId) {
       case 'sales':
         return (
-          <th key={columnId} className="h-[86px] min-h-[86px] min-w-[128px] px-4 py-3 text-left" {...d}>
+          <th key={columnId} className="min-w-[128px] px-4 py-[10px] text-left" {...d}>
             <span className="inline-flex items-center gap-2">
               {gripDragHandle(columnId, 'Revenue increase')}
               <span>Revenue increase</span>
@@ -183,7 +215,7 @@ export function AssortmentTable({
         );
       case 'transfers':
         return (
-          <th key={columnId} className="h-[86px] min-h-[86px] min-w-[200px] px-4 py-3 text-left" {...d}>
+          <th key={columnId} className="min-w-[200px] px-4 py-[10px] text-left" {...d}>
             <span className="inline-flex items-center gap-2">
               {gripDragHandle(columnId, 'Transfers')}
               <span>Transfers</span>
@@ -192,7 +224,7 @@ export function AssortmentTable({
         );
       case 'scheduleStart':
         return (
-          <th key={columnId} className="h-[86px] min-h-[86px] min-w-[240px] px-4 py-3 text-left" {...d}>
+          <th key={columnId} className="min-w-[240px] px-4 py-[10px] text-left" {...d}>
             <span className="inline-flex items-center gap-2">
               {gripDragHandle(columnId, 'Recommended transfers')}
               <span>Recommended transfers</span>
@@ -202,7 +234,7 @@ export function AssortmentTable({
         );
       case 'scheduleEnd':
         return (
-          <th key={columnId} className="h-[86px] min-h-[86px] min-w-[168px] px-4 py-3 text-right" {...d}>
+          <th key={columnId} className="min-w-[168px] px-4 py-[10px] text-right" {...d}>
             <span className="inline-flex w-full items-center justify-end gap-2">
               {gripDragHandle(columnId, 'Sales')}
               <span>Sales</span>
@@ -211,24 +243,17 @@ export function AssortmentTable({
         );
       case 'forecastPerWeek':
         return (
-          <th
-            key={columnId}
-            className="h-[86px] min-h-[86px] min-w-[128px] whitespace-normal px-4 py-3 text-right"
-            {...d}
-          >
+          <th key={columnId} className="min-w-[128px] px-4 py-[10px] text-right" {...d}>
             <span className="inline-flex w-full items-center justify-end gap-1.5">
               {gripDragHandle(columnId, 'Forecast per wk.')}
-              <span className="flex flex-col items-end leading-snug">
-                <span>Forecast</span>
-                <span>per wk.</span>
-              </span>
-              <Info size={14} className="shrink-0 self-center text-[#6A7282]" aria-hidden />
+              <span>Forecast per wk.</span>
+              <Info size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
             </span>
           </th>
         );
       case 'targetCoverage':
         return (
-          <th key={columnId} className="h-[86px] min-h-[86px] min-w-[128px] px-4 py-3 text-right" {...d}>
+          <th key={columnId} className="min-w-[128px] px-4 py-[10px] text-right" {...d}>
             <span className="inline-flex w-full items-center justify-end gap-2">
               {gripDragHandle(columnId, 'Stockouts')}
               <span>Stockouts</span>
@@ -237,7 +262,7 @@ export function AssortmentTable({
         );
       case 'gripLocations':
         return (
-          <th key={columnId} className="h-[86px] min-h-[86px] min-w-[120px] px-4 py-3 text-right" {...d}>
+          <th key={columnId} className="min-w-[120px] px-4 py-[10px] text-right" {...d}>
             <span className="inline-flex w-full items-center justify-end gap-2">
               {gripDragHandle(columnId, 'Locations')}
               <span>Locations</span>
@@ -246,7 +271,7 @@ export function AssortmentTable({
         );
       case 'gripOverstocks':
         return (
-          <th key={columnId} className="h-[86px] min-h-[86px] min-w-[120px] px-4 py-3 text-right" {...d}>
+          <th key={columnId} className="min-w-[120px] px-4 py-[10px] text-right" {...d}>
             <span className="inline-flex w-full items-center justify-end gap-1.5">
               {gripDragHandle(columnId, 'Overstocks')}
               <span>Overstocks</span>
@@ -256,7 +281,7 @@ export function AssortmentTable({
         );
       case 'gripUnderstocks':
         return (
-          <th key={columnId} className="h-[86px] min-h-[86px] min-w-[120px] px-4 py-3 text-right" {...d}>
+          <th key={columnId} className="min-w-[120px] px-4 py-[10px] text-right" {...d}>
             <span className="inline-flex w-full items-center justify-end gap-1.5">
               {gripDragHandle(columnId, 'Understocks')}
               <span>Understocks</span>
@@ -266,7 +291,7 @@ export function AssortmentTable({
         );
       case 'gripDepth':
         return (
-          <th key={columnId} className="h-[86px] min-h-[86px] min-w-[100px] px-4 py-3 text-right" {...d}>
+          <th key={columnId} className="min-w-[100px] px-4 py-[10px] text-right" {...d}>
             <span className="inline-flex w-full items-center justify-end gap-1.5">
               {gripDragHandle(columnId, 'Depth')}
               <span>Depth</span>
@@ -276,24 +301,17 @@ export function AssortmentTable({
         );
       case 'gripWarehouseUnits':
         return (
-          <th
-            key={columnId}
-            className="h-[86px] min-h-[86px] min-w-[128px] whitespace-normal px-4 py-3 text-right"
-            {...d}
-          >
+          <th key={columnId} className="min-w-[128px] px-4 py-[10px] text-right" {...d}>
             <span className="inline-flex w-full items-center justify-end gap-1.5">
               {gripDragHandle(columnId, 'Warehouse units')}
-              <span className="flex flex-col items-end leading-snug">
-                <span>Warehouse</span>
-                <span>units</span>
-              </span>
-              <Info size={14} className="shrink-0 self-center text-[#6A7282]" aria-hidden />
+              <span>Warehouse units</span>
+              <Info size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
             </span>
           </th>
         );
       case 'drillMinQty':
         return (
-          <th key={columnId} className="h-[86px] min-h-[86px] px-3 py-3 text-left" {...d}>
+          <th key={columnId} className="px-3 py-[10px] text-left" {...d}>
             <span className="inline-flex items-center gap-1.5">
               {gripDragHandle(columnId, 'Min Qty')}
               Min Qty
@@ -302,7 +320,7 @@ export function AssortmentTable({
         );
       case 'drillInventory':
         return (
-          <th key={columnId} className="h-[86px] min-h-[86px] px-3 py-3 text-right" {...d}>
+          <th key={columnId} className="px-3 py-[10px] text-right" {...d}>
             <span className="inline-flex w-full items-center justify-end gap-1.5">
               {gripDragHandle(columnId, 'Inventory (drill)')}
               Inventory
@@ -311,7 +329,7 @@ export function AssortmentTable({
         );
       case 'drillTarget':
         return (
-          <th key={columnId} className="h-[86px] min-h-[86px] px-3 py-3 text-right" {...d}>
+          <th key={columnId} className="px-3 py-[10px] text-right" {...d}>
             <span className="inline-flex w-full items-center justify-end gap-1.5">
               {gripDragHandle(columnId, 'Target coverage (drill)')}
               <span>Target coverage</span>
@@ -320,7 +338,7 @@ export function AssortmentTable({
         );
       case 'drillForecast':
         return (
-          <th key={columnId} className="h-[86px] min-h-[86px] px-3 py-3 text-right" {...d}>
+          <th key={columnId} className="px-3 py-[10px] text-right" {...d}>
             <span className="inline-flex w-full items-center justify-end gap-1.5">
               {gripDragHandle(columnId, 'Forecast sales per week')}
               <span>Forecast per week</span>
@@ -329,7 +347,7 @@ export function AssortmentTable({
         );
       case 'drillSkuLocs':
         return (
-          <th key={columnId} className="h-[86px] min-h-[86px] min-w-[108px] px-3 py-3 text-left" {...d}>
+          <th key={columnId} className="min-w-[108px] px-3 py-[10px] text-left" {...d}>
             <span className="inline-flex items-center gap-1.5">
               {gripDragHandle(columnId, 'SKU locations')}
               <span># SKU locations</span>
@@ -556,7 +574,7 @@ export function AssortmentTable({
           >
             <tr className="font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828] [&_th]:whitespace-nowrap [&_th]:align-middle">
               <th
-                className="sticky left-0 z-30 h-[86px] min-h-[86px] w-14 min-w-14 max-w-14 box-border bg-white px-4 py-3 text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                className="sticky left-0 z-30 w-14 min-w-14 max-w-14 box-border bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                 scope="col"
               >
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -568,16 +586,18 @@ export function AssortmentTable({
                   />
                 </label>
               </th>
-              <th
-                className="sticky left-14 z-20 h-[86px] min-h-[86px] w-[280px] min-w-[280px] max-w-[280px] box-border bg-white px-4 py-3 text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
-                scope="col"
-              >
-                <span className="inline-flex items-center gap-2">
-                  <span>Product details</span>
-                </span>
-              </th>
+              {showProductDetails && (
+                <th
+                  className="sticky left-14 z-20 w-[280px] min-w-[280px] max-w-[280px] box-border bg-white px-4 py-[10px] text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                  scope="col"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <span>Product details</span>
+                  </span>
+                </th>
+              )}
               {!designOnly &&
-                visibleGripColumnOrder.map((columnId) => renderGripColumnHeader(columnId))}
+                filteredGripColumnOrder.map((columnId) => renderGripColumnHeader(columnId))}
               </tr>
           </thead>
           <tbody className="[&_td]:border-t-0 [&_td]:border-b-[0.5px] [&_td]:border-solid [&_td]:border-[#E3E8F0]">
@@ -604,47 +624,51 @@ export function AssortmentTable({
                     />
                   </div>
                 </td>
-                <td className={`sticky left-14 z-20 min-h-[86px] w-[280px] min-w-[280px] max-w-[280px] box-border bg-white py-3 px-4 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}>
-                  <div className="flex min-w-0 gap-3">
-                    <div
-                      className="relative h-[48px] w-[48px] shrink-0 overflow-hidden rounded bg-[#f5f5f5]"
-                      data-name="Product image"
-                      data-node-id="12371:53131"
-                    >
-                      <img
-                        src={detail.imageSrc}
-                        alt={detail.title}
-                        className="pointer-events-none absolute inset-0 size-full max-w-none object-contain"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className={tableCellPrimary}>{detail.title}</div>
-                      <div className="mt-0.5 flex min-w-0 items-center gap-1">
-                        <span className={`min-w-0 truncate ${tableCellSecondary}`}>{detail.sku}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            void navigator.clipboard?.writeText(detail.sku);
-                          }}
-                          className="inline-flex shrink-0 rounded p-0.5 text-[#6A7282] transition-colors hover:bg-slate-100 hover:text-sky-600"
-                          aria-label="Copy SKU"
-                        >
-                          <Copy size={14} strokeWidth={2} aria-hidden />
-                        </button>
-                        <button
-                          type="button"
-                          className="inline-flex shrink-0 rounded p-0.5 text-[#6A7282] transition-colors hover:bg-slate-100 hover:text-sky-600"
-                          aria-label="Product options"
-                        >
-                          <ChevronDown size={14} strokeWidth={2} aria-hidden />
-                        </button>
+                {showProductDetails && (
+                  <td
+                    className={`sticky left-14 z-20 min-h-[86px] w-[280px] min-w-[280px] max-w-[280px] box-border bg-white py-3 px-4 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
+                  >
+                    <div className="flex min-w-0 gap-3">
+                      <div
+                        className="relative h-[48px] w-[48px] shrink-0 overflow-hidden rounded bg-[#f5f5f5]"
+                        data-name="Product image"
+                        data-node-id="12371:53131"
+                      >
+                        <img
+                          src={detail.imageSrc}
+                          alt={detail.title}
+                          className="pointer-events-none absolute inset-0 size-full max-w-none object-contain"
+                        />
                       </div>
-                      <div className={`mt-0.5 ${tableCellSecondary}`}>{detail.colorLabel}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className={tableCellPrimary}>{detail.title}</div>
+                        <div className="mt-0.5 flex min-w-0 items-center gap-1">
+                          <span className={`min-w-0 truncate ${tableCellSecondary}`}>{detail.sku}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              void navigator.clipboard?.writeText(detail.sku);
+                            }}
+                            className="inline-flex shrink-0 rounded p-0.5 text-[#6A7282] transition-colors hover:bg-slate-100 hover:text-sky-600"
+                            aria-label="Copy SKU"
+                          >
+                            <Copy size={14} strokeWidth={2} aria-hidden />
+                          </button>
+                          <button
+                            type="button"
+                            className="inline-flex shrink-0 rounded p-0.5 text-[#6A7282] transition-colors hover:bg-slate-100 hover:text-sky-600"
+                            aria-label="Product options"
+                          >
+                            <ChevronDown size={14} strokeWidth={2} aria-hidden />
+                          </button>
+                        </div>
+                        <div className={`mt-0.5 ${tableCellSecondary}`}>{detail.colorLabel}</div>
+                      </div>
                     </div>
-                  </div>
-                </td>
+                  </td>
+                )}
                 {!designOnly &&
-                  visibleGripColumnOrder.map((columnId) =>
+                  filteredGripColumnOrder.map((columnId) =>
                     renderGripColumnBodyCell(columnId, row, rowIndex, drillM)
                   )}
               </tr>
