@@ -2,14 +2,14 @@ import { useId, useState, type ComponentType } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { SCRATCHPAD_852_24160_TOGGLE_PATH } from '../assets/sidebarEdgeToggle85224160';
 
-/** Autone logo mark — Monotone / Icon 24px (Figma 12210:36296 → 12207:7487) */
+/** Autone logo mark — Monotone / autone-logo (Figma 12210:36296 → 12207:7487) */
 const AUTONE_LOGO_MARK =
-  'https://www.figma.com/api/mcp/asset/ff47c49a-32d3-41ef-a4af-b982250d71dc';
-/** Full wordmark pieces (Figma 12212:42693 AutoneLogo 12207:7492) */
+  'https://www.figma.com/api/mcp/asset/c5ee9218-b879-4260-83b3-109275a3e743';
+/** Full wordmark pieces (Figma AutoneLogo 12207:7492 → 12207:7490 + 12207:7491) */
 const AUTONE_LOGO_MARK_EXPANDED =
-  'https://www.figma.com/api/mcp/asset/9d650bdc-ecde-415f-bea2-d2cc21816d2e';
+  'https://www.figma.com/api/mcp/asset/69833f17-f272-4a51-9709-ccd76d53c85d';
 const AUTONE_LOGO_WORDMARK =
-  'https://www.figma.com/api/mcp/asset/8aef8dab-0f24-41a5-ad3c-1b0b8fbe7f1e';
+  'https://www.figma.com/api/mcp/asset/0f978b8f-318c-4152-a43c-cdaba4f9e270';
 
 /** Content width ~240px + horizontal padding (px-4 × 2) so nav labels are not clipped. */
 const SIDEBAR_EXPANDED_WIDTH = 272;
@@ -20,16 +20,17 @@ const EDGE_TOGGLE_PX = 40;
 const EDGE_TOGGLE_LEFT_COLLAPSED = 56;
 const USER_AVATAR_SRC =
   'https://www.figma.com/api/mcp/asset/3c4254ce-40aa-4ed2-af75-f53137e845d4';
+/** UK flag — Sidebar element Icon=uk (Figma 12349:171770 → 10027:30853) */
 const UK_FLAG_SRC =
-  'https://www.figma.com/api/mcp/asset/43899dcc-1578-4ed4-becc-ee0a3c834ab5';
-/** Chat — Sidebar element (Figma 12350:172509, Icon=chat 12350:172283) */
+  'https://www.figma.com/api/mcp/asset/6556f56e-8904-422b-8817-09a712cea858';
+/** Chat — Sidebar element Icon=chat (Figma 12353:173526 → 12353:173494) */
 const SIDEBAR_CHAT_ICON_SRC =
-  'https://www.figma.com/api/mcp/asset/dd77240e-5765-49a2-a5af-94eafc295af6';
-/** Currency — Icon=circle-dollar (Figma 12718:7365 → 4605:27967) */
+  'https://www.figma.com/api/mcp/asset/e6b40e9c-d822-47ec-81cd-89204f8f1316';
+/** Currency — Sidebar element Icon=circle-dollar (Figma 12718:7152 → 4605:27967) */
 const SIDEBAR_CURRENCY_ICON_VECTOR =
-  'https://www.figma.com/api/mcp/asset/6f7604c6-8bad-46e4-a81d-2903fe0890cd';
+  'https://www.figma.com/api/mcp/asset/96c77157-ecfd-4da2-ad27-e5fd6f309f8f';
 const SIDEBAR_CURRENCY_ICON_ELLIPSE =
-  'https://www.figma.com/api/mcp/asset/bfcc53c8-3349-47f2-984c-eb2ad1d268ac';
+  'https://www.figma.com/api/mcp/asset/816d86d5-bbf1-4b47-bfcb-b7f610c0bbc1';
 
 const SIDEBAR_INACTIVE_ICON = 'text-[#9AA4B2]';
 /** Chat/Currency imgs: default white glyph; `group-hover` → ~#0267FF like `text-inherit` nav icons. */
@@ -845,7 +846,7 @@ export function Sidebar({
           }`}
           aria-label="Chat"
           data-name="Sidebar element"
-          data-node-id="12350:172509"
+          data-node-id="12353:173526"
         >
           <SidebarChatIcon />
           {expanded && (
@@ -861,7 +862,8 @@ export function Sidebar({
             expanded ? 'justify-start text-left' : 'justify-center'
           }`}
           aria-label="Currency"
-          data-node-id="12718:7365"
+          data-name="Sidebar element"
+          data-node-id="12718:7152"
         >
           <SidebarCurrencyIcon />
           {expanded && (
@@ -878,7 +880,7 @@ export function Sidebar({
           }`}
           aria-label="Language (UK)"
           data-name="Sidebar element"
-          data-node-id="12350:172510"
+          data-node-id="12349:171770"
         >
           <div className="relative size-6 shrink-0 overflow-hidden">
             <div

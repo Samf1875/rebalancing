@@ -17,8 +17,8 @@ const tableCellPrimary =
 const tableCellSecondary =
   "font-['Inter',sans-serif] text-[12px] font-normal leading-normal text-[#6A7282]";
 
-/** Row hover fill (with `group` on `<tr>`) */
-const tableRowHoverTd = 'transition-colors group-hover:bg-[#F8FAFB]';
+/** Row cells stay white (no hover fill). */
+const tableRowHoverTd = '';
 
 function formatCoverageWeeks(n: number): string {
   return `${n} ${n === 1 ? 'week' : 'weeks'}`;
@@ -552,11 +552,11 @@ export function AssortmentTable({
           }`}
         >
           <thead
-            className="[&_th]:border-t-0 [&_th]:border-b-[0.5px] [&_th]:border-solid [&_th]:border-[#E3E8F0] [&_th]:bg-[#f5f5f5] [&_th]:font-['Inter',sans-serif]"
+            className="[&_th]:border-t-0 [&_th]:border-b-[0.5px] [&_th]:border-solid [&_th]:border-[#E3E8F0] [&_th]:bg-white [&_th]:font-['Inter',sans-serif]"
           >
             <tr className="font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828] [&_th]:whitespace-nowrap [&_th]:align-middle">
               <th
-                className="sticky left-0 z-30 h-[86px] min-h-[86px] w-14 min-w-14 max-w-14 box-border bg-[#f5f5f5] px-4 py-3 text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                className="sticky left-0 z-30 h-[86px] min-h-[86px] w-14 min-w-14 max-w-14 box-border bg-white px-4 py-3 text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                 scope="col"
               >
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -569,7 +569,7 @@ export function AssortmentTable({
                 </label>
               </th>
               <th
-                className="sticky left-14 z-20 h-[86px] min-h-[86px] w-[280px] min-w-[280px] max-w-[280px] box-border bg-[#f5f5f5] px-4 py-3 text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                className="sticky left-14 z-20 h-[86px] min-h-[86px] w-[280px] min-w-[280px] max-w-[280px] box-border bg-white px-4 py-3 text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                 scope="col"
               >
                 <span className="inline-flex items-center gap-2">
@@ -593,7 +593,7 @@ export function AssortmentTable({
                 : null;
               const detail = row.productCellDetail;
               return (
-              <tr key={row.id} className="group bg-white" data-name="table-cell">
+              <tr key={row.id} className="bg-white" data-name="table-cell">
                 <td className={`sticky left-0 z-30 h-[86px] min-h-[86px] w-14 min-w-14 max-w-14 box-border bg-white py-3 px-4 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}>
                   <div className="flex items-center">
                     <input
@@ -604,7 +604,7 @@ export function AssortmentTable({
                     />
                   </div>
                 </td>
-                <td className={`sticky left-14 z-20 min-h-[86px] w-[280px] min-w-[280px] max-w-[280px] box-border bg-white py-3 px-4 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] group relative ${tableRowHoverTd}`}>
+                <td className={`sticky left-14 z-20 min-h-[86px] w-[280px] min-w-[280px] max-w-[280px] box-border bg-white py-3 px-4 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}>
                   <div className="flex min-w-0 gap-3">
                     <div
                       className="relative h-[48px] w-[48px] shrink-0 overflow-hidden rounded bg-[#f5f5f5]"
