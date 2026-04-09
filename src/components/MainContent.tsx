@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { AssortmentTable } from './AssortmentTable';
 import { LocationsTable } from './LocationsTable';
+import { TripsTable } from './TripsTable';
 import { CommitSuccessBanner } from './CommitSuccessBanner';
 import { ConfirmCommitRevertModal, type ConfirmCommitRevertState } from './ConfirmCommitRevertModal';
 import { EditAllocationPanel } from './EditAllocationPanel';
@@ -763,6 +764,8 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
           <div className="min-w-0">
             {focusView === 'locations' ? (
               <LocationsTable />
+            ) : focusView === 'trips' ? (
+              <TripsTable />
             ) : (
               <AssortmentTable
                 rows={tableRows}
@@ -872,7 +875,7 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
         iaOnlyLocations={generateModalStats.iaOnlyLocations}
       />
 
-      {focusView !== 'locations' && (
+      {focusView !== 'locations' && focusView !== 'trips' && (
         <SelectionActionBar
           selectedRows={rows.filter((r) => r.selected) ?? []}
           onClearSelection={() => setRows((prev) => prev.map((r) => ({ ...r, selected: false })))}
