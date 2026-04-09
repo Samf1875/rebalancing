@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, type ReactNode } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, GripVertical, Info } from 'lucide-react';
 import { MOCK_LOCATION_ROWS, type LocationTableRow } from '../data/mockLocations';
 
@@ -7,6 +7,11 @@ const tableCellPrimary =
 const tableCellSecondary =
   "font-['Inter',sans-serif] text-[12px] font-normal leading-normal text-[#6A7282]";
 const tableRowHoverTd = '';
+
+const tableHeaderGripSize = "h-[1lh] w-[1lh] shrink-0";
+const tableHeaderGripIcon = `${tableHeaderGripSize} text-[#6A7282]`;
+const tableHeaderGripInsetFont =
+  "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal";
 
 const recommendedTransferActionBtn =
   "rounded border border-[#E3E8F0] bg-white px-2 py-1 font-['Inter',sans-serif] text-[11px] font-semibold leading-none text-[#0267FF] transition-colors hover:bg-slate-50";
@@ -34,7 +39,7 @@ function GripLabel({
 }) {
   const inner = (
     <>
-      <GripVertical className="h-4 w-4 shrink-0 text-[#6A7282]" aria-hidden />
+      <GripVertical className={tableHeaderGripIcon} aria-hidden />
       <span>{label}</span>
       {info ? <Info size={14} className="shrink-0 text-[#6A7282]" aria-hidden /> : null}
       {sort ? <ChevronDown size={14} className="shrink-0 text-[#6A7282]" aria-hidden /> : null}
@@ -46,6 +51,41 @@ function GripLabel({
     );
   }
   return <span className="inline-flex items-center gap-2">{inner}</span>;
+}
+
+/** Invisible grip + gap so cell content lines up with `GripLabel` / Location header. */
+function TransparentGrip() {
+  return (
+    <GripVertical
+      className={`pointer-events-none ${tableHeaderGripSize} text-transparent`}
+      aria-hidden
+    />
+  );
+}
+
+function CellGripInset({
+  children,
+  align,
+}: {
+  children: ReactNode;
+  align: 'left' | 'right';
+}) {
+  if (align === 'right') {
+    return (
+      <div
+        className={`flex w-full items-center justify-end gap-2 ${tableHeaderGripInsetFont}`}
+      >
+        <TransparentGrip />
+        <div className="min-w-0 text-right">{children}</div>
+      </div>
+    );
+  }
+  return (
+    <div className={`inline-flex items-center gap-2 ${tableHeaderGripInsetFont}`}>
+      <TransparentGrip />
+      <div className="min-w-0 text-left">{children}</div>
+    </div>
+  );
 }
 
 export function LocationsTable() {
@@ -105,79 +145,101 @@ export function LocationsTable() {
         />
       </td>
       <td
-        className={`sticky left-14 z-20 h-[86px] min-h-[86px] w-[220px] min-w-[220px] max-w-[220px] box-border bg-white px-4 py-3 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
+        className={`sticky left-14 z-20 h-[86px] min-h-[86px] w-[180px] min-w-[180px] max-w-[180px] box-border bg-white px-4 py-3 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
       >
-        <div className={tableCellPrimary}>{row.name}</div>
-        <div className={`mt-0.5 ${tableCellSecondary}`}>{row.code}</div>
+        <CellGripInset align="left">
+          <div>
+            <div className={tableCellPrimary}>{row.name}</div>
+            <div className={`mt-0.5 ${tableCellSecondary}`}>{row.code}</div>
+          </div>
+        </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
-        <div className="flex min-w-0 flex-col gap-1">
-          <div className={tableCellPrimary}>{row.transfersIn.units}</div>
-          <div className={tableCellSecondary}>{transfersSubline(row.transfersIn)}</div>
-        </div>
+        <CellGripInset align="left">
+          <div className="flex min-w-0 flex-col gap-1">
+            <div className={tableCellPrimary}>{row.transfersIn.units}</div>
+            <div className={tableCellSecondary}>{transfersSubline(row.transfersIn)}</div>
+          </div>
+        </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
-        <div className="flex min-w-0 flex-col gap-1">
-          <div className={tableCellPrimary}>{row.transfersOut.units}</div>
-          <div className={tableCellSecondary}>{transfersSubline(row.transfersOut)}</div>
-        </div>
+        <CellGripInset align="left">
+          <div className="flex min-w-0 flex-col gap-1">
+            <div className={tableCellPrimary}>{row.transfersOut.units}</div>
+            <div className={tableCellSecondary}>{transfersSubline(row.transfersOut)}</div>
+          </div>
+        </CellGripInset>
       </td>
-      <td
-        className={`h-[86px] min-h-[86px] px-4 py-3 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
-      >
-        {formatEurK(row.revenueEur)}
+      <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
+        <CellGripInset align="right">
+          <span className={`tabular-nums ${tableCellPrimary}`}>{formatEurK(row.revenueEur)}</span>
+        </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] min-w-[200px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
-        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
-          <span className={tableCellPrimary}>{row.recommendedIn}</span>
-          <div className="flex shrink-0 items-center gap-1">
-            <button type="button" className={recommendedTransferActionBtn} aria-label="Review">
-              REV
-            </button>
-            <button type="button" className={recommendedTransferActionBtn} aria-label="Visible">
-              VIS
-            </button>
+        <CellGripInset align="left">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+            <span className={tableCellPrimary}>{row.recommendedIn}</span>
+            <div className="flex shrink-0 items-center gap-1">
+              <button type="button" className={recommendedTransferActionBtn} aria-label="Review">
+                REV
+              </button>
+              <button type="button" className={recommendedTransferActionBtn} aria-label="Visible">
+                VIS
+              </button>
+            </div>
           </div>
-        </div>
+        </CellGripInset>
       </td>
-      <td
-        className={`h-[86px] min-h-[86px] px-4 py-3 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
-      >
-        {row.recommendedOut}
+      <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
+        <CellGripInset align="right">
+          <span className={`tabular-nums ${tableCellPrimary}`}>{row.recommendedOut}</span>
+        </CellGripInset>
       </td>
-      <td className={`h-[86px] min-h-[86px] px-4 py-3 text-right align-middle ${tableRowHoverTd}`}>
-        <div className="flex min-w-0 flex-col items-end gap-1">
-          <div className={`${tableCellPrimary} tabular-nums`}>{row.salesL7d}</div>
-          <div className={`${tableCellSecondary} tabular-nums`}>{row.salesL30d}</div>
-        </div>
+      <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
+        <CellGripInset align="right">
+          <div className="flex min-w-0 flex-col items-end gap-1">
+            <div className={`${tableCellPrimary} tabular-nums`}>{row.salesL7d}</div>
+            <div className={`${tableCellSecondary} tabular-nums`}>{row.salesL30d}</div>
+          </div>
+        </CellGripInset>
       </td>
-      <td
-        className={`h-[86px] min-h-[86px] px-4 py-3 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
-      >
-        {row.forecastPerWk.toLocaleString('en-US', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}
+      <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
+        <CellGripInset align="right">
+          <span className={`tabular-nums ${tableCellPrimary}`}>
+            {row.forecastPerWk.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
+        </CellGripInset>
       </td>
-      <td
-        className={`h-[86px] min-h-[86px] px-4 py-3 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
-      >
-        {row.stockouts.from} → {row.stockouts.to}
+      <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
+        <CellGripInset align="right">
+          <span className={`tabular-nums ${tableCellPrimary}`}>
+            {row.stockouts.from} → {row.stockouts.to}
+          </span>
+        </CellGripInset>
       </td>
-      <td
-        className={`h-[86px] min-h-[86px] px-4 py-3 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
-      >
-        {row.overstocks.from.toLocaleString()} → {row.overstocks.to.toLocaleString()}
+      <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
+        <CellGripInset align="right">
+          <span className={`tabular-nums ${tableCellPrimary}`}>
+            {row.overstocks.from.toLocaleString()} → {row.overstocks.to.toLocaleString()}
+          </span>
+        </CellGripInset>
       </td>
-      <td
-        className={`h-[86px] min-h-[86px] px-4 py-3 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
-      >
-        {row.understocks.from} → {row.understocks.to}
+      <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
+        <CellGripInset align="right">
+          <span className={`tabular-nums ${tableCellPrimary}`}>
+            {row.understocks.from} → {row.understocks.to}
+          </span>
+        </CellGripInset>
       </td>
-      <td
-        className={`h-[86px] min-h-[86px] px-4 py-3 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
-      >
-        {row.depth.from.toFixed(1)} → {row.depth.to.toFixed(1)}
+      <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
+        <CellGripInset align="right">
+          <span className={`tabular-nums ${tableCellPrimary}`}>
+            {row.depth.from.toFixed(1)} → {row.depth.to.toFixed(1)}
+          </span>
+        </CellGripInset>
       </td>
     </tr>
   );
@@ -188,7 +250,7 @@ export function LocationsTable() {
       data-name="Locations table"
     >
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[2200px] border-collapse">
+        <table className="w-full min-w-[2160px] border-collapse">
           <thead
             className="[&_th]:border-t-0 [&_th]:border-b-[0.5px] [&_th]:border-solid [&_th]:border-[#E3E8F0] [&_th]:bg-white [&_th]:font-['Inter',sans-serif]"
           >
@@ -209,11 +271,11 @@ export function LocationsTable() {
                 </label>
               </th>
               <th
-                className="sticky left-14 z-20 w-[220px] min-w-[220px] max-w-[220px] box-border bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                className="sticky left-14 z-20 w-[180px] min-w-[180px] max-w-[180px] box-border bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                 scope="col"
               >
                 <span className="inline-flex items-center gap-2">
-                  <GripVertical className="h-4 w-4 shrink-0 text-[#6A7282]" aria-hidden />
+                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
                   Location
                 </span>
               </th>
@@ -256,47 +318,85 @@ export function LocationsTable() {
             <tr className="bg-white font-semibold">
               <td className="sticky left-0 z-30 bg-white py-3 px-4 shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]" />
               <td
-                className={`sticky left-14 z-20 bg-white px-4 py-3 shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableCellPrimary}`}
+                className={`sticky left-14 z-20 w-[180px] min-w-[180px] max-w-[180px] bg-white px-4 py-3 shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableCellPrimary}`}
               />
               <td className="px-4 py-3 align-middle">
-                <div className="flex flex-col gap-1">
-                  <div className={tableCellPrimary}>{summary.transfersInUnits} units</div>
-                  <div className={tableCellSecondary}>{summary.transfersInTrips} trips</div>
-                </div>
+                <CellGripInset align="left">
+                  <div className="flex flex-col gap-1">
+                    <div className={tableCellPrimary}>{summary.transfersInUnits} units</div>
+                    <div className={tableCellSecondary}>{summary.transfersInTrips} trips</div>
+                  </div>
+                </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">
-                <div className="flex flex-col gap-1">
-                  <div className={tableCellPrimary}>{summary.transfersOutUnits} units</div>
-                  <div className={tableCellSecondary}>{summary.transfersOutTrips} trips</div>
-                </div>
+                <CellGripInset align="left">
+                  <div className="flex flex-col gap-1">
+                    <div className={tableCellPrimary}>{summary.transfersOutUnits} units</div>
+                    <div className={tableCellSecondary}>{summary.transfersOutTrips} trips</div>
+                  </div>
+                </CellGripInset>
               </td>
-              <td className={`px-4 py-3 text-right tabular-nums ${tableCellPrimary}`}>
-                {formatEurK(summary.revenueEur)}
+              <td className="px-4 py-3 align-middle">
+                <CellGripInset align="right">
+                  <span className={`tabular-nums ${tableCellPrimary}`}>
+                    {formatEurK(summary.revenueEur)}
+                  </span>
+                </CellGripInset>
               </td>
-              <td className={`px-4 py-3 ${tableCellPrimary}`}>{summary.recommendedIn} units</td>
-              <td className={`px-4 py-3 text-right ${tableCellPrimary}`}>
-                <span className="tabular-nums">{summary.recommendedOut}</span> units
+              <td className="px-4 py-3 align-middle">
+                <CellGripInset align="left">
+                  <span className={tableCellPrimary}>{summary.recommendedIn} units</span>
+                </CellGripInset>
               </td>
-              <td className="px-4 py-3 text-right align-middle">
-                <div className="flex flex-col items-end gap-1">
-                  <div className={`${tableCellPrimary} tabular-nums`}>{summary.salesL7d} L7D</div>
-                  <div className={`${tableCellSecondary} tabular-nums`}>{summary.salesL30d} L30D</div>
-                </div>
+              <td className="px-4 py-3 align-middle">
+                <CellGripInset align="right">
+                  <span className={tableCellPrimary}>
+                    <span className="tabular-nums">{summary.recommendedOut}</span> units
+                  </span>
+                </CellGripInset>
               </td>
-              <td className={`px-4 py-3 text-right ${tableCellPrimary}`}>
-                <div className="tabular-nums">{summary.forecastPerWk.toFixed(2)} per week</div>
+              <td className="px-4 py-3 align-middle">
+                <CellGripInset align="right">
+                  <div className="flex min-w-0 flex-col items-end gap-1">
+                    <div className={`${tableCellPrimary} tabular-nums`}>{summary.salesL7d} L7D</div>
+                    <div className={`${tableCellSecondary} tabular-nums`}>{summary.salesL30d} L30D</div>
+                  </div>
+                </CellGripInset>
               </td>
-              <td className={`px-4 py-3 text-right tabular-nums ${tableCellPrimary}`}>
-                {summary.stockouts.from} → {summary.stockouts.to}
+              <td className="px-4 py-3 align-middle">
+                <CellGripInset align="right">
+                  <span className={`tabular-nums ${tableCellPrimary}`}>
+                    {summary.forecastPerWk.toFixed(2)} per week
+                  </span>
+                </CellGripInset>
               </td>
-              <td className={`px-4 py-3 text-right tabular-nums ${tableCellPrimary}`}>
-                {summary.overstocks.from.toLocaleString()} → {summary.overstocks.to.toLocaleString()}
+              <td className="px-4 py-3 align-middle">
+                <CellGripInset align="right">
+                  <span className={`tabular-nums ${tableCellPrimary}`}>
+                    {summary.stockouts.from} → {summary.stockouts.to}
+                  </span>
+                </CellGripInset>
               </td>
-              <td className={`px-4 py-3 text-right tabular-nums ${tableCellPrimary}`}>
-                {summary.understocks.from} → {summary.understocks.to}
+              <td className="px-4 py-3 align-middle">
+                <CellGripInset align="right">
+                  <span className={`tabular-nums ${tableCellPrimary}`}>
+                    {summary.overstocks.from.toLocaleString()} → {summary.overstocks.to.toLocaleString()}
+                  </span>
+                </CellGripInset>
               </td>
-              <td className={`px-4 py-3 text-right tabular-nums ${tableCellPrimary}`}>
-                {summary.depth.from.toFixed(1)} → {summary.depth.to.toFixed(1)}
+              <td className="px-4 py-3 align-middle">
+                <CellGripInset align="right">
+                  <span className={`tabular-nums ${tableCellPrimary}`}>
+                    {summary.understocks.from} → {summary.understocks.to}
+                  </span>
+                </CellGripInset>
+              </td>
+              <td className="px-4 py-3 align-middle">
+                <CellGripInset align="right">
+                  <span className={`tabular-nums ${tableCellPrimary}`}>
+                    {summary.depth.from.toFixed(1)} → {summary.depth.to.toFixed(1)}
+                  </span>
+                </CellGripInset>
               </td>
             </tr>
             {rows.map((row) => renderDataRow(row))}

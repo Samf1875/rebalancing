@@ -18,6 +18,10 @@ const tableCellPrimary =
 const tableCellSecondary =
   "font-['Inter',sans-serif] text-[12px] font-normal leading-normal text-[#6A7282]";
 
+/** Grip in thead — same box height as header label (`text-[14px]` + `leading-normal`). */
+const tableHeaderGripIcon =
+  "h-[1lh] w-[1lh] shrink-0 text-[#6A7282]";
+
 /** Row cells stay white (no hover fill). */
 const tableRowHoverTd = '';
 
@@ -184,7 +188,7 @@ export function AssortmentTable({
       }}
       className="inline-flex cursor-grab touch-none active:cursor-grabbing"
     >
-      <GripVertical className="h-4 w-4 shrink-0 text-[#6A7282]" aria-hidden />
+      <GripVertical className={tableHeaderGripIcon} aria-hidden />
     </span>
   );
 
