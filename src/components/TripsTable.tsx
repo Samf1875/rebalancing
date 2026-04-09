@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, GripVertical, Info } from 'lucide-react';
+import { GripVertical, Info } from 'lucide-react';
 import { MOCK_TRIP_ROWS, type TripBadge, type TripTableRow } from '../data/mockTrips';
+import { AutoneArrowDownIcon } from './AutoneArrowDownIcon';
 
 const tableCellPrimary =
   "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
@@ -25,12 +26,22 @@ const stickySendingTh = `sticky left-14 z-20 ${tripLocCol} ${theadBg} text-left 
 const stickySendingTd = `sticky left-14 z-20 ${tripLocCol} bg-white ${stickyColShadow}`;
 const stickyReceivingTh = `sticky left-[calc(3.5rem+200px)] z-[15] ${tripLocCol} ${theadBg} text-left ${stickyColShadow}`;
 const stickyReceivingTd = `sticky left-[calc(3.5rem+200px)] z-[15] ${tripLocCol} bg-white ${stickyColShadow}`;
-/** Grip size uses label row line-height (`1lh` resolves on this span, not on the SVG). */
+/** Label row typography — grip wrapper uses the same so `1lh` matches the text span. */
 const tripThLabelRowEnd =
-  "inline-flex items-center justify-end gap-2 font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828] [&>svg:first-child]:h-[1lh] [&>svg:first-child]:w-[1lh] [&>svg:first-child]:shrink-0";
+  "inline-flex items-center justify-end gap-2 font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
 const tripThLabelRowCenter =
-  "inline-flex items-center justify-center gap-2 font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828] [&>svg:first-child]:h-[1lh] [&>svg:first-child]:w-[1lh] [&>svg:first-child]:shrink-0";
-const tripThGripIcon = 'shrink-0 text-[#6A7282]';
+  "inline-flex items-center justify-center gap-2 font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
+/** Match cap / font-size of 14px label (`1em`), not full line box (`1lh`). */
+const tripThGripWrap =
+  "inline-flex h-[1em] w-[1em] shrink-0 items-center justify-center self-center font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#6A7282]";
+
+function TripColumnGrip() {
+  return (
+    <span className={tripThGripWrap} aria-hidden>
+      <GripVertical className="h-full w-full" strokeWidth={2} />
+    </span>
+  );
+}
 
 const tripActionBtn =
   "rounded border border-[#E3E8F0] bg-white px-2 py-1 font-['Inter',sans-serif] text-[11px] font-semibold leading-none text-[#0267FF] transition-colors hover:bg-slate-50";
@@ -179,7 +190,7 @@ export function TripsTable() {
               <th className={`min-w-[140px] text-right ${theadBg}`} scope="col">
                 <div className="flex flex-col items-end gap-1">
                   <span className={tripThLabelRowEnd}>
-                    <GripVertical className={tripThGripIcon} aria-hidden />
+                    <TripColumnGrip />
                     <span>Transfers</span>
                   </span>
                   <span className="tabular-nums text-[14px] font-semibold leading-normal text-[#101828]">
@@ -190,10 +201,10 @@ export function TripsTable() {
               <th className={`min-w-[160px] text-right ${theadBg}`} scope="col">
                 <div className="flex flex-col items-end gap-1">
                   <span className={tripThLabelRowEnd}>
-                    <GripVertical className={tripThGripIcon} aria-hidden />
+                    <TripColumnGrip />
                     <span>Revenue increase</span>
                     <Info size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
-                    <ChevronDown size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+                    <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
                   </span>
                   <span className="tabular-nums text-[14px] font-semibold leading-normal text-[#101828]">
                     {formatEurK(TRIPS_HEADER_SUMMARY.revenueEur)}
@@ -203,9 +214,10 @@ export function TripsTable() {
               <th className={`min-w-[260px] text-right ${theadBg}`} scope="col">
                 <div className="flex flex-col items-end gap-1">
                   <span className={tripThLabelRowEnd}>
-                    <GripVertical className={tripThGripIcon} aria-hidden />
+                    <TripColumnGrip />
                     <span>Recommended transfers</span>
                     <Info size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+                    <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
                   </span>
                   <span className="tabular-nums text-[14px] font-semibold leading-normal text-[#101828]">
                     {TRIPS_HEADER_SUMMARY.recommendedUnits.toLocaleString('en-US')} units
@@ -214,7 +226,7 @@ export function TripsTable() {
               </th>
               <th className={`min-w-[120px] text-center ${theadBg}`} scope="col">
                 <span className={tripThLabelRowCenter}>
-                  <GripVertical className={tripThGripIcon} aria-hidden />
+                  <TripColumnGrip />
                   <span>Products</span>
                 </span>
               </th>
