@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { GripVertical, Info } from 'lucide-react';
+import { GripVertical } from 'lucide-react';
+import { HEADER_INFO_TOOLTIPS } from '../data/headerInfoTooltips';
 import { MOCK_TRIP_ROWS, type TripBadge, type TripTableRow } from '../data/mockTrips';
 import { AutoneArrowDownIcon } from './AutoneArrowDownIcon';
+import { AutoneHeaderInfoTooltip } from './AutoneHeaderInfoTooltip';
 
 const tableCellPrimary =
   "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
@@ -203,7 +205,10 @@ export function TripsTable() {
                   <span className={tripThLabelRowEnd}>
                     <TripColumnGrip />
                     <span>Revenue increase</span>
-                    <Info size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+                    <AutoneHeaderInfoTooltip
+                      label="Revenue increase"
+                      content={HEADER_INFO_TOOLTIPS.revenueIncrease}
+                    />
                     <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
                   </span>
                   <span className="tabular-nums text-[14px] font-semibold leading-normal text-[#101828]">
@@ -216,7 +221,10 @@ export function TripsTable() {
                   <span className={tripThLabelRowEnd}>
                     <TripColumnGrip />
                     <span>Recommended transfers</span>
-                    <Info size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+                    <AutoneHeaderInfoTooltip
+                      label="Recommended transfers"
+                      content={HEADER_INFO_TOOLTIPS.recommendedTransfers}
+                    />
                     <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
                   </span>
                   <span className="tabular-nums text-[14px] font-semibold leading-normal text-[#101828]">

@@ -4,7 +4,8 @@ import { Header } from './Header';
 import { MainContent } from './MainContent';
 
 export function Layout() {
-  const [activeMainNavId, setActiveMainNavId] = useState('home');
+  /** Default to Rebalancing (`refresh`) so a full page load opens the assortment workspace. */
+  const [activeMainNavId, setActiveMainNavId] = useState('refresh');
 
   return (
     <div className="flex h-screen bg-slate-100">

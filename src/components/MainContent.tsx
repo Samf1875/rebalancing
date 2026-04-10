@@ -30,6 +30,14 @@ import {
   type TableColumnVisibilityKey,
 } from '../tableColumnCustomise';
 import { ColumnCustomiseDrawer } from './ColumnCustomiseDrawer';
+import { HowItWorksPanel } from './rebalancing/HowItWorksPanel';
+import { RebalancingOnboardingBanner } from './rebalancing/RebalancingOnboardingBanner';
+import { RebalancingWalkthrough } from './rebalancing/RebalancingWalkthrough';
+import {
+  isBannerDismissed,
+  setBannerDismissed,
+  setWalkthroughCompleted,
+} from '../lib/rebalancingOnboardingStorage';
 
 type FocusView = 'products' | 'locations' | 'trips';
 
@@ -121,6 +129,10 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
   const filtersMenuId = useId();
   const [columnCustomiseOpen, setColumnCustomiseOpen] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState(defaultTableColumnVisibility);
+  const [rebalancingBannerDismissed, setRebalancingBannerDismissed] = useState(false);
+  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
+  const [walkthroughOpen, setWalkthroughOpen] = useState(false);
+  const [walkthroughStep, setWalkthroughStep] = useState(0);
   const optimisingToSuccessTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSuccessGroupsCountRef = useRef<number>(0);
 
@@ -128,6 +140,10 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
     return () => {
       if (optimisingToSuccessTimeoutRef.current) clearTimeout(optimisingToSuccessTimeoutRef.current);
     };
+  }, []);
+
+  useEffect(() => {
+    setRebalancingBannerDismissed(isBannerDismissed());
   }, []);
 
   useEffect(() => {
@@ -501,7 +517,34 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
         </div>
       )}
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto bg-white px-6 pt-4 pb-12">
+      <div
+        className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto bg-white px-6 pt-4 pb-12"
+        data-walkthrough-root
+      >
+        {!rebalancingBannerDismissed && (
+          <RebalancingOnboardingBanner
+            onDismiss={() => {
+              setBannerDismissed();
+              setRebalancingBannerDismissed(true);
+            }}
+            onStartWalkthrough={() => {
+              setWalkthroughStep(0);
+              setWalkthroughOpen(true);
+            }}
+            onOpenHowItWorks={() => setHowItWorksOpen(true)}
+          />
+        )}
+
+        <HowItWorksPanel open={howItWorksOpen} onClose={() => setHowItWorksOpen(false)} />
+
+        <RebalancingWalkthrough
+          open={walkthroughOpen}
+          stepIndex={walkthroughStep}
+          onStepIndexChange={setWalkthroughStep}
+          onClose={() => setWalkthroughOpen(false)}
+          onComplete={() => setWalkthroughCompleted()}
+        />
+
         {/* Top bar: tabs + trip controls; second row: search, sort, filter, settings */}
         <div
           className="flex w-full min-w-0 flex-col gap-3 border-b border-[#e9eaeb] pb-4"

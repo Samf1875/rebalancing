@@ -5,10 +5,12 @@ import {
   ChevronRight,
   Copy,
   GripVertical,
-  Info,
 } from 'lucide-react';
 import type { AssortmentRow, ModalKind } from '../types';
 import { defaultTableColumnVisibility, type TableColumnVisibilityKey } from '../tableColumnCustomise';
+import { ASSORTMENT_HEADER_RICH } from '../data/assortmentHeaderTooltips';
+import { HEADER_INFO_TOOLTIPS } from '../data/headerInfoTooltips';
+import { AutoneHeaderInfoTooltip } from './AutoneHeaderInfoTooltip';
 
 /** Body cell primary label — Inter 14px semibold #101828 */
 const tableCellPrimary =
@@ -211,8 +213,11 @@ export function AssortmentTable({
           <th key={columnId} className="min-w-[128px] px-4 py-[10px] text-left" {...d}>
             <span className="inline-flex items-center gap-2">
               {gripDragHandle(columnId, 'Revenue increase')}
-              <span>Revenue increase</span>
-              <Info size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+              <AutoneHeaderInfoTooltip
+                label="Revenue increase"
+                rich={ASSORTMENT_HEADER_RICH.revenueIncrease}
+                hoverWith={<span>Revenue increase</span>}
+              />
               <ChevronDown size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
             </span>
           </th>
@@ -222,7 +227,11 @@ export function AssortmentTable({
           <th key={columnId} className="min-w-[200px] px-4 py-[10px] text-left" {...d}>
             <span className="inline-flex items-center gap-2">
               {gripDragHandle(columnId, 'Transfers')}
-              <span>Transfers</span>
+              <AutoneHeaderInfoTooltip
+                label="Transfers"
+                rich={ASSORTMENT_HEADER_RICH.transfers}
+                hoverWith={<span>Transfers</span>}
+              />
             </span>
           </th>
         );
@@ -231,8 +240,11 @@ export function AssortmentTable({
           <th key={columnId} className="min-w-[240px] px-4 py-[10px] text-left" {...d}>
             <span className="inline-flex items-center gap-2">
               {gripDragHandle(columnId, 'Recommended transfers')}
-              <span>Recommended transfers</span>
-              <Info size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+              <AutoneHeaderInfoTooltip
+                label="Recommended transfers"
+                rich={ASSORTMENT_HEADER_RICH.recommendedTransfers}
+                hoverWith={<span>Recommended transfers</span>}
+              />
             </span>
           </th>
         );
@@ -241,7 +253,11 @@ export function AssortmentTable({
           <th key={columnId} className="min-w-[168px] px-4 py-[10px] text-right" {...d}>
             <span className="inline-flex w-full items-center justify-end gap-2">
               {gripDragHandle(columnId, 'Sales')}
-              <span>Sales</span>
+              <AutoneHeaderInfoTooltip
+                label="Sales (L7D / L30D)"
+                rich={ASSORTMENT_HEADER_RICH.salesL7dL30d}
+                hoverWith={<span>Sales</span>}
+              />
             </span>
           </th>
         );
@@ -251,7 +267,10 @@ export function AssortmentTable({
             <span className="inline-flex w-full items-center justify-end gap-1.5">
               {gripDragHandle(columnId, 'Forecast per wk.')}
               <span>Forecast per wk.</span>
-              <Info size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+              <AutoneHeaderInfoTooltip
+                label="Forecast per week"
+                content={HEADER_INFO_TOOLTIPS.forecastPerWk}
+              />
             </span>
           </th>
         );
@@ -279,7 +298,7 @@ export function AssortmentTable({
             <span className="inline-flex w-full items-center justify-end gap-1.5">
               {gripDragHandle(columnId, 'Overstocks')}
               <span>Overstocks</span>
-              <Info size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+              <AutoneHeaderInfoTooltip label="Overstocks" content={HEADER_INFO_TOOLTIPS.overstocks} />
             </span>
           </th>
         );
@@ -289,7 +308,7 @@ export function AssortmentTable({
             <span className="inline-flex w-full items-center justify-end gap-1.5">
               {gripDragHandle(columnId, 'Understocks')}
               <span>Understocks</span>
-              <Info size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+              <AutoneHeaderInfoTooltip label="Understocks" content={HEADER_INFO_TOOLTIPS.understocks} />
             </span>
           </th>
         );
@@ -299,7 +318,7 @@ export function AssortmentTable({
             <span className="inline-flex w-full items-center justify-end gap-1.5">
               {gripDragHandle(columnId, 'Depth')}
               <span>Depth</span>
-              <Info size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+              <AutoneHeaderInfoTooltip label="Depth" content={HEADER_INFO_TOOLTIPS.depth} />
             </span>
           </th>
         );
@@ -309,7 +328,12 @@ export function AssortmentTable({
             <span className="inline-flex w-full items-center justify-end gap-1.5">
               {gripDragHandle(columnId, 'Warehouse units')}
               <span>Warehouse units</span>
-              <Info size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+              <AutoneHeaderInfoTooltip
+                label="Warehouse units"
+                content={HEADER_INFO_TOOLTIPS.warehouseUnits}
+                side="left"
+                showIconInTooltip
+              />
             </span>
           </th>
         );
@@ -595,9 +619,11 @@ export function AssortmentTable({
                   className="sticky left-14 z-20 w-[280px] min-w-[280px] max-w-[280px] box-border bg-white px-4 py-[10px] text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                   scope="col"
                 >
-                  <span className="inline-flex items-center gap-2">
-                    <span>Product details</span>
-                  </span>
+                  <AutoneHeaderInfoTooltip
+                    label="Product details"
+                    rich={ASSORTMENT_HEADER_RICH.productDetails}
+                    hoverWith={<span>Product details</span>}
+                  />
                 </th>
               )}
               {!designOnly &&
