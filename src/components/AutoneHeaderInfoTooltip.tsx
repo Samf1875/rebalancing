@@ -381,8 +381,8 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
       className={`${triggerClass} cursor-help`}
       aria-label={`More about ${label}`}
       aria-describedby={visible ? tooltipId : undefined}
-      onMouseEnter={show}
-      onMouseLeave={hide}
+      onPointerEnter={show}
+      onPointerLeave={hide}
       onFocus={show}
       onBlur={hide}
       onKeyDown={(e) => {
@@ -393,21 +393,21 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
       }}
     >
       {hoverWith}
-      <Info size={iconSize} className="shrink-0" aria-hidden />
+      <Info size={iconSize} className="shrink-0 text-[#6A7282]" aria-hidden />
     </span>
   ) : (
     <button
       ref={triggerRef as React.RefObject<HTMLButtonElement | null>}
       type="button"
-      className={triggerClass}
+      className={`${triggerClass} cursor-help rounded p-1 text-[#6A7282] transition-colors hover:bg-slate-100 hover:text-[#101828]`}
       aria-label={`More about ${label}`}
       aria-describedby={visible ? tooltipId : undefined}
-      onMouseEnter={show}
-      onMouseLeave={hide}
+      onPointerEnter={show}
+      onPointerLeave={hide}
       onFocus={show}
       onBlur={hide}
     >
-      <Info size={iconSize} aria-hidden />
+      <Info size={iconSize} className="shrink-0" aria-hidden />
     </button>
   );
 

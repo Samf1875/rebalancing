@@ -583,7 +583,7 @@ export function MainContent({
 
         {/* Top bar: tabs + trip controls; second row: search, sort, filter, settings */}
         <div
-          className="flex w-full min-w-0 flex-col gap-3 border-b border-[#e9eaeb] pb-4"
+          className="flex w-full min-w-0 flex-col gap-3 pb-4"
           data-node-id="14764:268954"
         >
           <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-x-6 gap-y-3">

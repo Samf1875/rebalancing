@@ -1,6 +1,8 @@
 import { useState, useMemo, useRef, useEffect, type ReactNode } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, GripVertical, Info } from 'lucide-react';
+import { HEADER_INFO_TOOLTIPS } from '../data/headerInfoTooltips';
 import { MOCK_LOCATION_ROWS, type LocationTableRow } from '../data/mockLocations';
+import { AutoneHeaderInfoTooltip } from './AutoneHeaderInfoTooltip';
 
 const tableCellPrimary =
   "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
@@ -254,9 +256,9 @@ export function LocationsTable() {
           <thead
             className="[&_th]:border-t-0 [&_th]:border-b-[0.5px] [&_th]:border-solid [&_th]:border-[#E3E8F0] [&_th]:bg-white [&_th]:font-['Inter',sans-serif]"
           >
-            <tr className="text-[14px] font-semibold leading-normal text-[#101828] [&_th]:whitespace-nowrap [&_th]:align-middle">
+            <tr className="h-[62px] min-h-[62px] max-h-[62px] text-[14px] font-semibold leading-normal text-[#101828] [&_th]:whitespace-nowrap [&_th]:align-middle">
               <th
-                className="sticky left-0 z-30 w-14 min-w-14 max-w-14 box-border bg-white h-[62px] px-4 py-0 text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                className="sticky left-0 z-30 h-[62px] min-h-[62px] max-h-[62px] w-14 min-w-14 max-w-14 box-border overflow-hidden bg-white px-4 py-0 text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                 scope="col"
               >
                 <label className="flex cursor-pointer items-center gap-2">
@@ -271,7 +273,7 @@ export function LocationsTable() {
                 </label>
               </th>
               <th
-                className="sticky left-14 z-20 w-[180px] min-w-[180px] max-w-[180px] box-border bg-white h-[62px] px-4 py-0 text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                className="sticky left-14 z-20 h-[62px] min-h-[62px] max-h-[62px] w-[180px] min-w-[180px] max-w-[180px] box-border overflow-hidden bg-white px-4 py-0 text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                 scope="col"
               >
                 <span className="inline-flex items-center gap-2">
@@ -279,38 +281,143 @@ export function LocationsTable() {
                   Location
                 </span>
               </th>
-              <th className="min-w-[120px] h-[62px] px-4 py-0 text-left" scope="col">
+              <th
+                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-left align-middle"
+                scope="col"
+              >
                 <GripLabel label="Transfers in" />
               </th>
-              <th className="min-w-[120px] h-[62px] px-4 py-0 text-left" scope="col">
+              <th
+                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-left align-middle"
+                scope="col"
+              >
                 <GripLabel label="Transfers out" />
               </th>
-              <th className="min-w-[140px] h-[62px] px-4 py-0 text-right" scope="col">
-                <GripLabel label="Revenue increase" info sort align="right" />
+              <th
+                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[140px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                scope="col"
+              >
+                <span className="inline-flex w-full items-center justify-end gap-2">
+                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                  <span className={tableHeaderGripInsetFont}>Revenue increase</span>
+                  <AutoneHeaderInfoTooltip
+                    label="Revenue increase"
+                    content={HEADER_INFO_TOOLTIPS.revenueIncrease}
+                    side="top"
+                    topAlign="start"
+                  />
+                  <ChevronDown size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+                </span>
               </th>
-              <th className="min-w-[220px] h-[62px] px-4 py-0 text-left" scope="col">
-                <GripLabel label="Recommended transfers in" info />
+              <th
+                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[220px] box-border overflow-hidden px-4 py-0 text-left align-middle"
+                scope="col"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                  <span className={tableHeaderGripInsetFont}>Recommended transfers in</span>
+                  <AutoneHeaderInfoTooltip
+                    label="Recommended transfers in"
+                    content={HEADER_INFO_TOOLTIPS.recommendedTransfers}
+                    side="top"
+                  />
+                </span>
               </th>
-              <th className="min-w-[120px] h-[62px] px-4 py-0 text-right" scope="col">
-                <GripLabel label="Recommended transfers out" align="right" />
+              <th
+                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                scope="col"
+              >
+                <span className="inline-flex w-full items-center justify-end gap-2">
+                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                  <span className={tableHeaderGripInsetFont}>Recommended transfers out</span>
+                  <AutoneHeaderInfoTooltip
+                    label="Recommended transfers out"
+                    content={HEADER_INFO_TOOLTIPS.recommendedTransfersOut}
+                    side="top"
+                    topAlign="start"
+                  />
+                </span>
               </th>
-              <th className="min-w-[100px] h-[62px] px-4 py-0 text-right" scope="col">
+              <th
+                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[100px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                scope="col"
+              >
                 <GripLabel label="Sales" align="right" />
               </th>
-              <th className="min-w-[120px] h-[62px] px-4 py-0 text-right" scope="col">
-                <GripLabel label="Forecast per wk." info align="right" />
+              <th
+                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                scope="col"
+              >
+                <span className="inline-flex w-full items-center justify-end gap-2">
+                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                  <span className={tableHeaderGripInsetFont}>Forecast per wk.</span>
+                  <AutoneHeaderInfoTooltip
+                    label="Forecast per wk."
+                    content={HEADER_INFO_TOOLTIPS.forecastPerWk}
+                    side="top"
+                    topAlign="start"
+                  />
+                </span>
               </th>
-              <th className="min-w-[120px] h-[62px] px-4 py-0 text-right" scope="col">
-                <GripLabel label="Stockouts" align="right" />
+              <th
+                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                scope="col"
+              >
+                <span className="inline-flex w-full items-center justify-end gap-2">
+                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                  <span className={tableHeaderGripInsetFont}>Stockouts</span>
+                  <AutoneHeaderInfoTooltip
+                    label="Stockouts"
+                    content={HEADER_INFO_TOOLTIPS.stockouts}
+                    side="top"
+                    topAlign="start"
+                  />
+                </span>
               </th>
-              <th className="min-w-[120px] h-[62px] px-4 py-0 text-right" scope="col">
-                <GripLabel label="Overstocks" info align="right" />
+              <th
+                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                scope="col"
+              >
+                <span className="inline-flex w-full items-center justify-end gap-2">
+                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                  <span className={tableHeaderGripInsetFont}>Overstocks</span>
+                  <AutoneHeaderInfoTooltip
+                    label="Overstocks"
+                    content={HEADER_INFO_TOOLTIPS.overstocks}
+                    side="top"
+                    topAlign="start"
+                  />
+                </span>
               </th>
-              <th className="min-w-[120px] h-[62px] px-4 py-0 text-right" scope="col">
-                <GripLabel label="Understocks" info align="right" />
+              <th
+                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                scope="col"
+              >
+                <span className="inline-flex w-full items-center justify-end gap-2">
+                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                  <span className={tableHeaderGripInsetFont}>Understocks</span>
+                  <AutoneHeaderInfoTooltip
+                    label="Understocks"
+                    content={HEADER_INFO_TOOLTIPS.understocks}
+                    side="top"
+                    topAlign="start"
+                  />
+                </span>
               </th>
-              <th className="min-w-[100px] h-[62px] px-4 py-0 text-right" scope="col">
-                <GripLabel label="Depth" info align="right" />
+              <th
+                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[100px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                scope="col"
+              >
+                <span className="inline-flex w-full items-center justify-end gap-2">
+                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                  <span className={tableHeaderGripInsetFont}>Depth</span>
+                  <AutoneHeaderInfoTooltip
+                    label="Depth"
+                    content={HEADER_INFO_TOOLTIPS.depth}
+                    side="top"
+                    topAlign="start"
+                  />
+                </span>
               </th>
             </tr>
           </thead>

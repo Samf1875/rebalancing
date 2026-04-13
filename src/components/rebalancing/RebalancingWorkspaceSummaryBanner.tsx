@@ -120,7 +120,7 @@ export function RebalancingWorkspaceSummaryBanner({
               detailsIntroExtra ? 'mt-3' : ''
             }`}
           >
-            Rebalancing automatically identifies where stock is over- or under-performing and suggests transfers to
+            Rebalancing automatically identifies where inventory is out of line with demand and suggests transfers to
             better match supply with demand. It enables stock movement between locations and prioritizes shifting
             inventory from low-performing locations to those with higher demand.
           </p>

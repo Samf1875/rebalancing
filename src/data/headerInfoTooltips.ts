@@ -1,7 +1,8 @@
 /** Table header info tooltips — Autone / product copy */
 export const HEADER_INFO_TOOLTIPS = {
   revenueIncrease: 'Revenue increase transfer units would generate.',
-  recommendedTransfers: "autone's original unit\ntransfers recommendation.",
+  recommendedTransfers: "autone's original\nunit transfers\nin recommendation.",
+  recommendedTransfersOut: "autone's original\nunit transfers\nout recommendation.",
   forecastPerWk:
     'The total average demand per week during the coverage period.',
   stockouts:
@@ -19,7 +20,7 @@ export const HEADER_INFO_TOOLTIPS = {
   coverage:
     'Coverage as a share of target before and after rebalancing, and the coverage target in weeks.',
   depth:
-    'The average number of units per location, before & after transfers.',
+    'The average number of units per product, before & after transfers.',
   warehouseUnits:
     'The total number of units across your warehouses, before & after transfers.',
 } as const;
