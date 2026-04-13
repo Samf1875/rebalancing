@@ -22,7 +22,12 @@ export const ASSORTMENT_HEADER_RICH: {
     title: 'Estimated revenue gain',
     icon: 'chart',
     body: 'Based on historical sales and demand forecasts.',
-    footer: { kind: 'impact', badge: '+€211.7K', sublabel: 'High impact' },
+    footer: {
+      kind: 'impact',
+      prefix: 'Your total revenue increase',
+      badge: '+€238.0K',
+      sublabel: 'Euros',
+    },
   },
   recommendedTransfers: {
     title: 'AI-suggested transfers',

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, type DragEvent, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, useMemo, type DragEvent, type ReactNode } from 'react';
 import {
   ChevronDown,
   ChevronLeft,
@@ -37,6 +37,34 @@ function formatRevenueIncreaseEurK(eur: number): string {
   const frac = k >= 100 ? 1 : 2;
   return `€${k.toFixed(frac)}K`;
 }
+
+/** Thead summary stack — primary #101828, secondary #667085 (Autone header totals row). */
+function HeaderColumnSummary({
+  primary,
+  secondary,
+  align = 'left',
+}: {
+  primary: ReactNode;
+  secondary?: ReactNode;
+  align?: 'left' | 'right';
+}) {
+  return (
+    <div
+      className={`mt-2 flex flex-col gap-0.5 ${align === 'right' ? 'items-end text-right' : 'items-start text-left'}`}
+    >
+      <div className="font-['Inter',sans-serif] text-[14px] font-semibold tabular-nums leading-snug text-[#101828]">
+        {primary}
+      </div>
+      {secondary != null ? (
+        <div className="font-['Inter',sans-serif] text-[12px] font-normal tabular-nums leading-snug text-[#667085]">
+          {secondary}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+const theadCellBg = 'bg-white';
 
 /** Columns with grip handles — reorderable (IA after post–Stockouts block). */
 const BASE_GRIP_COLUMN_IDS = [
@@ -101,6 +129,8 @@ interface AssortmentTableProps {
   productDrillDownActive?: boolean;
   /** Per-column visibility from the Customise columns drawer; omitted keys default to visible. */
   columnVisibility?: Partial<Record<TableColumnVisibilityKey, boolean>>;
+  /** Opens product-level drill-down (e.g. location transfers). Clicks on inputs/buttons do not fire. */
+  onRowClick?: (row: AssortmentRow) => void;
 }
 
 export function AssortmentTable({
@@ -120,6 +150,7 @@ export function AssortmentTable({
   onRequestRevert: _onRequestRevert,
   productDrillDownActive = false,
   columnVisibility: columnVisibilityProp,
+  onRowClick,
 }: AssortmentTableProps) {
   const allSelected = rows.length > 0 && rows.every((r) => r.selected);
 
@@ -205,181 +236,380 @@ export function AssortmentTable({
     return mergedColumnVisibility[key];
   });
 
+  const columnHeaderAggregates = useMemo(() => {
+    if (rows.length === 0) return null;
+    let transfersL7d = 0;
+    let transfersL30d = 0;
+    let revenue = 0;
+    let recP = 0;
+    let salesL7d = 0;
+    let salesL30d = 0;
+    let forecastSum = 0;
+    let soFrom = 0;
+    let soTo = 0;
+    let locFrom = 0;
+    let locTo = 0;
+    let osFrom = 0;
+    let osTo = 0;
+    let usFrom = 0;
+    let usTo = 0;
+    let depthFrom = 0;
+    let depthTo = 0;
+    let whFrom = 0;
+    let whTo = 0;
+    for (const r of rows) {
+      transfersL7d += r.transfers.l7d;
+      transfersL30d += r.transfers.l30d;
+      revenue += r.revenueIncreaseEur;
+      recP += r.recommendedTransfers.primary;
+      salesL7d += r.sales.l7d;
+      salesL30d += r.sales.l30d;
+      forecastSum += r.forecastPerWeek;
+      soFrom += r.stockouts.from;
+      soTo += r.stockouts.to;
+      locFrom += r.locationsTransition.from;
+      locTo += r.locationsTransition.to;
+      osFrom += r.overstocksTransition.from;
+      osTo += r.overstocksTransition.to;
+      usFrom += r.understocksTransition.from;
+      usTo += r.understocksTransition.to;
+      depthFrom += r.depthTransition.from;
+      depthTo += r.depthTransition.to;
+      whFrom += r.warehouseUnitsTransition.from;
+      whTo += r.warehouseUnitsTransition.to;
+    }
+    const n = rows.length;
+    const trips = Math.max(1, Math.round(recP / 14));
+    return {
+      transfersL7d,
+      transfersL30d,
+      transfersTrips: trips,
+      revenue,
+      recP,
+      recTrips: trips,
+      salesL7d,
+      salesL30d,
+      forecastAvg: forecastSum / n,
+      stockouts: { from: soFrom, to: soTo },
+      locations: { from: locFrom, to: locTo },
+      overstocks: { from: osFrom, to: osTo },
+      understocks: { from: usFrom, to: usTo },
+      depth: { from: depthFrom / n, to: depthTo / n },
+      warehouse: { from: whFrom, to: whTo },
+    };
+  }, [rows]);
+
   const renderGripColumnHeader = (columnId: GripColumnId): ReactNode => {
     const d = gripThDropProps(columnId);
+    const agg = columnHeaderAggregates;
     switch (columnId) {
       case 'sales':
         return (
-          <th key={columnId} className="min-w-[128px] px-4 py-[10px] text-left" {...d}>
-            <span className="inline-flex items-center gap-2">
-              {gripDragHandle(columnId, 'Revenue increase')}
-              <AutoneHeaderInfoTooltip
-                label="Revenue increase"
-                rich={ASSORTMENT_HEADER_RICH.revenueIncrease}
-                hoverWith={<span>Revenue increase</span>}
-              />
-              <ChevronDown size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
-            </span>
+          <th key={columnId} className={`min-w-[128px] px-4 py-[10px] text-left align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col">
+              <span className="inline-flex items-center gap-2">
+                {gripDragHandle(columnId, 'Revenue increase')}
+                <AutoneHeaderInfoTooltip
+                  label="Revenue increase"
+                  rich={ASSORTMENT_HEADER_RICH.revenueIncrease}
+                  hoverWith={<span>Revenue increase</span>}
+                />
+                <ChevronDown size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+              </span>
+            </div>
           </th>
         );
       case 'transfers':
         return (
-          <th key={columnId} className="min-w-[200px] px-4 py-[10px] text-left" {...d}>
-            <span className="inline-flex items-center gap-2">
-              {gripDragHandle(columnId, 'Transfers')}
-              <AutoneHeaderInfoTooltip
-                label="Transfers"
-                rich={ASSORTMENT_HEADER_RICH.transfers}
-                hoverWith={<span>Transfers</span>}
-              />
-            </span>
+          <th key={columnId} className={`min-w-[200px] px-4 py-[10px] text-left align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col">
+              <span className="inline-flex items-center gap-2">
+                {gripDragHandle(columnId, 'Transfers')}
+                <AutoneHeaderInfoTooltip
+                  label="Transfers"
+                  rich={{
+                    ...ASSORTMENT_HEADER_RICH.transfers,
+                    ...(agg
+                      ? {
+                          footer: {
+                            kind: 'transferTotals' as const,
+                            unitsLine: `${agg.transfersL7d.toLocaleString()} units`,
+                            tripsLine: `${agg.transfersTrips} trips`,
+                          },
+                        }
+                      : {}),
+                  }}
+                  hoverWith={<span>Transfers</span>}
+                />
+              </span>
+              {agg ? (
+                <HeaderColumnSummary
+                  primary={<span>{agg.transfersL7d.toLocaleString()} units</span>}
+                  secondary={<span>{agg.transfersTrips} trips</span>}
+                />
+              ) : null}
+            </div>
           </th>
         );
       case 'scheduleStart':
         return (
-          <th key={columnId} className="min-w-[240px] px-4 py-[10px] text-left" {...d}>
-            <span className="inline-flex items-center gap-2">
-              {gripDragHandle(columnId, 'Recommended transfers')}
-              <AutoneHeaderInfoTooltip
-                label="Recommended transfers"
-                rich={ASSORTMENT_HEADER_RICH.recommendedTransfers}
-                hoverWith={<span>Recommended transfers</span>}
-              />
-            </span>
+          <th key={columnId} className={`min-w-[240px] px-4 py-[10px] text-left align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col">
+              <span className="inline-flex items-center gap-2">
+                {gripDragHandle(columnId, 'Recommended transfers')}
+                <AutoneHeaderInfoTooltip
+                  label="Recommended transfers"
+                  rich={ASSORTMENT_HEADER_RICH.recommendedTransfers}
+                  hoverWith={<span>Recommended transfers</span>}
+                />
+              </span>
+              {agg ? (
+                <HeaderColumnSummary
+                  primary={<span>{agg.recP.toLocaleString()} units</span>}
+                  secondary={<span>{agg.recTrips} trips</span>}
+                />
+              ) : null}
+            </div>
           </th>
         );
       case 'scheduleEnd':
         return (
-          <th key={columnId} className="min-w-[168px] px-4 py-[10px] text-right" {...d}>
-            <span className="inline-flex w-full items-center justify-end gap-2">
-              {gripDragHandle(columnId, 'Sales')}
-              <AutoneHeaderInfoTooltip
-                label="Sales (L7D / L30D)"
-                rich={ASSORTMENT_HEADER_RICH.salesL7dL30d}
-                hoverWith={<span>Sales</span>}
-              />
-            </span>
+          <th key={columnId} className={`min-w-[168px] px-4 py-[10px] text-right align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col items-end">
+              <span className="inline-flex w-full items-center justify-end gap-2">
+                {gripDragHandle(columnId, 'Sales')}
+                <AutoneHeaderInfoTooltip
+                  label="Sales (L7D / L30D)"
+                  rich={ASSORTMENT_HEADER_RICH.salesL7dL30d}
+                  hoverWith={<span>Sales</span>}
+                />
+              </span>
+              {agg ? (
+                <HeaderColumnSummary
+                  align="right"
+                  primary={<span>{agg.salesL7d.toLocaleString()} L7D</span>}
+                  secondary={<span>{agg.salesL30d.toLocaleString()} L30D</span>}
+                />
+              ) : null}
+            </div>
           </th>
         );
       case 'forecastPerWeek':
         return (
-          <th key={columnId} className="min-w-[128px] px-4 py-[10px] text-right" {...d}>
-            <span className="inline-flex w-full items-center justify-end gap-1.5">
-              {gripDragHandle(columnId, 'Forecast per wk.')}
-              <span>Forecast per wk.</span>
-              <AutoneHeaderInfoTooltip
-                label="Forecast per week"
-                content={HEADER_INFO_TOOLTIPS.forecastPerWk}
-              />
-            </span>
+          <th key={columnId} className={`min-w-[128px] px-4 py-[10px] text-right align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col items-end">
+              <span className="inline-flex w-full items-center justify-end gap-1.5">
+                {gripDragHandle(columnId, 'Forecast per wk.')}
+                <span>Forecast per wk.</span>
+                <AutoneHeaderInfoTooltip
+                  label="Forecast per week"
+                  content={HEADER_INFO_TOOLTIPS.forecastPerWk}
+                />
+              </span>
+              {agg ? (
+                <HeaderColumnSummary
+                  align="right"
+                  primary={
+                    <span>
+                      {agg.forecastAvg.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}{' '}
+                      per wk
+                    </span>
+                  }
+                />
+              ) : null}
+            </div>
           </th>
         );
       case 'targetCoverage':
         return (
-          <th key={columnId} className="min-w-[128px] px-4 py-[10px] text-right" {...d}>
-            <span className="inline-flex w-full items-center justify-end gap-2">
-              {gripDragHandle(columnId, 'Stockouts')}
-              <span>Stockouts</span>
-            </span>
+          <th key={columnId} className={`min-w-[128px] px-4 py-[10px] text-left align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col items-start">
+              <span className="inline-flex items-center gap-2">
+                {gripDragHandle(columnId, 'Stockouts')}
+                <span>Stockouts</span>
+              </span>
+              {agg ? (
+                <HeaderColumnSummary
+                  primary={
+                    <span className="tabular-nums">
+                      {agg.stockouts.from.toLocaleString()} → {agg.stockouts.to.toLocaleString()}
+                    </span>
+                  }
+                />
+              ) : null}
+            </div>
           </th>
         );
       case 'gripLocations':
         return (
-          <th key={columnId} className="min-w-[120px] px-4 py-[10px] text-right" {...d}>
-            <span className="inline-flex w-full items-center justify-end gap-2">
-              {gripDragHandle(columnId, 'Locations')}
-              <span>Locations</span>
-            </span>
+          <th key={columnId} className={`min-w-[120px] px-4 py-[10px] text-left align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col items-start">
+              <span className="inline-flex items-center gap-2">
+                {gripDragHandle(columnId, 'Locations')}
+                <span>Locations</span>
+              </span>
+              {agg ? (
+                <HeaderColumnSummary
+                  primary={
+                    <span className="tabular-nums">
+                      {agg.locations.from.toLocaleString()} → {agg.locations.to.toLocaleString()}
+                    </span>
+                  }
+                />
+              ) : null}
+            </div>
           </th>
         );
       case 'gripOverstocks':
         return (
-          <th key={columnId} className="min-w-[120px] px-4 py-[10px] text-right" {...d}>
-            <span className="inline-flex w-full items-center justify-end gap-1.5">
-              {gripDragHandle(columnId, 'Overstocks')}
-              <span>Overstocks</span>
-              <AutoneHeaderInfoTooltip label="Overstocks" content={HEADER_INFO_TOOLTIPS.overstocks} />
-            </span>
+          <th key={columnId} className={`min-w-[120px] px-4 py-[10px] text-left align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col items-start">
+              <span className="inline-flex items-center gap-1.5">
+                {gripDragHandle(columnId, 'Overstocks')}
+                <span>Overstocks</span>
+                <AutoneHeaderInfoTooltip label="Overstocks" content={HEADER_INFO_TOOLTIPS.overstocks} />
+              </span>
+              {agg ? (
+                <HeaderColumnSummary
+                  primary={
+                    <span className="tabular-nums">
+                      {agg.overstocks.from.toLocaleString()} → {agg.overstocks.to.toLocaleString()}
+                    </span>
+                  }
+                />
+              ) : null}
+            </div>
           </th>
         );
       case 'gripUnderstocks':
         return (
-          <th key={columnId} className="min-w-[120px] px-4 py-[10px] text-right" {...d}>
-            <span className="inline-flex w-full items-center justify-end gap-1.5">
-              {gripDragHandle(columnId, 'Understocks')}
-              <span>Understocks</span>
-              <AutoneHeaderInfoTooltip label="Understocks" content={HEADER_INFO_TOOLTIPS.understocks} />
-            </span>
+          <th key={columnId} className={`min-w-[120px] px-4 py-[10px] text-left align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col items-start">
+              <span className="inline-flex items-center gap-1.5">
+                {gripDragHandle(columnId, 'Understocks')}
+                <span>Understocks</span>
+                <AutoneHeaderInfoTooltip label="Understocks" content={HEADER_INFO_TOOLTIPS.understocks} />
+              </span>
+              {agg ? (
+                <HeaderColumnSummary
+                  primary={
+                    <span className="tabular-nums">
+                      {agg.understocks.from.toLocaleString()} → {agg.understocks.to.toLocaleString()}
+                    </span>
+                  }
+                />
+              ) : null}
+            </div>
           </th>
         );
       case 'gripDepth':
         return (
-          <th key={columnId} className="min-w-[100px] px-4 py-[10px] text-right" {...d}>
-            <span className="inline-flex w-full items-center justify-end gap-1.5">
-              {gripDragHandle(columnId, 'Depth')}
-              <span>Depth</span>
-              <AutoneHeaderInfoTooltip label="Depth" content={HEADER_INFO_TOOLTIPS.depth} />
-            </span>
+          <th key={columnId} className={`min-w-[100px] px-4 py-[10px] text-left align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col items-start">
+              <span className="inline-flex items-center gap-1.5">
+                {gripDragHandle(columnId, 'Depth')}
+                <span>Depth</span>
+                <AutoneHeaderInfoTooltip label="Depth" content={HEADER_INFO_TOOLTIPS.depth} />
+              </span>
+              {agg ? (
+                <HeaderColumnSummary
+                  primary={
+                    <span className="tabular-nums">
+                      {agg.depth.from.toFixed(1)} → {agg.depth.to.toFixed(1)}
+                    </span>
+                  }
+                />
+              ) : null}
+            </div>
           </th>
         );
       case 'gripWarehouseUnits':
         return (
-          <th key={columnId} className="min-w-[128px] px-4 py-[10px] text-right" {...d}>
-            <span className="inline-flex w-full items-center justify-end gap-1.5">
-              {gripDragHandle(columnId, 'Warehouse units')}
-              <span>Warehouse units</span>
-              <AutoneHeaderInfoTooltip
-                label="Warehouse units"
-                content={HEADER_INFO_TOOLTIPS.warehouseUnits}
-                side="left"
-                showIconInTooltip
-              />
-            </span>
+          <th key={columnId} className={`min-w-[128px] px-4 py-[10px] text-left align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col items-start">
+              <span className="inline-flex items-center gap-1.5">
+                {gripDragHandle(columnId, 'Warehouse units')}
+                <span>Warehouse units</span>
+                <AutoneHeaderInfoTooltip
+                  label="Warehouse units"
+                  content={HEADER_INFO_TOOLTIPS.warehouseUnits}
+                  side="left"
+                  showIconInTooltip
+                />
+              </span>
+              {agg ? (
+                <HeaderColumnSummary
+                  primary={
+                    <span className="tabular-nums">
+                      {agg.warehouse.from.toLocaleString()} → {agg.warehouse.to.toLocaleString()}
+                    </span>
+                  }
+                />
+              ) : null}
+            </div>
           </th>
         );
       case 'drillMinQty':
         return (
-          <th key={columnId} className="px-3 py-[10px] text-left" {...d}>
-            <span className="inline-flex items-center gap-1.5">
-              {gripDragHandle(columnId, 'Min Qty')}
-              Min Qty
-            </span>
+          <th key={columnId} className={`px-3 py-[10px] text-left align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col gap-2">
+              <span className="inline-flex items-center gap-1.5">
+                {gripDragHandle(columnId, 'Min Qty')}
+                Min Qty
+              </span>
+              <div className="min-h-[2.75rem]" aria-hidden />
+            </div>
           </th>
         );
       case 'drillInventory':
         return (
-          <th key={columnId} className="px-3 py-[10px] text-right" {...d}>
-            <span className="inline-flex w-full items-center justify-end gap-1.5">
-              {gripDragHandle(columnId, 'Inventory (drill)')}
-              Inventory
-            </span>
+          <th key={columnId} className={`px-3 py-[10px] text-right align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col items-end gap-2">
+              <span className="inline-flex w-full items-center justify-end gap-1.5">
+                {gripDragHandle(columnId, 'Inventory (drill)')}
+                Inventory
+              </span>
+              <div className="min-h-[2.75rem]" aria-hidden />
+            </div>
           </th>
         );
       case 'drillTarget':
         return (
-          <th key={columnId} className="px-3 py-[10px] text-right" {...d}>
-            <span className="inline-flex w-full items-center justify-end gap-1.5">
-              {gripDragHandle(columnId, 'Target coverage (drill)')}
-              <span>Target coverage</span>
-            </span>
+          <th key={columnId} className={`px-3 py-[10px] text-right align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col items-end gap-2">
+              <span className="inline-flex w-full items-center justify-end gap-1.5">
+                {gripDragHandle(columnId, 'Target coverage (drill)')}
+                <span>Target coverage</span>
+              </span>
+              <div className="min-h-[2.75rem]" aria-hidden />
+            </div>
           </th>
         );
       case 'drillForecast':
         return (
-          <th key={columnId} className="px-3 py-[10px] text-right" {...d}>
-            <span className="inline-flex w-full items-center justify-end gap-1.5">
-              {gripDragHandle(columnId, 'Forecast sales per week')}
-              <span>Forecast per week</span>
-            </span>
+          <th key={columnId} className={`px-3 py-[10px] text-right align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col items-end gap-2">
+              <span className="inline-flex w-full items-center justify-end gap-1.5">
+                {gripDragHandle(columnId, 'Forecast sales per week')}
+                <span>Forecast per week</span>
+              </span>
+              <div className="min-h-[2.75rem]" aria-hidden />
+            </div>
           </th>
         );
       case 'drillSkuLocs':
         return (
-          <th key={columnId} className="min-w-[108px] px-3 py-[10px] text-left" {...d}>
-            <span className="inline-flex items-center gap-1.5">
-              {gripDragHandle(columnId, 'SKU locations')}
-              <span># SKU locations</span>
-            </span>
+          <th key={columnId} className={`min-w-[108px] px-3 py-[10px] text-left align-top ${theadCellBg}`} {...d}>
+            <div className="flex flex-col gap-2">
+              <span className="inline-flex items-center gap-1.5">
+                {gripDragHandle(columnId, 'SKU locations')}
+                <span># SKU locations</span>
+              </span>
+              <div className="min-h-[2.75rem]" aria-hidden />
+            </div>
           </th>
         );
       default:
@@ -438,10 +668,20 @@ export function AssortmentTable({
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-1">
-                <button type="button" className={recommendedTransferActionBtn} aria-label="Visible">
+                <button
+                  type="button"
+                  className={recommendedTransferActionBtn}
+                  aria-label="Visible"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   VIS
                 </button>
-                <button type="button" className={recommendedTransferActionBtn} aria-label="Review">
+                <button
+                  type="button"
+                  className={recommendedTransferActionBtn}
+                  aria-label="Review"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   REV
                 </button>
               </div>
@@ -484,7 +724,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-left align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
           >
             {row.stockouts.from.toLocaleString()} → {row.stockouts.to.toLocaleString()}
           </td>
@@ -493,7 +733,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-left align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
           >
             {row.locationsTransition.from.toLocaleString()} → {row.locationsTransition.to.toLocaleString()}
           </td>
@@ -502,7 +742,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-left align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
           >
             {row.overstocksTransition.from.toLocaleString()} → {row.overstocksTransition.to.toLocaleString()}
           </td>
@@ -511,7 +751,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-left align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
           >
             {row.understocksTransition.from.toLocaleString()} → {row.understocksTransition.to.toLocaleString()}
           </td>
@@ -520,7 +760,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-left align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
           >
             {row.depthTransition.from.toFixed(1)} → {row.depthTransition.to.toFixed(1)}
           </td>
@@ -529,7 +769,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-left align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
           >
             {row.warehouseUnitsTransition.from.toLocaleString()} →{' '}
             {row.warehouseUnitsTransition.to.toLocaleString()}
@@ -598,32 +838,38 @@ export function AssortmentTable({
           }`}
         >
           <thead
-            className="[&_th]:border-t-0 [&_th]:border-b-[0.5px] [&_th]:border-solid [&_th]:border-[#E3E8F0] [&_th]:bg-white [&_th]:font-['Inter',sans-serif]"
+            className="[&_th]:border-t-0 [&_th]:border-b-[0.5px] [&_th]:border-solid [&_th]:border-[#E3E8F0] [&_th]:font-['Inter',sans-serif]"
           >
-            <tr className="font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828] [&_th]:whitespace-nowrap [&_th]:align-middle">
+            <tr className="font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828] [&_th]:whitespace-nowrap">
               <th
-                className="sticky left-0 z-30 w-14 min-w-14 max-w-14 box-border bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                className={`sticky left-0 z-30 w-14 min-w-14 max-w-14 box-border ${theadCellBg} px-4 py-[10px] text-left align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
                 scope="col"
               >
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    onChange={(e) => onSelectAll(e.target.checked)}
-                    className="w-4 h-4 rounded border-2 border-[#e9eaeb] bg-white text-sky-600 focus:ring-sky-500"
-                  />
-                </label>
+                <div className="flex flex-col gap-2">
+                  <label className="flex cursor-pointer items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={(e) => onSelectAll(e.target.checked)}
+                      className="h-4 w-4 rounded border-2 border-[#e9eaeb] bg-white text-sky-600 focus:ring-sky-500"
+                    />
+                  </label>
+                  {columnHeaderAggregates ? <div className="min-h-[2.75rem]" aria-hidden /> : null}
+                </div>
               </th>
               {showProductDetails && (
                 <th
-                  className="sticky left-14 z-20 w-[280px] min-w-[280px] max-w-[280px] box-border bg-white px-4 py-[10px] text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                  className={`sticky left-14 z-20 w-[280px] min-w-[280px] max-w-[280px] box-border ${theadCellBg} px-4 py-[10px] text-left align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
                   scope="col"
                 >
-                  <AutoneHeaderInfoTooltip
-                    label="Product details"
-                    rich={ASSORTMENT_HEADER_RICH.productDetails}
-                    hoverWith={<span>Product details</span>}
-                  />
+                  <div className="flex flex-col gap-2">
+                    <AutoneHeaderInfoTooltip
+                      label="Product details"
+                      rich={ASSORTMENT_HEADER_RICH.productDetails}
+                      hoverWith={<span>Product details</span>}
+                    />
+                    {columnHeaderAggregates ? <div className="min-h-[2.75rem]" aria-hidden /> : null}
+                  </div>
                 </th>
               )}
               {!designOnly &&
@@ -643,13 +889,27 @@ export function AssortmentTable({
                 : null;
               const detail = row.productCellDetail;
               return (
-              <tr key={row.id} className="bg-white" data-name="table-cell">
-                <td className={`sticky left-0 z-30 h-[86px] min-h-[86px] w-14 min-w-14 max-w-14 box-border bg-white py-3 px-4 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}>
+              <tr
+                key={row.id}
+                className={`bg-white ${onRowClick ? 'cursor-pointer' : ''}`}
+                data-name="table-cell"
+                onClick={(e) => {
+                  if (!onRowClick) return;
+                  const el = e.target as HTMLElement;
+                  if (el.closest('button') || el.closest('input') || el.closest('label')) return;
+                  onRowClick(row);
+                }}
+              >
+                <td
+                  className={`sticky left-0 z-30 h-[86px] min-h-[86px] w-14 min-w-14 max-w-14 box-border bg-white py-3 px-4 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <div className="flex items-center">
                     <input
                       type="checkbox"
                       checked={!!row.selected}
                       onChange={(e) => onSelectRow(row.id, e.target.checked)}
+                      onClick={(e) => e.stopPropagation()}
                       className="w-4 h-4 rounded border-2 border-[#e9eaeb] bg-white text-sky-600 focus:ring-sky-500"
                     />
                   </div>
@@ -676,7 +936,8 @@ export function AssortmentTable({
                           <span className={`min-w-0 truncate ${tableCellSecondary}`}>{detail.sku}</span>
                           <button
                             type="button"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               void navigator.clipboard?.writeText(detail.sku);
                             }}
                             className="inline-flex shrink-0 rounded p-0.5 text-[#6A7282] transition-colors hover:bg-slate-100 hover:text-sky-600"
@@ -686,6 +947,7 @@ export function AssortmentTable({
                           </button>
                           <button
                             type="button"
+                            onClick={(e) => e.stopPropagation()}
                             className="inline-flex shrink-0 rounded p-0.5 text-[#6A7282] transition-colors hover:bg-slate-100 hover:text-sky-600"
                             aria-label="Product options"
                           >

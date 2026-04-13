@@ -10,6 +10,7 @@ import {
   Check,
 } from 'lucide-react';
 import { AssortmentTable } from './AssortmentTable';
+import { ProductTransfersTable } from './ProductTransfersTable';
 import { LocationsTable } from './LocationsTable';
 import { TripsTable } from './TripsTable';
 import { CommitSuccessBanner } from './CommitSuccessBanner';
@@ -33,8 +34,10 @@ import { ColumnCustomiseDrawer } from './ColumnCustomiseDrawer';
 import { HowItWorksPanel } from './rebalancing/HowItWorksPanel';
 import { RebalancingOnboardingBanner } from './rebalancing/RebalancingOnboardingBanner';
 import { RebalancingWalkthrough } from './rebalancing/RebalancingWalkthrough';
+import { RebalancingWalkthroughFab } from './rebalancing/RebalancingWalkthroughFab';
 import {
   isBannerDismissed,
+  clearBannerDismissed,
   setBannerDismissed,
   setWalkthroughCompleted,
 } from '../lib/rebalancingOnboardingStorage';
@@ -57,25 +60,21 @@ const FILTERS_MENU_ITEMS = [
   'Styles',
 ] as const;
 
-/** Sort-by options — alphabetical labels (design). */
+/**
+ * Table metric / sort-by selector — matches rebalancing workspace dropdown (design).
+ * Order and labels follow product spec.
+ */
 const SORT_BY_OPTIONS = [
-  { id: 'forecast-sales-rate', label: 'Forecast sales rate' },
+  { id: 'forecast', label: 'Forecast' },
   { id: 'l30d-sales', label: 'L30D sales' },
   { id: 'l7d-sales', label: 'L7D sales' },
-  { id: 'locations-after-rebalance', label: 'Locations after rebalance' },
-  { id: 'locations-before-rebalance', label: 'Locations before rebalance' },
-  { id: 'overstocks-after', label: 'Overstocks after' },
-  { id: 'overstocks-before', label: 'Overstocks before' },
-  { id: 'recommended-transfer-units', label: 'Recommended transfer units' },
-  { id: 'revenue-increase', label: 'Revenue increase' },
-  { id: 'stockouts-after-rebalance', label: 'Stockouts after rebalance' },
-  { id: 'stockouts-before-rebalance', label: 'Stockouts before rebalance' },
-  { id: 'transfer-trips', label: 'Transfer trips' },
-  { id: 'transfer-units', label: 'Transfer units' },
-  { id: 'understocks-after', label: 'Understocks after' },
-  { id: 'understocks-before', label: 'Understocks before' },
-  { id: 'warehouse-units-after', label: 'Warehouse units after' },
-  { id: 'warehouse-units-before', label: 'Warehouse units before' },
+  { id: 'locations', label: 'Locations' },
+  { id: 'stock-after', label: 'Stock after' },
+  { id: 'stock-before', label: 'Stock before' },
+  { id: 'stockouts-after', label: 'Stockouts after' },
+  { id: 'stockouts-before', label: 'Stockouts before' },
+  { id: 'units-transferred-in', label: 'Units transferred in' },
+  { id: 'units-transferred-out', label: 'Units transferred out' },
 ] as const;
 
 type SortMetricId = (typeof SORT_BY_OPTIONS)[number]['id'];
@@ -112,7 +111,7 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
   const [statusTableFilter, setStatusTableFilter] = useState<StatusTableFilter>('all');
   const [tripType, setTripType] = useState<'rebalancing' | 'replenishment'>('rebalancing');
   const [includeZeroTransfers, setIncludeZeroTransfers] = useState(true);
-  const [sortMetric, setSortMetric] = useState<SortMetricId>('revenue-increase');
+  const [sortMetric, setSortMetric] = useState<SortMetricId>('stock-after');
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [sortDescending, setSortDescending] = useState(false);
   const sortMenuRef = useRef<HTMLDivElement>(null);
@@ -133,6 +132,8 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
   const [walkthroughOpen, setWalkthroughOpen] = useState(false);
   const [walkthroughStep, setWalkthroughStep] = useState(0);
+  /** Products tab: row drill-down to per-location transfers for one assortment row */
+  const [productTransfersDrillRowId, setProductTransfersDrillRowId] = useState<string | null>(null);
   const optimisingToSuccessTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSuccessGroupsCountRef = useRef<number>(0);
 
@@ -145,6 +146,12 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
   useEffect(() => {
     setRebalancingBannerDismissed(isBannerDismissed());
   }, []);
+
+  useEffect(() => {
+    if (productTransfersDrillRowId != null && !rows.some((r) => r.id === productTransfersDrillRowId)) {
+      setProductTransfersDrillRowId(null);
+    }
+  }, [rows, productTransfersDrillRowId]);
 
   useEffect(() => {
     if (!filtersMenuOpen) return;
@@ -187,7 +194,7 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
   }, [filtersSearchQuery]);
 
   const sortMetricLabel = useMemo(
-    () => SORT_BY_OPTIONS.find((o) => o.id === sortMetric)?.label ?? 'Revenue increase',
+    () => SORT_BY_OPTIONS.find((o) => o.id === sortMetric)?.label ?? 'Stock after',
     [sortMetric]
   );
 
@@ -277,6 +284,14 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
     return f;
   })();
   const tableRows = filteredRows;
+
+  const productTransfersParentRow = useMemo(
+    () =>
+      productTransfersDrillRowId != null
+        ? rows.find((r) => r.id === productTransfersDrillRowId) ?? null
+        : null,
+    [rows, productTransfersDrillRowId]
+  );
 
   const updateRow = (id: string, patch: Partial<AssortmentRow>) => {
     setRows((prev) =>
@@ -571,6 +586,11 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
                     role="tab"
                     aria-selected={active}
                     onClick={() => {
+                      if (id === 'products' && focusView === 'products' && productTransfersDrillRowId != null) {
+                        setProductTransfersDrillRowId(null);
+                        return;
+                      }
+                      setProductTransfersDrillRowId(null);
                       setFocusView(id);
                       setStatusTableFilter('all');
                     }}
@@ -809,6 +829,11 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
               <LocationsTable />
             ) : focusView === 'trips' ? (
               <TripsTable />
+            ) : productTransfersParentRow ? (
+              <ProductTransfersTable
+                parentRow={productTransfersParentRow}
+                onBack={() => setProductTransfersDrillRowId(null)}
+              />
             ) : (
               <AssortmentTable
                 rows={tableRows}
@@ -821,6 +846,7 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
                 onAvgIaChange={onAvgIaChange}
                 onCommit={onCommit}
                 onRevert={onRevert}
+                onRowClick={(row) => setProductTransfersDrillRowId(row.id)}
                 onEditRow={(row, openFrom) => {
                   const selected = rows.filter((r) => r.selected);
                   const rowsToEdit =
@@ -918,7 +944,7 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
         iaOnlyLocations={generateModalStats.iaOnlyLocations}
       />
 
-      {focusView !== 'locations' && focusView !== 'trips' && (
+      {focusView !== 'locations' && focusView !== 'trips' && productTransfersDrillRowId === null && (
         <SelectionActionBar
           selectedRows={rows.filter((r) => r.selected) ?? []}
           onClearSelection={() => setRows((prev) => prev.map((r) => ({ ...r, selected: false })))}
@@ -932,6 +958,15 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
           onRequestRevert={(selected) => setConfirmCommitRevert({ action: 'revert', rows: selected })}
           onCommit={onCommit}
           onRevert={onRevert}
+        />
+      )}
+
+      {rebalancingBannerDismissed && !walkthroughOpen && (
+        <RebalancingWalkthroughFab
+          onOpen={() => {
+            clearBannerDismissed();
+            setRebalancingBannerDismissed(false);
+          }}
         />
       )}
     </main>

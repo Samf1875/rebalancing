@@ -21,9 +21,10 @@ const VIEWPORT_PAD = 12;
 export type AutoneHeaderInfoTooltipSide = 'top' | 'left';
 
 export type HeaderTooltipRichFooter =
-  | { kind: 'impact'; badge: string; sublabel: string }
+  | { kind: 'impact'; badge: string; sublabel: string; prefix?: string }
   | { kind: 'highlight'; text: string }
-  | { kind: 'salesMetrics'; l7d: string; l30d: string };
+  | { kind: 'salesMetrics'; l7d: string; l30d: string }
+  | { kind: 'transferTotals'; unitsLine: string; tripsLine: string };
 
 export type HeaderTooltipRich = {
   title: string;
@@ -100,6 +101,9 @@ function RichFooter({ footer }: { footer: HeaderTooltipRichFooter }) {
   if (footer.kind === 'impact') {
     return (
       <div className="flex flex-wrap items-center gap-2 font-['Inter',sans-serif] text-xs">
+        {footer.prefix != null && footer.prefix !== '' ? (
+          <span className="text-emerald-100/90">{footer.prefix}</span>
+        ) : null}
         <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 font-semibold tabular-nums text-emerald-200">
           {footer.badge}
         </span>
@@ -112,6 +116,14 @@ function RichFooter({ footer }: { footer: HeaderTooltipRichFooter }) {
       <div className="flex items-start gap-2 font-['Inter',sans-serif] text-xs text-amber-100/95">
         <Zap size={14} className="mt-0.5 shrink-0 text-amber-400" aria-hidden />
         <span>{footer.text}</span>
+      </div>
+    );
+  }
+  if (footer.kind === 'transferTotals') {
+    return (
+      <div className="flex flex-col gap-0.5 font-['Inter',sans-serif] text-xs tabular-nums">
+        <span className="font-semibold leading-snug text-white">{footer.unitsLine}</span>
+        <span className="font-normal leading-snug text-[#9AA4B2]">{footer.tripsLine}</span>
       </div>
     );
   }
@@ -278,7 +290,7 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
       : 'pointer-events-none fixed z-[100] flex max-w-[calc(100vw-24px)] flex-row items-center';
 
   const triggerClass =
-    'inline-flex shrink-0 items-center gap-1.5 rounded px-0.5 text-[#6A7282] transition-colors hover:text-[#374151] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#0267FF]';
+    'inline-flex shrink-0 items-center gap-1.5 rounded px-0.5 text-[#101828] transition-colors hover:text-[#00050a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#0267FF]';
 
   const triggerInner = hoverWith != null ? (
     <span
