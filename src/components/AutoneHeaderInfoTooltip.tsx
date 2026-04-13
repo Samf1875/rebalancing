@@ -321,8 +321,8 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
     <div
       className={
         isLightRich
-          ? `flex min-w-0 ${richBubbleMaxW} flex-col gap-2 rounded-lg border border-[#E3E8F0] p-4 text-left shadow-[0_4px_16px_-4px_rgba(15,23,42,0.12)]`
-          : `flex min-w-0 ${richBubbleMaxW} flex-col gap-3 rounded-lg border border-[#1E293B] p-4 text-left shadow-[0_8px_24px_-6px_rgba(15,23,42,0.45)]`
+          ? `flex w-max shrink-0 ${richBubbleMaxW} flex-col gap-2 rounded-lg border border-[#E3E8F0] p-4 text-left shadow-[0_4px_16px_-4px_rgba(15,23,42,0.12)]`
+          : `flex w-max shrink-0 ${richBubbleMaxW} flex-col gap-3 rounded-lg border border-[#1E293B] p-4 text-left shadow-[0_8px_24px_-6px_rgba(15,23,42,0.45)]`
       }
       style={{ backgroundColor: bubbleBg }}
     >
@@ -351,7 +351,7 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
 
   const simpleBubble = !isRich ? (
     <div
-      className="flex min-w-0 max-w-[min(18rem,calc(100vw-24px))] gap-2 rounded-lg px-4 py-4 text-left shadow-[0_8px_24px_-4px_rgba(15,23,42,0.45)]"
+      className="flex w-max shrink-0 max-w-[min(18rem,calc(100vw-24px))] gap-2 rounded-lg px-4 py-4 text-left shadow-[0_8px_24px_-4px_rgba(15,23,42,0.45)]"
       style={{ backgroundColor: bubbleBg }}
     >
       {showIconInTooltip ? (

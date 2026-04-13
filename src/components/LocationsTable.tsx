@@ -121,7 +121,12 @@ function CellGripInset({
   );
 }
 
-export function LocationsTable() {
+type LocationsTableProps = {
+  /** Open per-location Products drill (e.g. workspace body). Checkbox / buttons do not trigger this. */
+  onOpenLocationProducts?: (row: LocationTableRow) => void;
+};
+
+export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps = {}) {
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const selectAllRef = useRef<HTMLInputElement>(null);
 
@@ -165,9 +170,19 @@ export function LocationsTable() {
   );
 
   const renderDataRow = (row: LocationTableRow) => (
-    <tr key={row.id} className="bg-white">
+    <tr
+      key={row.id}
+      className={`bg-white ${onOpenLocationProducts ? 'cursor-pointer' : ''} ${tableRowHoverTd}`}
+      onClick={(e) => {
+        if (!onOpenLocationProducts) return;
+        const el = e.target as HTMLElement;
+        if (el.closest('button') || el.closest('input') || el.closest('label')) return;
+        onOpenLocationProducts(row);
+      }}
+    >
       <td
         className={`sticky left-0 z-30 h-[86px] min-h-[86px] w-14 min-w-14 max-w-14 box-border bg-white py-3 px-4 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
+        onClick={(e) => e.stopPropagation()}
       >
         <input
           type="checkbox"
@@ -212,7 +227,7 @@ export function LocationsTable() {
         <CellGripInset align="left">
           <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
             <span className={tableCellPrimary}>{row.recommendedIn}</span>
-            <div className="flex shrink-0 items-center gap-1">
+            <div className="flex shrink-0 items-center gap-1" onClick={(e) => e.stopPropagation()}>
               <button type="button" className={recommendedTransferActionBtn} aria-label="Review">
                 REV
               </button>

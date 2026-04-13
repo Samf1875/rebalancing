@@ -12,6 +12,7 @@ import {
 import { AssortmentTable } from './AssortmentTable';
 import { ProductTransfersTable } from './ProductTransfersTable';
 import { LocationsTable } from './LocationsTable';
+import { LocationProductsDrillView } from './LocationProductsDrillView';
 import { TripsTable } from './TripsTable';
 import { CommitSuccessBanner } from './CommitSuccessBanner';
 import { ConfirmCommitRevertModal, type ConfirmCommitRevertState } from './ConfirmCommitRevertModal';
@@ -23,6 +24,7 @@ import {
   type RecommendationMode,
 } from './GenerateRecommendationsModal';
 import { mockRows } from '../data/mockAssortment';
+import type { LocationTableRow } from '../data/mockLocations';
 import type { AssortmentRow } from '../types';
 import { MAIN_NAV_ASSORTMENT_BODY_IDS } from '../mainNavModuleIds';
 import { drillDropdownMenuItemHover } from '../lib/dropdownMenuClasses';
@@ -143,6 +145,8 @@ export function MainContent({
   const [walkthroughStep, setWalkthroughStep] = useState(0);
   /** Products tab: row drill-down to per-location transfers for one assortment row */
   const [productTransfersDrillRowId, setProductTransfersDrillRowId] = useState<string | null>(null);
+  /** Locations tab: row drill-down to per-location product list */
+  const [locationProductsDrill, setLocationProductsDrill] = useState<LocationTableRow | null>(null);
   const optimisingToSuccessTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSuccessGroupsCountRef = useRef<number>(0);
 
@@ -612,6 +616,9 @@ export function MainContent({
                         return;
                       }
                       setProductTransfersDrillRowId(null);
+                      if (focusView === 'locations' && id !== 'locations') {
+                        setLocationProductsDrill(null);
+                      }
                       setFocusView(id);
                       setStatusTableFilter('all');
                     }}
@@ -850,7 +857,14 @@ export function MainContent({
         <div className="flex min-w-0 flex-col gap-0">
           <div className="min-w-0">
             {focusView === 'locations' ? (
-              <LocationsTable />
+              locationProductsDrill ? (
+                <LocationProductsDrillView
+                  location={locationProductsDrill}
+                  onBack={() => setLocationProductsDrill(null)}
+                />
+              ) : (
+                <LocationsTable onOpenLocationProducts={(row) => setLocationProductsDrill(row)} />
+              )
             ) : focusView === 'trips' ? (
               <TripsTable />
             ) : productTransfersParentRow ? (
@@ -968,7 +982,10 @@ export function MainContent({
         iaOnlyLocations={generateModalStats.iaOnlyLocations}
       />
 
-      {focusView !== 'locations' && focusView !== 'trips' && productTransfersDrillRowId === null && (
+      {focusView !== 'locations' &&
+        focusView !== 'trips' &&
+        productTransfersDrillRowId === null &&
+        locationProductsDrill === null && (
         <SelectionActionBar
           selectedRows={rows.filter((r) => r.selected) ?? []}
           onClearSelection={() => setRows((prev) => prev.map((r) => ({ ...r, selected: false })))}
