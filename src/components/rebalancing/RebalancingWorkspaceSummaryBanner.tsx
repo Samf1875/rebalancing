@@ -19,7 +19,7 @@ export function RebalancingWorkspaceSummaryBanner() {
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="flex min-w-0 flex-1 items-start gap-3">
           <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#0267FF] text-white"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#12171e] text-white"
             aria-hidden
           >
             <RefreshCw size={20} strokeWidth={2} />
@@ -37,7 +37,7 @@ export function RebalancingWorkspaceSummaryBanner() {
               <span className="font-normal text-[#667085]">206 transfers suggested</span>
             </p>
             <p className="font-['Inter',sans-serif] text-xs font-normal leading-normal text-[#98A2B3]">
-              Based on: L7D demand • Zero transfers included
+              Based on: Last 7 days demand • Zero transfers included • Cross-location balancing
             </p>
           </div>
         </div>
@@ -69,25 +69,57 @@ export function RebalancingWorkspaceSummaryBanner() {
       {detailsOpen ? (
         <div className="mt-4 flex flex-col border-t border-[#E3E8F0] pt-4">
           <p className="font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
-            This view redistributes stock based on recent demand signals to maximize revenue across locations.
+            Rebalancing automatically identifies where stock is over- or under-performing and suggests transfers to
+            better match supply with demand.
           </p>
-          <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
-            <div className="flex min-w-0 flex-col gap-1">
-              <span className="font-['Inter',sans-serif] text-xs font-normal text-[#667085]">Mode</span>
-              <span className="font-['Inter',sans-serif] text-sm font-semibold text-[#101828]">Rebalancing</span>
+
+          <div className="mt-4 flex flex-col divide-y divide-[#E3E8F0]">
+            <div className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:gap-8 sm:py-5">
+              <div className="w-full shrink-0 sm:w-fit sm:min-w-0">
+                <div className="font-['Inter',sans-serif] text-xs font-normal text-[#667085]">Mode</div>
+                <div className="mt-0.5 font-['Inter',sans-serif] text-sm font-semibold text-[#101828]">
+                  Rebalancing
+                </div>
+              </div>
+              <p className="min-w-0 flex-1 font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
+                Enables stock movement between locations. The system prioritizes shifting inventory from
+                low-performing locations to those with higher demand.
+              </p>
             </div>
-            <div className="flex min-w-0 flex-col gap-1">
-              <span className="font-['Inter',sans-serif] text-xs font-normal text-[#667085]">Zero transfers</span>
-              <span className="font-['Inter',sans-serif] text-sm font-semibold text-[#101828]">Enabled</span>
+            <div className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:gap-8 sm:py-5">
+              <div className="w-full shrink-0 sm:w-fit sm:min-w-0">
+                <div className="font-['Inter',sans-serif] text-xs font-normal text-[#667085]">Zero transfers</div>
+                <div className="mt-0.5 font-['Inter',sans-serif] text-sm font-semibold text-[#101828]">Enabled</div>
+              </div>
+              <p className="min-w-0 flex-1 font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
+                Includes products with little or no recent movement. This increases coverage but may surface
+                lower-confidence recommendations.
+              </p>
             </div>
-            <div className="flex min-w-0 flex-col gap-1">
-              <span className="font-['Inter',sans-serif] text-xs font-normal text-[#667085]">Time window</span>
-              <span className="font-['Inter',sans-serif] text-sm font-semibold text-[#101828]">Last 7 days</span>
+            <div className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:gap-8 sm:py-5">
+              <div className="w-full shrink-0 sm:w-fit sm:min-w-0">
+                <div className="font-['Inter',sans-serif] text-xs font-normal text-[#667085]">Time window</div>
+                <div className="mt-0.5 font-['Inter',sans-serif] text-sm font-semibold text-[#101828]">
+                  Last 7 days
+                </div>
+              </div>
+              <p className="min-w-0 flex-1 font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
+                Focuses on recent sales trends. Shorter windows react faster to demand changes but can be more
+                volatile.
+              </p>
             </div>
           </div>
-          <p className="mt-4 font-['Inter',sans-serif] text-xs font-normal leading-normal text-[#98A2B3]">
-            Impacts: Transfers, Recommended transfers, Revenue increase
-          </p>
+
+          <div className="mt-4 border-t border-[#E3E8F0] pt-4">
+            <p className="font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
+              These parameters directly influence how transfer opportunities are calculated, impacting:
+            </p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 font-['Inter',sans-serif] text-sm leading-relaxed text-[#475467] marker:text-[#475467]">
+              <li>Number of suggested transfers</li>
+              <li>Estimated revenue uplift</li>
+              <li>Which products and locations are prioritized</li>
+            </ul>
+          </div>
         </div>
       ) : null}
     </div>
