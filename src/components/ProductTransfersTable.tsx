@@ -89,7 +89,7 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
             <span className={`shrink-0 ${tableCellPrimary}`}>{row.name}</span>
             {row.transferHub ? (
               <span
-                className="inline-flex shrink-0 items-center justify-center text-[16px] leading-none text-[#101828]"
+                className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]"
                 title="Receiving location"
                 aria-label="Receiving location"
               >
@@ -310,8 +310,7 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
                   {headerStack(
                     <AutoneHeaderInfoTooltip
                       label="Coverage"
-                      richAppearance="light"
-                      richBubbleMaxWidthClass="max-w-[min(32rem,calc(100vw-24px))]"
+                      topAlign="start"
                       rich={{
                         title: 'Coverage',
                         icon: 'info',

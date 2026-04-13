@@ -2,7 +2,7 @@
  * Autone DS 2.0 — "Receiving location" (Figma `14152:1320`, NEW Autone Design System 2.0).
  * Line house with rounded joins; horizontal inbound arrow (R→L) through a gap in the right wall.
  * Tokens: 07 Grey/800 `#212B36`, Base `#22272F` — use `currentColor` in UI (e.g. `text-[#101828]`).
- * Default: `text-[16px]` + `size-[1em]` → 16×16px box; override with `className`.
+ * Default: `text-[20px]` + `size-[1em]` → 20×20px box; override with `className`.
  */
 export function AutoneReceivingLocationIcon({ className, title }: { className?: string; title?: string }) {
   return (
@@ -10,7 +10,7 @@ export function AutoneReceivingLocationIcon({ className, title }: { className?: 
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
-      className={['block size-[1em] shrink-0 text-[16px] leading-none', className].filter(Boolean).join(' ')}
+      className={['block size-[1em] shrink-0 text-[20px] leading-none', className].filter(Boolean).join(' ')}
       aria-hidden={title ? undefined : true}
       role={title ? 'img' : undefined}
     >

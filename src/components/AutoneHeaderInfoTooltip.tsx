@@ -13,14 +13,16 @@ import { CheckCircle2, Info, Lightbulb, LineChart, Zap } from 'lucide-react';
 
 /** Figma DS tooltips — solid black panels in product headers */
 const TOOLTIP_BG = '#000000';
-/** Rich explainers — aligned with rebalancing onboarding panels */
-const RICH_TOOLTIP_BG = '#12171E';
-/** Figma `5478:57392` — light DS tooltip (white panel, foreground #00050a) */
+/** Rich explainers — dark panel (Sales-style tooltip mock) */
+const RICH_TOOLTIP_BG = '#0F172A';
+/** Light panel (Coverage-style tooltip mock): white, 8px radius, border #E3E8F0 */
 const RICH_TOOLTIP_BG_LIGHT = '#FFFFFF';
 
 const VIEWPORT_PAD = 12;
 
 export type AutoneHeaderInfoTooltipSide = 'top' | 'left';
+/** `side="top"` only: where the bubble anchors horizontally relative to the trigger. */
+export type AutoneHeaderInfoTooltipTopAlign = 'center' | 'start';
 
 export type HeaderTooltipRichFooter =
   | { kind: 'impact'; badge: string; sublabel: string; prefix?: string }
@@ -47,6 +49,8 @@ type BaseProps = {
    * `left` — Figma `5478:57391` (bubble left of trigger, caret points at icon).
    */
   side?: AutoneHeaderInfoTooltipSide;
+  /** When `side` is `top`, align bubble to trigger start (left in LTR) instead of centered. */
+  topAlign?: AutoneHeaderInfoTooltipTopAlign;
   /**
    * When set, hovering the label + icon opens the tooltip (larger hit area).
    * Omit to keep a compact info-only trigger.
@@ -58,7 +62,7 @@ type BaseProps = {
    */
   richBubbleMaxWidthClass?: string;
   /**
-   * Rich mode only: `light` matches Figma `5478:57392` (white panel, 16px padding, 8px gap, 4px radius).
+   * Rich mode only: `light` — white panel, 8px radius, 16px padding (Coverage mock).
    */
   richAppearance?: 'dark' | 'light';
 };
@@ -164,11 +168,9 @@ function RichFooter({
   }
   if (footer.kind === 'transferTotals') {
     return (
-      <div
-        className={`flex flex-col gap-0.5 font-['Inter',sans-serif] text-xs tabular-nums ${L ? 'text-[#101828]' : 'text-white'}`}
-      >
-        <span className="font-semibold leading-snug">{footer.unitsLine}</span>
-        <span className={`font-normal leading-snug ${L ? 'text-[#6A7282]' : 'text-white'}`}>{footer.tripsLine}</span>
+      <div className="flex flex-col gap-0.5 font-['Inter',sans-serif] text-xs tabular-nums">
+        <span className={`font-semibold leading-snug ${L ? 'text-[#101828]' : 'text-white'}`}>{footer.unitsLine}</span>
+        <span className={`font-normal leading-snug ${L ? 'text-[#667085]' : 'text-[#94A3B8]'}`}>{footer.tripsLine}</span>
       </div>
     );
   }
@@ -183,15 +185,15 @@ function RichFooter({
   }
   return (
     <div
-      className={`flex flex-wrap items-center gap-6 font-['Inter',sans-serif] text-xs tabular-nums ${L ? 'text-[#6A7282]' : 'text-[#c9d1d9]'}`}
+      className={`flex flex-wrap items-center gap-6 font-['Inter',sans-serif] text-xs tabular-nums ${L ? 'text-[#667085]' : 'text-[#94A3B8]'}`}
     >
       <div className="flex flex-col gap-0.5">
         <span className={`font-semibold ${L ? 'text-[#101828]' : 'text-white'}`}>{footer.l7d}</span>
-        <span className={L ? 'text-[#6A7282]' : 'text-[#9AA4B2]'}>L7D</span>
+        <span className={L ? 'text-[#667085]' : 'text-[#94A3B8]'}>L7D</span>
       </div>
       <div className="flex flex-col gap-0.5">
         <span className={`font-semibold ${L ? 'text-[#101828]' : 'text-white'}`}>{footer.l30d}</span>
-        <span className={L ? 'text-[#6A7282]' : 'text-[#9AA4B2]'}>L30D</span>
+        <span className={L ? 'text-[#667085]' : 'text-[#94A3B8]'}>L30D</span>
       </div>
     </div>
   );
@@ -210,6 +212,7 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
     hoverWith,
     richBubbleMaxWidthClass,
     richAppearance = 'dark',
+    topAlign = 'center',
   } = props;
 
   const isRich = 'rich' in props && props.rich != null;
@@ -244,8 +247,8 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
   }, []);
 
   const layoutKey = isRich
-    ? `${rich?.title}\n${rich?.body}\n${JSON.stringify(rich?.footer)}\n${richBubbleMaxWidthClass ?? ''}\n${richAppearance}`
-    : content;
+    ? `${rich?.title}\n${rich?.body}\n${JSON.stringify(rich?.footer)}\n${richBubbleMaxWidthClass ?? ''}\n${richAppearance}\n${topAlign}`
+    : `${content}\n${topAlign}`;
 
   useLayoutEffect(() => {
     if (!visible || !rect || !wrapRef.current) return;
@@ -271,7 +274,7 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
     if (dx !== 0 || dy !== 0) {
       setNudge((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
     }
-  }, [visible, rect, layoutKey, showIconInTooltip, side, nudge.x, nudge.y]);
+  }, [visible, rect, layoutKey, showIconInTooltip, side, topAlign, nudge.x, nudge.y]);
 
   useEffect(() => {
     if (!visible) return;
@@ -300,8 +303,8 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
     <div
       className={
         isLightRich
-          ? `flex min-w-0 ${richBubbleMaxW} flex-col gap-2 rounded border border-[#E3E8F0] p-4 text-left shadow-[0_4px_12px_-2px_rgba(15,23,42,0.1)]`
-          : `flex min-w-0 ${richBubbleMaxW} flex-col gap-3 rounded-lg border border-[#2a3340] px-4 py-3 text-left shadow-[0_8px_24px_-4px_rgba(15,23,42,0.55)]`
+          ? `flex min-w-0 ${richBubbleMaxW} flex-col gap-2 rounded-lg border border-[#E3E8F0] p-4 text-left shadow-[0_4px_16px_-4px_rgba(15,23,42,0.12)]`
+          : `flex min-w-0 ${richBubbleMaxW} flex-col gap-3 rounded-lg border border-[#1E293B] p-4 text-left shadow-[0_8px_24px_-6px_rgba(15,23,42,0.45)]`
       }
       style={{ backgroundColor: bubbleBg }}
     >
@@ -309,19 +312,19 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
         <TitleIcon kind={rich.icon} appearance={richAppearance} />
         <div className="min-w-0 flex-1">
           <p
-            className={`font-['Inter',sans-serif] text-sm font-semibold leading-snug ${isLightRich ? 'text-[#00050a]' : 'text-white'}`}
+            className={`font-['Inter',sans-serif] text-sm font-semibold leading-snug ${isLightRich ? 'text-[#101828]' : 'text-white'}`}
           >
             {rich.title}
           </p>
           <p
-            className={`mt-1.5 font-['Inter',sans-serif] font-normal leading-relaxed ${isLightRich ? 'text-[14px] text-[#475467]' : 'text-[13px] text-[#c9d1d9]'}`}
+            className={`mt-1.5 font-['Inter',sans-serif] text-[14px] font-normal leading-relaxed ${isLightRich ? 'text-[#475467]' : 'text-[#94A3B8]'}`}
           >
             {rich.body}
           </p>
         </div>
       </div>
       {rich.footer ? (
-        <div className={`border-t pt-2 ${isLightRich ? 'border-[#E3E8F0]' : 'border-[#2a3340]'}`}>
+        <div className={`border-t pt-2 ${isLightRich ? 'border-[#E3E8F0]' : 'border-[#1E293B]'}`}>
           <RichFooter footer={rich.footer} appearance={richAppearance} />
         </div>
       ) : null}
@@ -360,9 +363,11 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
     />
   );
 
+  const isTopStart = side === 'top' && topAlign === 'start';
+
   const wrapClass =
     side === 'top'
-      ? 'pointer-events-none fixed z-[100] flex max-w-[calc(100vw-24px)] flex-col items-center'
+      ? `pointer-events-none fixed z-[100] flex max-w-[calc(100vw-24px)] flex-col ${isTopStart ? 'items-start' : 'items-center'}`
       : 'pointer-events-none fixed z-[100] flex max-w-[calc(100vw-24px)] flex-row items-center';
 
   const triggerClass =
@@ -419,11 +424,17 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
             className={wrapClass}
             style={
               side === 'top'
-                ? ({
-                    left: rect.left + rect.width / 2,
-                    top: rect.top - 8,
-                    transform: `translate(calc(-50% + ${nudge.x}px), calc(-100% + ${nudge.y}px))`,
-                  } satisfies CSSProperties)
+                ? isTopStart
+                  ? ({
+                      left: rect.left,
+                      top: rect.top - 8,
+                      transform: `translate(${nudge.x}px, calc(-100% + ${nudge.y}px))`,
+                    } satisfies CSSProperties)
+                  : ({
+                      left: rect.left + rect.width / 2,
+                      top: rect.top - 8,
+                      transform: `translate(calc(-50% + ${nudge.x}px), calc(-100% + ${nudge.y}px))`,
+                    } satisfies CSSProperties)
                 : ({
                     left: rect.left - 8 + nudge.x,
                     top: rect.top + rect.height / 2 + nudge.y,
@@ -434,7 +445,17 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
             {side === 'top' ? (
               <>
                 {bubble}
-                {caretDown}
+                {isTopStart ? (
+                  <span
+                    className="self-start"
+                    style={{ marginLeft: Math.max(0, rect.width / 2 - 8) }}
+                    aria-hidden
+                  >
+                    {caretDown}
+                  </span>
+                ) : (
+                  caretDown
+                )}
               </>
             ) : (
               <>
