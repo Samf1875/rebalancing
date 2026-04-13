@@ -524,8 +524,9 @@ export function AssortmentTable({
                     ...(agg
                       ? {
                           footer: {
-                            kind: 'footerCaption' as const,
-                            text: `Depth ${agg.depth.from.toFixed(1)} → ${agg.depth.to.toFixed(1)}`,
+                            kind: 'footerStackedCaption' as const,
+                            title: 'Depth',
+                            valueLine: `${agg.depth.from.toFixed(1)} → ${agg.depth.to.toFixed(1)}`,
                           },
                         }
                       : {}),
@@ -552,8 +553,9 @@ export function AssortmentTable({
                     ...(agg
                       ? {
                           footer: {
-                            kind: 'footerCaption' as const,
-                            text: `Warehouse units ${agg.warehouse.from.toLocaleString()} → ${agg.warehouse.to.toLocaleString()}`,
+                            kind: 'footerStackedCaption' as const,
+                            title: 'Warehouse units',
+                            valueLine: `${agg.warehouse.from.toLocaleString()} → ${agg.warehouse.to.toLocaleString()}`,
                           },
                         }
                       : {}),

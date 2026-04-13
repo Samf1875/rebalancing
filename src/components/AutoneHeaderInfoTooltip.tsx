@@ -29,6 +29,8 @@ export type HeaderTooltipRichFooter =
   | { kind: 'highlight'; text: string }
   | { kind: 'salesMetrics'; l7d: string; l30d: string }
   | { kind: 'transferTotals'; unitsLine: string; tripsLine: string }
+  /** Metric label on one line, values on the next (matches warehouse-units header mock). */
+  | { kind: 'footerStackedCaption'; title: string; valueLine: string }
   | { kind: 'footerCaption'; text: string };
 
 export type HeaderTooltipRich = {
@@ -57,7 +59,7 @@ type BaseProps = {
    */
   hoverWith?: ReactNode;
   /**
-   * Rich mode only: replaces the default `max-w-[min(22rem,...)]` on the bubble
+   * Rich mode only: replaces the default `max-w-[min(32rem,...)]` on the bubble
    * (e.g. `max-w-[min(32rem,calc(100vw-24px))]` for a wider panel).
    */
   richBubbleMaxWidthClass?: string;
@@ -171,6 +173,22 @@ function RichFooter({
       <div className="flex flex-col gap-0.5 font-['Inter',sans-serif] text-xs tabular-nums">
         <span className={`font-semibold leading-snug ${L ? 'text-[#101828]' : 'text-white'}`}>{footer.unitsLine}</span>
         <span className={`font-normal leading-snug ${L ? 'text-[#667085]' : 'text-[#94A3B8]'}`}>{footer.tripsLine}</span>
+      </div>
+    );
+  }
+  if (footer.kind === 'footerStackedCaption') {
+    return (
+      <div className="flex flex-col gap-1 font-['Inter',sans-serif]">
+        <p
+          className={`text-xs font-semibold leading-snug ${L ? 'text-[#101828]' : 'text-white'}`}
+        >
+          {footer.title}
+        </p>
+        <p
+          className={`text-sm font-semibold tabular-nums leading-snug ${L ? 'text-[#101828]' : 'text-white'}`}
+        >
+          {footer.valueLine}
+        </p>
       </div>
     );
   }
@@ -297,7 +315,7 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
   }, [visible, hide]);
 
   const richBubbleMaxW =
-    richBubbleMaxWidthClass ?? 'max-w-[min(22rem,calc(100vw-24px))]';
+    richBubbleMaxWidthClass ?? 'max-w-[min(32rem,calc(100vw-24px))]';
 
   const richBubble = rich ? (
     <div
@@ -317,7 +335,7 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
             {rich.title}
           </p>
           <p
-            className={`mt-1.5 font-['Inter',sans-serif] text-[14px] font-normal leading-relaxed ${isLightRich ? 'text-[#475467]' : 'text-[#94A3B8]'}`}
+            className={`mt-1.5 whitespace-pre-line font-['Inter',sans-serif] text-[14px] font-normal leading-relaxed ${isLightRich ? 'text-[#475467]' : 'text-[#94A3B8]'}`}
           >
             {rich.body}
           </p>

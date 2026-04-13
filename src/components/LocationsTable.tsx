@@ -2,7 +2,38 @@ import { useState, useMemo, useRef, useEffect, type ReactNode } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, GripVertical, Info } from 'lucide-react';
 import { HEADER_INFO_TOOLTIPS } from '../data/headerInfoTooltips';
 import { MOCK_LOCATION_ROWS, type LocationTableRow } from '../data/mockLocations';
-import { AutoneHeaderInfoTooltip } from './AutoneHeaderInfoTooltip';
+import {
+  AutoneHeaderInfoTooltip,
+  type HeaderTooltipRich,
+  type HeaderTooltipRichFooter,
+} from './AutoneHeaderInfoTooltip';
+
+function locationsTableHeaderRich(
+  title: string,
+  body: string,
+  footer?: HeaderTooltipRichFooter
+): HeaderTooltipRich {
+  return footer != null ? { title, icon: 'info', body, footer } : { title, icon: 'info', body };
+}
+
+function metricArrowFooter(metricLabel: string, from: number, to: number, decimals?: number) {
+  const fmt = (n: number) =>
+    decimals != null ? n.toFixed(decimals) : n.toLocaleString();
+  return {
+    kind: 'footerCaption' as const,
+    text: `${metricLabel} ${fmt(from)} → ${fmt(to)}`,
+  };
+}
+
+function metricStackedFooter(metricLabel: string, from: number, to: number, decimals?: number) {
+  const fmt = (n: number) =>
+    decimals != null ? n.toFixed(decimals) : n.toLocaleString();
+  return {
+    kind: 'footerStackedCaption' as const,
+    title: metricLabel,
+    valueLine: `${fmt(from)} → ${fmt(to)}`,
+  };
+}
 
 const tableCellPrimary =
   "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
@@ -302,9 +333,11 @@ export function LocationsTable() {
                   <span className={tableHeaderGripInsetFont}>Revenue increase</span>
                   <AutoneHeaderInfoTooltip
                     label="Revenue increase"
-                    content={HEADER_INFO_TOOLTIPS.revenueIncrease}
+                    rich={locationsTableHeaderRich(
+                      'Revenue increase',
+                      HEADER_INFO_TOOLTIPS.revenueIncrease,
+                    )}
                     side="top"
-                    topAlign="start"
                   />
                   <ChevronDown size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
                 </span>
@@ -318,7 +351,10 @@ export function LocationsTable() {
                   <span className={tableHeaderGripInsetFont}>Recommended transfers in</span>
                   <AutoneHeaderInfoTooltip
                     label="Recommended transfers in"
-                    content={HEADER_INFO_TOOLTIPS.recommendedTransfers}
+                    rich={locationsTableHeaderRich(
+                      'Recommended transfers in',
+                      HEADER_INFO_TOOLTIPS.recommendedTransfers,
+                    )}
                     side="top"
                   />
                 </span>
@@ -332,9 +368,11 @@ export function LocationsTable() {
                   <span className={tableHeaderGripInsetFont}>Recommended transfers out</span>
                   <AutoneHeaderInfoTooltip
                     label="Recommended transfers out"
-                    content={HEADER_INFO_TOOLTIPS.recommendedTransfersOut}
+                    rich={locationsTableHeaderRich(
+                      'Recommended transfers out',
+                      HEADER_INFO_TOOLTIPS.recommendedTransfersOut,
+                    )}
                     side="top"
-                    topAlign="start"
                   />
                 </span>
               </th>
@@ -353,9 +391,11 @@ export function LocationsTable() {
                   <span className={tableHeaderGripInsetFont}>Forecast per wk.</span>
                   <AutoneHeaderInfoTooltip
                     label="Forecast per wk."
-                    content={HEADER_INFO_TOOLTIPS.forecastPerWk}
+                    rich={locationsTableHeaderRich(
+                      'Forecast per wk.',
+                      HEADER_INFO_TOOLTIPS.forecastPerWk,
+                    )}
                     side="top"
-                    topAlign="start"
                   />
                 </span>
               </th>
@@ -368,9 +408,16 @@ export function LocationsTable() {
                   <span className={tableHeaderGripInsetFont}>Stockouts</span>
                   <AutoneHeaderInfoTooltip
                     label="Stockouts"
-                    content={HEADER_INFO_TOOLTIPS.stockouts}
+                    rich={locationsTableHeaderRich(
+                      'Stockouts',
+                      HEADER_INFO_TOOLTIPS.stockouts,
+                      metricArrowFooter(
+                        'Stockouts',
+                        summary.stockouts.from,
+                        summary.stockouts.to
+                      ),
+                    )}
                     side="top"
-                    topAlign="start"
                   />
                 </span>
               </th>
@@ -383,9 +430,16 @@ export function LocationsTable() {
                   <span className={tableHeaderGripInsetFont}>Overstocks</span>
                   <AutoneHeaderInfoTooltip
                     label="Overstocks"
-                    content={HEADER_INFO_TOOLTIPS.overstocks}
+                    rich={locationsTableHeaderRich(
+                      'Overstocks',
+                      HEADER_INFO_TOOLTIPS.overstocks,
+                      metricArrowFooter(
+                        'Overstocks',
+                        summary.overstocks.from,
+                        summary.overstocks.to
+                      ),
+                    )}
                     side="top"
-                    topAlign="start"
                   />
                 </span>
               </th>
@@ -398,9 +452,16 @@ export function LocationsTable() {
                   <span className={tableHeaderGripInsetFont}>Understocks</span>
                   <AutoneHeaderInfoTooltip
                     label="Understocks"
-                    content={HEADER_INFO_TOOLTIPS.understocks}
+                    rich={locationsTableHeaderRich(
+                      'Understocks',
+                      HEADER_INFO_TOOLTIPS.understocks,
+                      metricArrowFooter(
+                        'Understocks',
+                        summary.understocks.from,
+                        summary.understocks.to
+                      ),
+                    )}
                     side="top"
-                    topAlign="start"
                   />
                 </span>
               </th>
@@ -413,9 +474,12 @@ export function LocationsTable() {
                   <span className={tableHeaderGripInsetFont}>Depth</span>
                   <AutoneHeaderInfoTooltip
                     label="Depth"
-                    content={HEADER_INFO_TOOLTIPS.depth}
+                    rich={locationsTableHeaderRich(
+                      'Depth',
+                      HEADER_INFO_TOOLTIPS.depth,
+                      metricStackedFooter('Depth', summary.depth.from, summary.depth.to, 1),
+                    )}
                     side="top"
-                    topAlign="start"
                   />
                 </span>
               </th>
