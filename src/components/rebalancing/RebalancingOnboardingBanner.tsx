@@ -13,7 +13,7 @@ export function RebalancingOnboardingBanner({
 }: RebalancingOnboardingBannerProps) {
   return (
     <div
-      className="flex w-full min-w-0 flex-col gap-4 rounded-lg border border-[#22272F] bg-[#12171E] px-4 py-4 text-white sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-5 sm:py-4"
+      className="relative left-0 flex w-full min-w-0 flex-col gap-4 self-stretch rounded-lg border border-[#2d3844] bg-[#12171e] px-4 py-4 text-white sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-5 sm:py-4"
       role="region"
       aria-label="Rebalancing introduction"
     >

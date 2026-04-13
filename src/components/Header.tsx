@@ -1,9 +1,14 @@
 import { ArrowLeft, Download, ExternalLink, Share2, Upload } from 'lucide-react';
 
+type RebalancingHeaderMode = 'taskList' | 'workspace';
+
 type HeaderProps = {
   activeMainNavId?: string;
   /** Rebalancing header: return to Replenishment workspace. */
   onSwitchBack?: () => void;
+  /** First visit: task list uses Switch back + Create new; afterward workspace actions. */
+  rebalancingHeaderMode?: RebalancingHeaderMode;
+  onCreateNewRebalancing?: () => void;
   onShare?: () => void;
   onDownload?: () => void;
   onSubmitRebalancing?: () => void;
@@ -11,7 +16,9 @@ type HeaderProps = {
 
 export function Header({
   activeMainNavId = 'home',
-  onSwitchBack: _onSwitchBack,
+  onSwitchBack,
+  rebalancingHeaderMode = 'workspace',
+  onCreateNewRebalancing,
   onShare,
   onDownload,
   onSubmitRebalancing,
@@ -19,6 +26,7 @@ export function Header({
   const isRebalancing = activeMainNavId === 'refresh';
 
   if (isRebalancing) {
+    const taskList = rebalancingHeaderMode === 'taskList';
     return (
       <header
         className="flex w-full shrink-0 items-center justify-between bg-[#12171e] px-6 py-6"
@@ -33,29 +41,50 @@ export function Header({
           </p>
         </div>
         <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
-          <button
-            type="button"
-            onClick={() => onShare?.()}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-[#212b36] text-white transition-colors hover:bg-[#2d3844]"
-            aria-label="Share"
-          >
-            <Share2 size={20} strokeWidth={2} aria-hidden />
-          </button>
-          <button
-            type="button"
-            onClick={() => onDownload?.()}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-[#212b36] text-white transition-colors hover:bg-[#2d3844]"
-            aria-label="Download"
-          >
-            <Download size={20} strokeWidth={2} aria-hidden />
-          </button>
-          <button
-            type="button"
-            onClick={() => onSubmitRebalancing?.()}
-            className="flex h-12 shrink-0 items-center justify-center rounded bg-[#0267FF] px-5 text-sm font-medium text-white transition-colors hover:bg-[#0258e6] sm:px-6"
-          >
-            Submit rebalancing
-          </button>
+          {taskList ? (
+            <>
+              <button
+                type="button"
+                onClick={() => onSwitchBack?.()}
+                className="flex h-12 shrink-0 items-center justify-center rounded bg-[#212b36] px-5 text-sm font-medium text-[#a6aaaf] transition-colors hover:bg-[#2d3844] hover:text-white sm:px-6"
+              >
+                Switch back
+              </button>
+              <button
+                type="button"
+                onClick={() => onCreateNewRebalancing?.()}
+                className="flex h-12 shrink-0 items-center justify-center rounded bg-[#0267FF] px-5 text-sm font-medium text-white transition-colors hover:bg-[#0258e6] sm:px-6"
+              >
+                Create new rebalancing
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => onShare?.()}
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-[#212b36] text-white transition-colors hover:bg-[#2d3844]"
+                aria-label="Share"
+              >
+                <Share2 size={20} strokeWidth={2} aria-hidden />
+              </button>
+              <button
+                type="button"
+                onClick={() => onDownload?.()}
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-[#212b36] text-white transition-colors hover:bg-[#2d3844]"
+                aria-label="Download"
+              >
+                <Download size={20} strokeWidth={2} aria-hidden />
+              </button>
+              <button
+                type="button"
+                onClick={() => onSubmitRebalancing?.()}
+                className="flex h-12 shrink-0 items-center justify-center rounded bg-[#0267FF] px-5 text-sm font-medium text-white transition-colors hover:bg-[#0258e6] sm:px-6"
+              >
+                Submit rebalancing
+              </button>
+            </>
+          )}
         </div>
       </header>
     );

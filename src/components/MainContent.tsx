@@ -35,6 +35,8 @@ import { HowItWorksPanel } from './rebalancing/HowItWorksPanel';
 import { RebalancingOnboardingBanner } from './rebalancing/RebalancingOnboardingBanner';
 import { RebalancingWalkthrough } from './rebalancing/RebalancingWalkthrough';
 import { RebalancingWalkthroughFab } from './rebalancing/RebalancingWalkthroughFab';
+import { RebalancingWorkspaceSummaryBanner } from './rebalancing/RebalancingWorkspaceSummaryBanner';
+import { RebalancingTaskListScreen } from './rebalancing/RebalancingTaskListScreen';
 import {
   isBannerDismissed,
   clearBannerDismissed,
@@ -96,9 +98,16 @@ const initRow = (r: AssortmentRow, isDraft = false): AssortmentRow => ({
 type MainContentProps = {
   /** Primary sidebar selection — assortment UI only when Rebalancing (`refresh`) is active. */
   activeMainNavId?: string;
+  /** After first task list visit, workspace is shown (persisted in localStorage). */
+  rebalancingListIntroCompleted?: boolean;
+  onEnterRebalancingWorkspace?: () => void;
 };
 
-export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
+export function MainContent({
+  activeMainNavId = 'home',
+  rebalancingListIntroCompleted = true,
+  onEnterRebalancingWorkspace,
+}: MainContentProps) {
   const [rows, setRows] = useState<AssortmentRow[]>(() =>
     mockRows.slice(0, 5).map((r) => initRow(r, false))
   );
@@ -481,8 +490,20 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
     );
   }
 
+  if (!rebalancingListIntroCompleted) {
+    return (
+      <main className="relative left-0 flex min-h-0 min-w-0 w-full flex-1 flex-col bg-slate-50">
+        <RebalancingTaskListScreen
+          onOpenTask={() => {
+            onEnterRebalancingWorkspace?.();
+          }}
+        />
+      </main>
+    );
+  }
+
   return (
-    <main className="flex-1 flex flex-col min-h-0 bg-slate-50">
+    <main className="flex min-h-0 min-w-0 w-full flex-1 flex-col bg-slate-50">
       {optimisingBannerVisible && !optimisingBannerDismissed && (
         <div className="fixed left-1/2 top-[116px] z-[60] w-full max-w-2xl -translate-x-1/2">
           <OptimisingIABanner
@@ -533,7 +554,7 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
       )}
 
       <div
-        className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto bg-white px-6 pt-4 pb-12"
+        className="flex min-h-0 min-w-0 w-full flex-1 flex-col gap-4 overflow-y-auto bg-white px-6 pt-4 pb-12"
         data-walkthrough-root
       >
         {!rebalancingBannerDismissed && (
@@ -665,6 +686,9 @@ export function MainContent({ activeMainNavId = 'home' }: MainContentProps) {
               </div>
             </div>
           </div>
+
+          <RebalancingWorkspaceSummaryBanner />
+
           <div className="flex w-full min-w-0 flex-wrap items-center justify-start gap-2">
             <div className="relative min-w-0 max-w-full shrink" ref={sortMenuRef}>
               <div className="flex min-w-0 max-w-full items-stretch">
