@@ -6,6 +6,7 @@ import {
   formatTransferValueEur,
   type RebalancingTaskRow,
 } from '../../data/mockRebalancingTasks';
+import { RebalancingWorkspaceSummaryBanner } from './RebalancingWorkspaceSummaryBanner';
 
 type RebalancingTaskListScreenProps = {
   onOpenTask: (task: RebalancingTaskRow) => void;
@@ -81,37 +82,57 @@ export function RebalancingTaskListScreen({ onOpenTask }: RebalancingTaskListScr
       className="relative left-0 mx-0 flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col gap-4 self-stretch overflow-y-auto bg-white px-6 pt-4 pb-12"
       data-rebalancing-task-list
     >
-      <div className="flex w-full min-w-0 flex-wrap items-center gap-3">
-        <div
-          className="flex min-w-0 flex-wrap items-center gap-8"
-          role="tablist"
-          aria-label="Rebalancing tasks"
-        >
-          {(
-            [
-              { id: 'ongoing' as const, label: 'Ongoing' },
-              { id: 'submitted' as const, label: 'Submitted' },
-            ] as const
-          ).map(({ id, label }) => {
-            const active = tab === id;
-            return (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setTab(id)}
-                className={`flex items-center justify-center border-b-2 px-1 py-3 text-sm transition-colors ${
-                  active
-                    ? 'border-[#2EB8C2] font-semibold text-[#00050a]'
-                    : 'border-transparent font-normal text-[#4b535c] hover:text-[#00050a]'
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
+      <div className="flex w-full min-w-0 flex-col gap-3">
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-3">
+          <div
+            className="flex min-w-0 flex-wrap items-center gap-8"
+            role="tablist"
+            aria-label="Rebalancing tasks"
+          >
+            {(
+              [
+                { id: 'ongoing' as const, label: 'Ongoing' },
+                { id: 'submitted' as const, label: 'Submitted' },
+              ] as const
+            ).map(({ id, label }) => {
+              const active = tab === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setTab(id)}
+                  className={`flex items-center justify-center border-b-2 px-1 py-3 text-sm transition-colors ${
+                    active
+                      ? 'border-[#2EB8C2] font-semibold text-[#00050a]'
+                      : 'border-transparent font-normal text-[#4b535c] hover:text-[#00050a]'
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        <RebalancingWorkspaceSummaryBanner
+          headline={tab === 'ongoing' ? 'Rebalancing: Ongoing' : 'Rebalancing: Submitted'}
+          hidePrimaryMetric
+          secondaryMetric={
+            tab === 'ongoing'
+              ? `${visibleTasks.length} rebalancings ongoing`
+              : `${visibleTasks.length} rebalancings submitted`
+          }
+          secondaryMetricTone="muted"
+          subline={tab === 'ongoing' ? 'View, edit ongoing active rebalancing.' : 'View submitted rebalances.'}
+          detailsIntroExtra={
+            tab === 'submitted'
+              ? 'View your submitted rebalancings.'
+              : 'View your ongoing rebalancings.'
+          }
+          showWorkspaceParameterDetails={false}
+        />
       </div>
 
       <div ref={searchWrapRef} className="flex w-full min-w-0 items-center justify-start">
