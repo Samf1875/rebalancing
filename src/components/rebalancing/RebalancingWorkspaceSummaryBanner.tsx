@@ -70,23 +70,12 @@ export function RebalancingWorkspaceSummaryBanner() {
         <div className="mt-4 flex flex-col border-t border-[#E3E8F0] pt-4">
           <p className="font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
             Rebalancing automatically identifies where stock is over- or under-performing and suggests transfers to
-            better match supply with demand.
+            better match supply with demand. It enables stock movement between locations and prioritizes shifting
+            inventory from low-performing locations to those with higher demand.
           </p>
 
           <div className="mt-4 flex flex-col divide-y divide-[#E3E8F0]">
-            <div className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:gap-8 sm:py-5">
-              <div className="w-full shrink-0 sm:w-fit sm:min-w-0">
-                <div className="font-['Inter',sans-serif] text-xs font-normal text-[#667085]">Mode</div>
-                <div className="mt-0.5 font-['Inter',sans-serif] text-sm font-semibold text-[#101828]">
-                  Rebalancing
-                </div>
-              </div>
-              <p className="min-w-0 flex-1 font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
-                Enables stock movement between locations. The system prioritizes shifting inventory from
-                low-performing locations to those with higher demand.
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:gap-8 sm:py-5">
+            <div className="flex flex-col gap-2 py-2.5 sm:flex-row sm:items-start sm:gap-6 sm:py-3">
               <div className="w-full shrink-0 sm:w-fit sm:min-w-0">
                 <div className="font-['Inter',sans-serif] text-xs font-normal text-[#667085]">Zero transfers</div>
                 <div className="mt-0.5 font-['Inter',sans-serif] text-sm font-semibold text-[#101828]">Enabled</div>
@@ -96,7 +85,7 @@ export function RebalancingWorkspaceSummaryBanner() {
                 lower-confidence recommendations.
               </p>
             </div>
-            <div className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:gap-8 sm:py-5">
+            <div className="flex flex-col gap-2 pt-2.5 pb-1 sm:flex-row sm:items-start sm:gap-6 sm:pt-3 sm:pb-1.5">
               <div className="w-full shrink-0 sm:w-fit sm:min-w-0">
                 <div className="font-['Inter',sans-serif] text-xs font-normal text-[#667085]">Time window</div>
                 <div className="mt-0.5 font-['Inter',sans-serif] text-sm font-semibold text-[#101828]">
@@ -110,11 +99,11 @@ export function RebalancingWorkspaceSummaryBanner() {
             </div>
           </div>
 
-          <div className="mt-4 border-t border-[#E3E8F0] pt-4">
-            <p className="font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
+          <div className="mt-2 border-t border-[#E3E8F0] pt-2">
+            <p className="font-['Inter',sans-serif] text-sm font-bold leading-relaxed text-[#475467]">
               These parameters directly influence how transfer opportunities are calculated, impacting:
             </p>
-            <ul className="mt-2 list-disc space-y-1 pl-5 font-['Inter',sans-serif] text-sm leading-relaxed text-[#475467] marker:text-[#475467]">
+            <ul className="mt-1.5 list-disc space-y-1 pl-5 font-['Inter',sans-serif] text-sm leading-relaxed text-[#475467] marker:text-[#475467]">
               <li>Number of suggested transfers</li>
               <li>Estimated revenue uplift</li>
               <li>Which products and locations are prioritized</li>

@@ -76,6 +76,46 @@ export const MOCK_REBALANCING_TASKS: RebalancingTaskRow[] = [
   },
 ];
 
+/** Submitted rebalancing tasks — same columns as ongoing, distinct list */
+export const MOCK_SUBMITTED_REBALANCING_TASKS: RebalancingTaskRow[] = [
+  {
+    id: 's1',
+    name: 'new test for',
+    createdLabel: '25/03/26',
+    creator: 'Autone',
+    uniqueTrips: 49,
+    transferUnits: 734,
+    transferValueEur: 243_800,
+  },
+  {
+    id: 's2',
+    name: 'REBAL-24/03/2026',
+    createdLabel: '24/03/26',
+    creator: 'Autone',
+    uniqueTrips: 49,
+    transferUnits: 734,
+    transferValueEur: 243_800,
+  },
+  {
+    id: 's3',
+    name: 'REBAL-24/03/26',
+    createdLabel: '24/03/26',
+    creator: 'Autone',
+    uniqueTrips: 49,
+    transferUnits: 734,
+    transferValueEur: 243_800,
+  },
+  {
+    id: 's4',
+    name: 'REBAL-24/03/26',
+    createdLabel: '24/03/26',
+    creator: 'Autone',
+    uniqueTrips: 49,
+    transferUnits: 734,
+    transferValueEur: 243_800,
+  },
+];
+
 export function formatTransferValueEur(eur: number): string {
   if (eur >= 1_000_000) return `€${(eur / 1_000_000).toFixed(1)}M`;
   if (eur >= 1_000) return `€${(eur / 1_000).toFixed(1)}K`;

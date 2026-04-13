@@ -256,7 +256,7 @@ export function LocationsTable() {
           >
             <tr className="text-[14px] font-semibold leading-normal text-[#101828] [&_th]:whitespace-nowrap [&_th]:align-middle">
               <th
-                className="sticky left-0 z-30 w-14 min-w-14 max-w-14 box-border bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                className="sticky left-0 z-30 w-14 min-w-14 max-w-14 box-border bg-white h-[62px] px-4 py-0 text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                 scope="col"
               >
                 <label className="flex cursor-pointer items-center gap-2">
@@ -271,7 +271,7 @@ export function LocationsTable() {
                 </label>
               </th>
               <th
-                className="sticky left-14 z-20 w-[180px] min-w-[180px] max-w-[180px] box-border bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                className="sticky left-14 z-20 w-[180px] min-w-[180px] max-w-[180px] box-border bg-white h-[62px] px-4 py-0 text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                 scope="col"
               >
                 <span className="inline-flex items-center gap-2">
@@ -279,37 +279,37 @@ export function LocationsTable() {
                   Location
                 </span>
               </th>
-              <th className="min-w-[120px] px-4 py-[10px] text-left" scope="col">
+              <th className="min-w-[120px] h-[62px] px-4 py-0 text-left" scope="col">
                 <GripLabel label="Transfers in" />
               </th>
-              <th className="min-w-[120px] px-4 py-[10px] text-left" scope="col">
+              <th className="min-w-[120px] h-[62px] px-4 py-0 text-left" scope="col">
                 <GripLabel label="Transfers out" />
               </th>
-              <th className="min-w-[140px] px-4 py-[10px] text-right" scope="col">
+              <th className="min-w-[140px] h-[62px] px-4 py-0 text-right" scope="col">
                 <GripLabel label="Revenue increase" info sort align="right" />
               </th>
-              <th className="min-w-[220px] px-4 py-[10px] text-left" scope="col">
+              <th className="min-w-[220px] h-[62px] px-4 py-0 text-left" scope="col">
                 <GripLabel label="Recommended transfers in" info />
               </th>
-              <th className="min-w-[120px] px-4 py-[10px] text-right" scope="col">
+              <th className="min-w-[120px] h-[62px] px-4 py-0 text-right" scope="col">
                 <GripLabel label="Recommended transfers out" align="right" />
               </th>
-              <th className="min-w-[100px] px-4 py-[10px] text-right" scope="col">
+              <th className="min-w-[100px] h-[62px] px-4 py-0 text-right" scope="col">
                 <GripLabel label="Sales" align="right" />
               </th>
-              <th className="min-w-[120px] px-4 py-[10px] text-right" scope="col">
+              <th className="min-w-[120px] h-[62px] px-4 py-0 text-right" scope="col">
                 <GripLabel label="Forecast per wk." info align="right" />
               </th>
-              <th className="min-w-[120px] px-4 py-[10px] text-right" scope="col">
+              <th className="min-w-[120px] h-[62px] px-4 py-0 text-right" scope="col">
                 <GripLabel label="Stockouts" align="right" />
               </th>
-              <th className="min-w-[120px] px-4 py-[10px] text-right" scope="col">
+              <th className="min-w-[120px] h-[62px] px-4 py-0 text-right" scope="col">
                 <GripLabel label="Overstocks" info align="right" />
               </th>
-              <th className="min-w-[120px] px-4 py-[10px] text-right" scope="col">
+              <th className="min-w-[120px] h-[62px] px-4 py-0 text-right" scope="col">
                 <GripLabel label="Understocks" info align="right" />
               </th>
-              <th className="min-w-[100px] px-4 py-[10px] text-right" scope="col">
+              <th className="min-w-[100px] h-[62px] px-4 py-0 text-right" scope="col">
                 <GripLabel label="Depth" info align="right" />
               </th>
             </tr>

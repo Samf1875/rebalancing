@@ -1,8 +1,8 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { GripVertical, MoreVertical } from 'lucide-react';
-import { AutoneSearchIcon } from '../icons/AutoneSearchIcon';
+import { GripVertical, MoreVertical, Search } from 'lucide-react';
 import {
   MOCK_REBALANCING_TASKS,
+  MOCK_SUBMITTED_REBALANCING_TASKS,
   formatTransferValueEur,
   type RebalancingTaskRow,
 } from '../../data/mockRebalancingTasks';
@@ -42,7 +42,7 @@ export function RebalancingTaskListScreen({ onOpenTask }: RebalancingTaskListScr
   const searchWrapRef = useRef<HTMLDivElement>(null);
 
   const visibleTasks = useMemo(() => {
-    const list = tab === 'ongoing' ? MOCK_REBALANCING_TASKS : [];
+    const list = tab === 'ongoing' ? MOCK_REBALANCING_TASKS : MOCK_SUBMITTED_REBALANCING_TASKS;
     const q = searchQuery.trim().toLowerCase();
     if (!q) return list;
     return list.filter((task) => {
@@ -81,7 +81,7 @@ export function RebalancingTaskListScreen({ onOpenTask }: RebalancingTaskListScr
       className="relative left-0 mx-0 flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col gap-4 self-stretch overflow-y-auto bg-white px-6 pt-4 pb-12"
       data-rebalancing-task-list
     >
-      <div className="flex w-full min-w-0 flex-wrap items-center gap-3 border-b border-[#e9eaeb] pb-4">
+      <div className="flex w-full min-w-0 flex-wrap items-center gap-3">
         <div
           className="flex min-w-0 flex-wrap items-center gap-8"
           role="tablist"
@@ -103,7 +103,7 @@ export function RebalancingTaskListScreen({ onOpenTask }: RebalancingTaskListScr
                 onClick={() => setTab(id)}
                 className={`flex items-center justify-center border-b-2 px-1 py-3 text-sm transition-colors ${
                   active
-                    ? 'border-[#0267FF] font-semibold text-[#00050a]'
+                    ? 'border-[#2EB8C2] font-semibold text-[#00050a]'
                     : 'border-transparent font-normal text-[#4b535c] hover:text-[#00050a]'
                 }`}
               >
@@ -123,17 +123,15 @@ export function RebalancingTaskListScreen({ onOpenTask }: RebalancingTaskListScr
             aria-expanded={false}
             onClick={() => setSearchOpen(true)}
           >
-            <span className="text-[18px] leading-none text-[#22272F]">
-              <AutoneSearchIcon className="!text-[18px]" />
-            </span>
+            <Search size={16} strokeWidth={1.75} className="text-[#101828]" aria-hidden />
           </button>
         ) : (
           <div
             className="flex h-12 w-[150px] min-w-0 shrink-0 items-center gap-2.5 rounded-[4px] border border-[#E3E8F0] bg-white px-3 py-0"
             role="search"
           >
-            <span className="pointer-events-none flex shrink-0 text-[18px] leading-none text-[#22272F]" aria-hidden>
-              <AutoneSearchIcon className="!text-[18px]" />
+            <span className="pointer-events-none flex shrink-0 text-[#101828]" aria-hidden>
+              <Search size={16} strokeWidth={1.75} />
             </span>
             <input
               ref={searchInputRef}
@@ -213,10 +211,10 @@ export function RebalancingTaskListScreen({ onOpenTask }: RebalancingTaskListScr
                 </td>
               </tr>
             ))}
-            {tab === 'submitted' && (
+            {visibleTasks.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-12 text-center font-['Inter',sans-serif] text-sm text-[#6B7280]">
-                  No submitted rebalancings yet.
+                  {tab === 'ongoing' ? 'No ongoing rebalancings.' : 'No submitted rebalancings yet.'}
                 </td>
               </tr>
             )}
