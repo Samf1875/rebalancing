@@ -1,3 +1,6 @@
+/** Purple “warehouse / box” vs blue “transfer / truck” chips in the TU column (design mock). */
+export type TuBreakdownItem = { kind: 'warehouse' | 'transfer'; count: number };
+
 /** Location-level transfer rows for the product drill-down “Transfers” table (per design mock). */
 export type ProductTransferLocationRow = {
   id: string;
@@ -9,6 +12,8 @@ export type ProductTransferLocationRow = {
   locationFilter?: boolean;
   stock: { from: number; to: number };
   tu: { from: number; to: number };
+  /** Shown when the TU header pencil toggles breakdown on */
+  tuBreakdown?: TuBreakdownItem[];
   sales: { l7d: number; l30d: number };
   forecastPerWeek: number;
   stockouts: { from: number; to: number };
@@ -38,7 +43,8 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     name: 'Lulli Eshop',
     code: '610',
     stock: { from: 9, to: 9 },
-    tu: { from: 0, to: 0 },
+    tu: { from: 9, to: 9 },
+    tuBreakdown: [{ kind: 'warehouse', count: 9 }],
     sales: { l7d: 1, l30d: 3 },
     forecastPerWeek: 0.77,
     stockouts: { from: 0, to: 0 },
@@ -51,7 +57,12 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     transferHub: true,
     locationFilter: true,
     stock: { from: 2, to: 5 },
-    tu: { from: 1, to: 3 },
+    tu: { from: 2, to: 5 },
+    tuBreakdown: [
+      { kind: 'warehouse', count: 2 },
+      { kind: 'transfer', count: 2 },
+      { kind: 'transfer', count: 1 },
+    ],
     sales: { l7d: 0, l30d: 1 },
     forecastPerWeek: 0.9,
     stockouts: { from: 1, to: 0 },
@@ -63,7 +74,11 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     code: '644',
     transferHub: true,
     stock: { from: 1, to: 3 },
-    tu: { from: 0, to: 2 },
+    tu: { from: 1, to: 3 },
+    tuBreakdown: [
+      { kind: 'transfer', count: 1 },
+      { kind: 'transfer', count: 1 },
+    ],
     sales: { l7d: 0, l30d: 0 },
     forecastPerWeek: 0.24,
     stockouts: { from: 2, to: 1 },
@@ -74,7 +89,11 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     name: 'SU PP Vieille du templ...',
     code: '003',
     stock: { from: 0, to: 0 },
-    tu: { from: 0, to: 0 },
+    tu: { from: 1, to: 2 },
+    tuBreakdown: [
+      { kind: 'warehouse', count: 1 },
+      { kind: 'transfer', count: 1 },
+    ],
     sales: { l7d: 0, l30d: 0 },
     forecastPerWeek: 0.12,
     stockouts: { from: 4, to: 6 },
