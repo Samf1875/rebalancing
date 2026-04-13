@@ -18,8 +18,9 @@ const SIDEBAR_COLLAPSED_WIDTH = 72;
 const EDGE_TOGGLE_PX = 40;
 /** Collapsed rail: past centered `size-10` logo (≈16–56px) so the toggle does not overlap. */
 const EDGE_TOGGLE_LEFT_COLLAPSED = 56;
+/** User avatar — Figma NEW Autone DS 2.0 Sidebar expanded (12299:63282 → Avatar image) */
 const USER_AVATAR_SRC =
-  'https://www.figma.com/api/mcp/asset/3c4254ce-40aa-4ed2-af75-f53137e845d4';
+  'https://www.figma.com/api/mcp/asset/1219bd98-c11e-416a-b2e3-9f49046e360c';
 /** UK flag — Sidebar element Icon=uk (Figma 12349:171770 → 10027:30853) */
 const UK_FLAG_SRC =
   'https://www.figma.com/api/mcp/asset/6556f56e-8904-422b-8817-09a712cea858';
@@ -33,6 +34,31 @@ const SIDEBAR_CURRENCY_ICON_ELLIPSE =
   'https://www.figma.com/api/mcp/asset/816d86d5-bbf1-4b47-bfcb-b7f610c0bbc1';
 
 const SIDEBAR_INACTIVE_ICON = 'text-[#9AA4B2]';
+
+/** Avatar stack: Avatar → Container → Image (40px pill), Figma 12299:63282 */
+function SidebarUserAvatarImage({ alt }: { alt: string }) {
+  return (
+    <div className="flex shrink-0 items-center rounded-full" data-name="Avatar" data-node-id="12206:42130">
+      <div
+        className="flex shrink-0 items-center justify-center rounded-full"
+        data-name="Container"
+        data-node-id="I12206:42130;12134:33221"
+      >
+        <div
+          className="relative size-10 shrink-0 overflow-hidden rounded-full"
+          data-name="Image"
+          data-node-id="I12206:42130;12134:33222"
+        >
+          <img
+            src={USER_AVATAR_SRC}
+            alt={alt}
+            className="pointer-events-none absolute inset-0 size-full max-w-none rounded-full object-cover"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
 /** Chat/Currency imgs: default white glyph; `group-hover` → ~#0267FF like `text-inherit` nav icons. */
 const SIDEBAR_RASTER_ICON_HOVER =
   'brightness-0 invert transition-[filter] duration-200 ease-out group-hover:[filter:brightness(0)_saturate(100%)_invert(27%)_sepia(100%)_saturate(7499%)_hue-rotate(208deg)_brightness(101%)_contrast(101%)]';
@@ -906,36 +932,30 @@ export function Sidebar({
         {expanded ? (
           <button
             type="button"
-            className="flex h-auto w-full min-h-10 items-center gap-2 rounded-lg py-1 pr-4 text-left shadow-[0px_8px_25px_0px_rgba(0,0,0,0.03)] transition-colors hover:bg-white/[0.06]"
+            className="flex h-10 min-h-10 w-full shrink-0 items-center gap-2 rounded-lg py-0 pl-0 pr-4 text-left shadow-[0px_8px_25px_0px_rgba(0,0,0,0.03)] transition-colors hover:bg-white/[0.06]"
             data-name="user-avatar"
             data-node-id="12212:42592"
           >
-            <div className="relative size-10 shrink-0 overflow-hidden rounded-full">
-              <img
-                src={USER_AVATAR_SRC}
-                alt=""
-                className="pointer-events-none absolute inset-0 size-full max-w-none rounded-full object-cover"
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-base font-medium leading-tight text-white">Charles Morenno</p>
-              <p className="mt-0.5 truncate text-[10px] leading-tight text-[#878d94]">charlesmorenno@gmail.com</p>
+            <div className="flex min-w-0 min-h-0 flex-1 items-center gap-2">
+              <SidebarUserAvatarImage alt="" />
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <p className="truncate font-['Inter',sans-serif] text-base font-medium leading-normal text-white">
+                  Charles Morenno
+                </p>
+                <p className="truncate font-['Inter',sans-serif] text-[10px] font-normal leading-normal text-[#878d94]">
+                  charlesmorenno@gmail.com
+                </p>
+              </div>
             </div>
             <ChevronRight size={20} strokeWidth={1.5} className="shrink-0 text-[#9AA4B2]" aria-hidden />
           </button>
         ) : (
           <div
-            className="flex shrink-0 items-center justify-center rounded-lg shadow-[0px_20px_40px_0px_rgba(145,158,171,0.12)]"
+            className="flex shrink-0 items-center justify-center rounded-lg p-0 shadow-[0px_20px_40px_0px_rgba(145,158,171,0.12)]"
             data-name="user-avatar"
             data-node-id="12203:35406"
           >
-            <div className="relative size-10 shrink-0 overflow-hidden rounded-full">
-              <img
-                src={USER_AVATAR_SRC}
-                alt="User avatar"
-                className="pointer-events-none absolute inset-0 size-full max-w-none rounded-full object-cover"
-              />
-            </div>
+            <SidebarUserAvatarImage alt="User avatar" />
           </div>
         )}
       </div>

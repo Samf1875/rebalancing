@@ -333,8 +333,8 @@ export function AssortmentTable({
                       ? {
                           footer: {
                             kind: 'transferTotals' as const,
-                            unitsLine: `${agg.transfersL7d.toLocaleString()} units`,
-                            tripsLine: `${agg.transfersTrips} trips`,
+                            unitsLine: `Total transfer units - ${agg.transfersL7d.toLocaleString()}`,
+                            tripsLine: `Total trips - ${agg.transfersTrips}`,
                           },
                         }
                       : {}),
@@ -342,12 +342,6 @@ export function AssortmentTable({
                   hoverWith={<span>Transfers</span>}
                 />
               </span>
-              {agg ? (
-                <HeaderColumnSummary
-                  primary={<span>{agg.transfersL7d.toLocaleString()} units</span>}
-                  secondary={<span>{agg.transfersTrips} trips</span>}
-                />
-              ) : null}
             </div>
           </th>
         );
