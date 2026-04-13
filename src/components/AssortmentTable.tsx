@@ -874,6 +874,7 @@ export function AssortmentTable({
                     <AutoneHeaderInfoTooltip
                       label="Product details"
                       rich={ASSORTMENT_HEADER_RICH.productDetails}
+                      richBubbleMaxWidthClass="max-w-[min(18rem,calc(100vw-24px))]"
                       hoverWith={<span>Product details</span>}
                     />
                   </div>

@@ -21,12 +21,15 @@ const tableRowHoverTd = '';
 
 const theadBg = 'bg-white';
 const stickyColShadow = 'shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]';
+/** Match Locations / Assortment header band. */
+const tripThRowH = 'h-[62px] min-h-[62px] max-h-[62px]';
+const tripThCell = `${tripThRowH} box-border align-middle`;
 /** After checkbox (`left-14` = 3.5rem). */
 const tripLocCol =
   'w-[200px] min-w-[200px] max-w-[200px] box-border';
-const stickySendingTh = `sticky left-14 z-20 ${tripLocCol} ${theadBg} text-left ${stickyColShadow}`;
+const stickySendingTh = `sticky left-14 z-20 ${tripLocCol} ${theadBg} text-left ${tripThCell} ${stickyColShadow}`;
 const stickySendingTd = `sticky left-14 z-20 ${tripLocCol} bg-white ${stickyColShadow}`;
-const stickyReceivingTh = `sticky left-[calc(3.5rem+200px)] z-[15] ${tripLocCol} ${theadBg} text-left ${stickyColShadow}`;
+const stickyReceivingTh = `sticky left-[calc(3.5rem+200px)] z-[15] ${tripLocCol} ${theadBg} text-left ${tripThCell} ${stickyColShadow}`;
 const stickyReceivingTd = `sticky left-[calc(3.5rem+200px)] z-[15] ${tripLocCol} bg-white ${stickyColShadow}`;
 /** Label row typography — grip wrapper uses the same so `1lh` matches the text span. */
 const tripThLabelRowEnd =
@@ -167,9 +170,11 @@ export function TripsTable() {
           <thead
             className={`[&_th]:border-t-0 [&_th]:border-b-[0.5px] [&_th]:border-solid [&_th]:border-[#E3E8F0] [&_th]:font-['Inter',sans-serif] ${theadBg}`}
           >
-            <tr className="text-[14px] font-semibold leading-normal text-[#101828] [&_th]:align-top [&_th]:py-[10px] [&_th]:px-4">
+            <tr
+              className={`${tripThRowH} text-[14px] font-semibold leading-normal text-[#101828] [&_th]:whitespace-nowrap [&_th]:align-middle [&_th]:py-0 [&_th]:px-4`}
+            >
               <th
-                className={`sticky left-0 z-30 w-14 min-w-14 max-w-14 box-border ${theadBg} text-left ${stickyColShadow}`}
+                className={`sticky left-0 z-30 w-14 min-w-14 max-w-14 ${tripThCell} ${theadBg} text-left ${stickyColShadow}`}
                 scope="col"
               >
                 <label className="flex cursor-pointer items-center gap-2">
@@ -189,50 +194,67 @@ export function TripsTable() {
               <th className={stickyReceivingTh} scope="col">
                 Receiving location
               </th>
-              <th className={`min-w-[140px] text-right ${theadBg}`} scope="col">
-                <div className="flex flex-col items-end gap-1">
-                  <span className={tripThLabelRowEnd}>
-                    <TripColumnGrip />
-                    <span>Transfers</span>
-                  </span>
-                  <span className="tabular-nums text-[14px] font-semibold leading-normal text-[#101828]">
-                    {TRIPS_HEADER_SUMMARY.transfersUnits.toLocaleString('en-US')} units
-                  </span>
-                </div>
+              <th className={`min-w-[140px] text-right ${tripThCell} ${theadBg}`} scope="col">
+                <span className={tripThLabelRowEnd}>
+                  <TripColumnGrip />
+                  <AutoneHeaderInfoTooltip
+                    label="Transfers"
+                    rich={{
+                      title: 'Transfers',
+                      icon: 'info',
+                      body: HEADER_INFO_TOOLTIPS.tripsTransfers,
+                      footer: {
+                        kind: 'footerCaption' as const,
+                        text: `${TRIPS_HEADER_SUMMARY.transfersUnits.toLocaleString('en-US')} units`,
+                      },
+                    }}
+                    richBubbleMaxWidthClass="max-w-[min(20rem,calc(100vw-24px))]"
+                    hoverWith={<span>Transfers</span>}
+                    side="top"
+                  />
+                </span>
               </th>
-              <th className={`min-w-[160px] text-right ${theadBg}`} scope="col">
-                <div className="flex flex-col items-end gap-1">
-                  <span className={tripThLabelRowEnd}>
-                    <TripColumnGrip />
-                    <span>Revenue increase</span>
-                    <AutoneHeaderInfoTooltip
-                      label="Revenue increase"
-                      content={HEADER_INFO_TOOLTIPS.revenueIncrease}
-                    />
-                    <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
-                  </span>
-                  <span className="tabular-nums text-[14px] font-semibold leading-normal text-[#101828]">
-                    {formatEurK(TRIPS_HEADER_SUMMARY.revenueEur)}
-                  </span>
-                </div>
+              <th className={`min-w-[160px] text-right ${tripThCell} ${theadBg}`} scope="col">
+                <span className={tripThLabelRowEnd}>
+                  <TripColumnGrip />
+                  <AutoneHeaderInfoTooltip
+                    label="Revenue increase"
+                    rich={{
+                      title: 'Revenue increase',
+                      icon: 'info',
+                      body: HEADER_INFO_TOOLTIPS.revenueIncrease,
+                      footer: {
+                        kind: 'footerCaption' as const,
+                        text: formatEurK(TRIPS_HEADER_SUMMARY.revenueEur),
+                      },
+                    }}
+                    hoverWith={<span>Revenue increase</span>}
+                    side="top"
+                  />
+                  <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
+                </span>
               </th>
-              <th className={`min-w-[260px] text-right ${theadBg}`} scope="col">
-                <div className="flex flex-col items-end gap-1">
-                  <span className={tripThLabelRowEnd}>
-                    <TripColumnGrip />
-                    <span>Recommended transfers</span>
-                    <AutoneHeaderInfoTooltip
-                      label="Recommended transfers"
-                      content={HEADER_INFO_TOOLTIPS.recommendedTransfers}
-                    />
-                    <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
-                  </span>
-                  <span className="tabular-nums text-[14px] font-semibold leading-normal text-[#101828]">
-                    {TRIPS_HEADER_SUMMARY.recommendedUnits.toLocaleString('en-US')} units
-                  </span>
-                </div>
+              <th className={`min-w-[260px] text-right ${tripThCell} ${theadBg}`} scope="col">
+                <span className={tripThLabelRowEnd}>
+                  <TripColumnGrip />
+                  <AutoneHeaderInfoTooltip
+                    label="Recommended transfers"
+                    rich={{
+                      title: 'Recommended transfers',
+                      icon: 'info',
+                      body: HEADER_INFO_TOOLTIPS.tripsRecommendedTransfers,
+                      footer: {
+                        kind: 'footerCaption' as const,
+                        text: `${TRIPS_HEADER_SUMMARY.recommendedUnits.toLocaleString('en-US')} units`,
+                      },
+                    }}
+                    hoverWith={<span>Recommended transfers</span>}
+                    side="top"
+                  />
+                  <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
+                </span>
               </th>
-              <th className={`min-w-[120px] text-center ${theadBg}`} scope="col">
+              <th className={`min-w-[120px] text-center ${tripThCell} ${theadBg}`} scope="col">
                 <span className={tripThLabelRowCenter}>
                   <TripColumnGrip />
                   <span>Products</span>

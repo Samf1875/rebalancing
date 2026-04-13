@@ -62,25 +62,29 @@ export function RebalancingWorkspaceSummaryBanner({
           >
             <RefreshCw size={20} strokeWidth={2} />
           </div>
-          <div className="min-w-0 flex-1 flex flex-col gap-1">
-            <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 font-['Inter',sans-serif] text-sm leading-snug text-[#101828]">
-              <span className="font-semibold">{headline}</span>
-              {hidePrimaryMetric ? null : (
-                <>
-                  <span className="text-[#D0D5DD]" aria-hidden>
-                    |
-                  </span>
-                  <span className={metricToneClass[primaryMetricTone]}>{primaryMetric}</span>
-                </>
-              )}
-              <span className="text-[#D0D5DD]" aria-hidden>
-                |
-              </span>
-              <span className={metricToneClass[secondaryMetricTone]}>{secondaryMetric}</span>
-            </p>
-            <p className="font-['Inter',sans-serif] text-xs font-normal leading-normal text-[#98A2B3]">
-              {subline}
-            </p>
+          <div className="min-w-0 flex-1 grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-x-8 md:gap-y-1 md:items-start">
+            <div className="min-w-0 max-w-prose md:max-w-none">
+              <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 font-['Inter',sans-serif] text-sm leading-snug text-[#101828]">
+                <span className="font-semibold">{headline}</span>
+                {hidePrimaryMetric ? null : (
+                  <>
+                    <span className="text-[#D0D5DD]" aria-hidden>
+                      |
+                    </span>
+                    <span className={metricToneClass[primaryMetricTone]}>{primaryMetric}</span>
+                  </>
+                )}
+                <span className="text-[#D0D5DD]" aria-hidden>
+                  |
+                </span>
+                <span className={metricToneClass[secondaryMetricTone]}>{secondaryMetric}</span>
+              </p>
+            </div>
+            <div className="min-w-0 max-w-prose md:max-w-none">
+              <p className="font-['Inter',sans-serif] text-xs font-normal leading-relaxed text-[#98A2B3]">
+                {subline}
+              </p>
+            </div>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2 self-start sm:mt-0.5">
@@ -109,25 +113,29 @@ export function RebalancingWorkspaceSummaryBanner({
       </div>
 
       {detailsOpen ? (
-        <div className="mt-4 flex flex-col border-t border-[#E3E8F0] pt-4">
-          {detailsIntroExtra ? (
-            <p className="font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
-              {detailsIntroExtra}
-            </p>
-          ) : null}
-          <p
-            className={`font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467] ${
-              detailsIntroExtra ? 'mt-3' : ''
+        <div className="mt-4 border-t border-[#E3E8F0] pt-4">
+          <div
+            className={`grid min-w-0 grid-cols-1 gap-6 lg:gap-y-6 ${
+              showWorkspaceParameterDetails
+                ? 'lg:grid-cols-2 lg:gap-x-10'
+                : 'mx-auto w-full max-w-3xl lg:gap-x-0'
             }`}
           >
-            Rebalancing automatically identifies where inventory is out of line with demand and suggests transfers to
-            better match supply with demand. It enables stock movement between locations and prioritizes shifting
-            inventory from low-performing locations to those with higher demand.
-          </p>
+            <div className="min-w-0 space-y-3 max-w-prose md:max-w-none">
+              {detailsIntroExtra ? (
+                <p className="font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
+                  {detailsIntroExtra}
+                </p>
+              ) : null}
+              <p className="font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
+                Rebalancing automatically identifies where inventory is out of line with demand and suggests transfers
+                to better match supply with demand. It enables stock movement between locations and prioritizes shifting
+                inventory from low-performing locations to those with higher demand.
+              </p>
+            </div>
 
-          {showWorkspaceParameterDetails ? (
-            <>
-              <div className="mt-4 flex flex-col divide-y divide-[#E3E8F0]">
+            {showWorkspaceParameterDetails ? (
+              <div className="min-w-0 flex flex-col divide-y divide-[#E3E8F0] lg:pt-0">
                 <div className="flex flex-col gap-2 py-2.5 sm:flex-row sm:items-start sm:gap-6 sm:py-3">
                   <div className="w-full shrink-0 sm:w-fit sm:min-w-0">
                     <div className="font-['Inter',sans-serif] text-xs font-normal text-[#667085]">Zero transfers</div>
@@ -153,19 +161,23 @@ export function RebalancingWorkspaceSummaryBanner({
                   </p>
                 </div>
               </div>
+            ) : null}
 
-              <div className="mt-2 border-t border-[#E3E8F0] pt-2">
-                <p className="font-['Inter',sans-serif] text-sm font-bold leading-relaxed text-[#475467]">
-                  These parameters directly influence how transfer opportunities are calculated, impacting:
-                </p>
-                <ul className="mt-1.5 list-disc space-y-1 pl-5 font-['Inter',sans-serif] text-sm leading-relaxed text-[#475467] marker:text-[#475467]">
-                  <li>Number of suggested transfers</li>
-                  <li>Estimated revenue uplift</li>
-                  <li>Which products and locations are prioritized</li>
-                </ul>
+            {showWorkspaceParameterDetails ? (
+              <div className="min-w-0 border-t border-[#E3E8F0] pt-4 lg:col-span-2">
+                <div className="max-w-3xl">
+                  <p className="font-['Inter',sans-serif] text-sm font-bold leading-relaxed text-[#475467]">
+                    These parameters directly influence how transfer opportunities are calculated, impacting:
+                  </p>
+                  <ul className="mt-1.5 list-disc space-y-1 pl-5 font-['Inter',sans-serif] text-sm leading-relaxed text-[#475467] marker:text-[#475467]">
+                    <li>Number of suggested transfers</li>
+                    <li>Estimated revenue uplift</li>
+                    <li>Which products and locations are prioritized</li>
+                  </ul>
+                </div>
               </div>
-            </>
-          ) : null}
+            ) : null}
+          </div>
         </div>
       ) : null}
     </div>

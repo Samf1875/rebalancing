@@ -23,4 +23,8 @@ export const HEADER_INFO_TOOLTIPS = {
     'The average number of units per product, before & after transfers.',
   warehouseUnits:
     'The total number of units across your warehouses, before & after transfers.',
+  tripsTransfers:
+    'Total units moving on the proposed trips in this view. Each row shows the transfer size for that route.',
+  tripsRecommendedTransfers:
+    'Total recommended transfer units across the trips in this view. Per-trip values appear in each row.',
 } as const;
