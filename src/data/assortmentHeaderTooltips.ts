@@ -30,15 +30,13 @@ export const ASSORTMENT_HEADER_RICH: {
     },
   },
   recommendedTransfers: {
-    title: 'AI-suggested transfers',
+    title: 'AI suggested recommended transfers',
     icon: 'lightbulb',
     body: 'Based on demand, stock levels, and sales trends. Move units here to balance stock and maximize revenue.',
-    footer: { kind: 'highlight', text: 'Highlighted rows show high-impact moves' },
   },
   salesL7dL30d: {
     title: 'Sales (L7D / L30D)',
     icon: 'info',
     body: 'Units sold in the last 7 / 30 days. Helps gauge product demand in each location.',
-    footer: { kind: 'salesMetrics', l7d: '4,944', l30d: '20,370' },
   },
 };

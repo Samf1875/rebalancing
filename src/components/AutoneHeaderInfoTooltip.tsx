@@ -15,6 +15,8 @@ import { CheckCircle2, Info, Lightbulb, LineChart, Zap } from 'lucide-react';
 const TOOLTIP_BG = '#000000';
 /** Rich explainers — aligned with rebalancing onboarding panels */
 const RICH_TOOLTIP_BG = '#12171E';
+/** Figma `5478:57392` — light DS tooltip (white panel, foreground #00050a) */
+const RICH_TOOLTIP_BG_LIGHT = '#FFFFFF';
 
 const VIEWPORT_PAD = 12;
 
@@ -24,7 +26,8 @@ export type HeaderTooltipRichFooter =
   | { kind: 'impact'; badge: string; sublabel: string; prefix?: string }
   | { kind: 'highlight'; text: string }
   | { kind: 'salesMetrics'; l7d: string; l30d: string }
-  | { kind: 'transferTotals'; unitsLine: string; tripsLine: string };
+  | { kind: 'transferTotals'; unitsLine: string; tripsLine: string }
+  | { kind: 'footerCaption'; text: string };
 
 export type HeaderTooltipRich = {
   title: string;
@@ -49,6 +52,15 @@ type BaseProps = {
    * Omit to keep a compact info-only trigger.
    */
   hoverWith?: ReactNode;
+  /**
+   * Rich mode only: replaces the default `max-w-[min(22rem,...)]` on the bubble
+   * (e.g. `max-w-[min(32rem,calc(100vw-24px))]` for a wider panel).
+   */
+  richBubbleMaxWidthClass?: string;
+  /**
+   * Rich mode only: `light` matches Figma `5478:57392` (white panel, 16px padding, 8px gap, 4px radius).
+   */
+  richAppearance?: 'dark' | 'light';
 };
 
 type SimpleMode = BaseProps & {
@@ -64,9 +76,25 @@ type RichMode = BaseProps & {
 
 export type AutoneHeaderInfoTooltipProps = SimpleMode | RichMode;
 
-function TitleIcon({ kind }: { kind: HeaderTooltipRich['icon'] }) {
+function TitleIcon({
+  kind,
+  appearance = 'dark',
+}: {
+  kind: HeaderTooltipRich['icon'];
+  appearance?: 'dark' | 'light';
+}) {
   const wrap =
     'flex h-7 w-7 shrink-0 items-center justify-center rounded-full [&_svg]:shrink-0';
+  if (appearance === 'light' && kind === 'info') {
+    return (
+      <span
+        className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-[#E3E8F0] bg-white text-[#101828] [&_svg]:shrink-0"
+        aria-hidden
+      >
+        <Info size={14} strokeWidth={2} />
+      </span>
+    );
+  }
   switch (kind) {
     case 'info':
       return (
@@ -97,45 +125,73 @@ function TitleIcon({ kind }: { kind: HeaderTooltipRich['icon'] }) {
   }
 }
 
-function RichFooter({ footer }: { footer: HeaderTooltipRichFooter }) {
+function RichFooter({
+  footer,
+  appearance = 'dark',
+}: {
+  footer: HeaderTooltipRichFooter;
+  appearance?: 'dark' | 'light';
+}) {
+  const L = appearance === 'light';
   if (footer.kind === 'impact') {
     return (
       <div className="flex flex-wrap items-center gap-2 font-['Inter',sans-serif] text-xs">
         {footer.prefix != null && footer.prefix !== '' ? (
-          <span className="text-emerald-100/90">{footer.prefix}</span>
+          <span className={L ? 'text-emerald-800' : 'text-emerald-100/90'}>{footer.prefix}</span>
         ) : null}
-        <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 font-semibold tabular-nums text-emerald-200">
+        <span
+          className={
+            L
+              ? 'rounded-full bg-emerald-500/15 px-2 py-0.5 font-semibold tabular-nums text-emerald-800'
+              : 'rounded-full bg-emerald-500/20 px-2 py-0.5 font-semibold tabular-nums text-emerald-200'
+          }
+        >
           {footer.badge}
         </span>
-        <span className="text-emerald-100/90">{footer.sublabel}</span>
+        <span className={L ? 'text-emerald-800' : 'text-emerald-100/90'}>{footer.sublabel}</span>
       </div>
     );
   }
   if (footer.kind === 'highlight') {
     return (
-      <div className="flex items-start gap-2 font-['Inter',sans-serif] text-xs text-amber-100/95">
-        <Zap size={14} className="mt-0.5 shrink-0 text-amber-400" aria-hidden />
+      <div
+        className={`flex items-start gap-2 font-['Inter',sans-serif] text-xs ${L ? 'text-amber-900' : 'text-amber-100/95'}`}
+      >
+        <Zap size={14} className={`mt-0.5 shrink-0 ${L ? 'text-amber-600' : 'text-amber-400'}`} aria-hidden />
         <span>{footer.text}</span>
       </div>
     );
   }
   if (footer.kind === 'transferTotals') {
     return (
-      <div className="flex flex-col gap-0.5 font-['Inter',sans-serif] text-xs tabular-nums">
-        <span className="font-semibold leading-snug text-white">{footer.unitsLine}</span>
-        <span className="font-normal leading-snug text-[#9AA4B2]">{footer.tripsLine}</span>
+      <div
+        className={`flex flex-col gap-0.5 font-['Inter',sans-serif] text-xs tabular-nums ${L ? 'text-[#101828]' : 'text-white'}`}
+      >
+        <span className="font-semibold leading-snug">{footer.unitsLine}</span>
+        <span className={`font-normal leading-snug ${L ? 'text-[#6A7282]' : 'text-white'}`}>{footer.tripsLine}</span>
       </div>
     );
   }
+  if (footer.kind === 'footerCaption') {
+    return (
+      <p
+        className={`font-['Inter',sans-serif] text-sm font-semibold tabular-nums leading-snug ${L ? 'text-[#101828]' : 'text-white'}`}
+      >
+        {footer.text}
+      </p>
+    );
+  }
   return (
-    <div className="flex flex-wrap items-center gap-6 font-['Inter',sans-serif] text-xs tabular-nums text-[#c9d1d9]">
+    <div
+      className={`flex flex-wrap items-center gap-6 font-['Inter',sans-serif] text-xs tabular-nums ${L ? 'text-[#6A7282]' : 'text-[#c9d1d9]'}`}
+    >
       <div className="flex flex-col gap-0.5">
-        <span className="font-semibold text-white">{footer.l7d}</span>
-        <span className="text-[#9AA4B2]">L7D</span>
+        <span className={`font-semibold ${L ? 'text-[#101828]' : 'text-white'}`}>{footer.l7d}</span>
+        <span className={L ? 'text-[#6A7282]' : 'text-[#9AA4B2]'}>L7D</span>
       </div>
       <div className="flex flex-col gap-0.5">
-        <span className="font-semibold text-white">{footer.l30d}</span>
-        <span className="text-[#9AA4B2]">L30D</span>
+        <span className={`font-semibold ${L ? 'text-[#101828]' : 'text-white'}`}>{footer.l30d}</span>
+        <span className={L ? 'text-[#6A7282]' : 'text-[#9AA4B2]'}>L30D</span>
       </div>
     </div>
   );
@@ -152,13 +208,20 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
     iconSize = 14,
     side = 'top',
     hoverWith,
+    richBubbleMaxWidthClass,
+    richAppearance = 'dark',
   } = props;
 
   const isRich = 'rich' in props && props.rich != null;
   const rich = isRich ? props.rich : undefined;
   const content = !isRich ? props.content : '';
 
-  const bubbleBg = isRich ? RICH_TOOLTIP_BG : TOOLTIP_BG;
+  const isLightRich = isRich && richAppearance === 'light';
+  const bubbleBg = !isRich
+    ? TOOLTIP_BG
+    : isLightRich
+      ? RICH_TOOLTIP_BG_LIGHT
+      : RICH_TOOLTIP_BG;
 
   const [visible, setVisible] = useState(false);
   const [rect, setRect] = useState<DOMRect | null>(null);
@@ -181,7 +244,7 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
   }, []);
 
   const layoutKey = isRich
-    ? `${rich?.title}\n${rich?.body}\n${JSON.stringify(rich?.footer)}`
+    ? `${rich?.title}\n${rich?.body}\n${JSON.stringify(rich?.footer)}\n${richBubbleMaxWidthClass ?? ''}\n${richAppearance}`
     : content;
 
   useLayoutEffect(() => {
@@ -230,23 +293,36 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
     return () => document.removeEventListener('keydown', onKey);
   }, [visible, hide]);
 
+  const richBubbleMaxW =
+    richBubbleMaxWidthClass ?? 'max-w-[min(22rem,calc(100vw-24px))]';
+
   const richBubble = rich ? (
     <div
-      className="flex min-w-0 max-w-[min(22rem,calc(100vw-24px))] flex-col gap-3 rounded-lg border border-[#2a3340] px-4 py-3 text-left shadow-[0_8px_24px_-4px_rgba(15,23,42,0.55)]"
+      className={
+        isLightRich
+          ? `flex min-w-0 ${richBubbleMaxW} flex-col gap-2 rounded border border-[#E3E8F0] p-4 text-left shadow-[0_4px_12px_-2px_rgba(15,23,42,0.1)]`
+          : `flex min-w-0 ${richBubbleMaxW} flex-col gap-3 rounded-lg border border-[#2a3340] px-4 py-3 text-left shadow-[0_8px_24px_-4px_rgba(15,23,42,0.55)]`
+      }
       style={{ backgroundColor: bubbleBg }}
     >
-      <div className="flex gap-3">
-        <TitleIcon kind={rich.icon} />
+      <div className={isLightRich ? 'flex gap-2' : 'flex gap-3'}>
+        <TitleIcon kind={rich.icon} appearance={richAppearance} />
         <div className="min-w-0 flex-1">
-          <p className="font-['Inter',sans-serif] text-sm font-semibold leading-snug text-white">{rich.title}</p>
-          <p className="mt-1.5 font-['Inter',sans-serif] text-[13px] font-normal leading-relaxed text-[#c9d1d9]">
+          <p
+            className={`font-['Inter',sans-serif] text-sm font-semibold leading-snug ${isLightRich ? 'text-[#00050a]' : 'text-white'}`}
+          >
+            {rich.title}
+          </p>
+          <p
+            className={`mt-1.5 font-['Inter',sans-serif] font-normal leading-relaxed ${isLightRich ? 'text-[14px] text-[#475467]' : 'text-[13px] text-[#c9d1d9]'}`}
+          >
             {rich.body}
           </p>
         </div>
       </div>
       {rich.footer ? (
-        <div className="border-t border-[#2a3340] pt-2">
-          <RichFooter footer={rich.footer} />
+        <div className={`border-t pt-2 ${isLightRich ? 'border-[#E3E8F0]' : 'border-[#2a3340]'}`}>
+          <RichFooter footer={rich.footer} appearance={richAppearance} />
         </div>
       ) : null}
     </div>

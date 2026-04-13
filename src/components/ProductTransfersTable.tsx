@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react';
-import { ChevronDown, GripVertical } from 'lucide-react';
+import { ChevronDown, Filter, Pencil } from 'lucide-react';
 import type { AssortmentRow } from '../types';
 import { ASSORTMENT_HEADER_RICH } from '../data/assortmentHeaderTooltips';
 import { AutoneReceivingLocationIcon } from './icons/AutoneReceivingLocationIcon';
 import { HEADER_INFO_TOOLTIPS } from '../data/headerInfoTooltips';
 import {
   MOCK_PRODUCT_TRANSFER_LOCATIONS,
-  PRODUCT_TRANSFER_SUMMARY_CARDS,
+  MOCK_PRODUCT_TRANSFER_SUMMARY,
   type ProductTransferLocationRow,
 } from '../data/mockProductTransferLocations';
 import { AutoneHeaderInfoTooltip } from './AutoneHeaderInfoTooltip';
@@ -16,32 +16,15 @@ const tableCellPrimary =
 const tableCellSecondary =
   "font-['Inter',sans-serif] text-[12px] font-normal leading-normal text-[#6A7282]";
 const tableRowHoverTd = '';
-const tableHeaderGripIcon = 'h-[1lh] w-[1lh] shrink-0 text-[#6A7282]';
-
-function formatRevenueIncreaseEurK(eur: number): string {
-  const k = eur / 1000;
-  const frac = k >= 100 ? 1 : 2;
-  return `€${k.toFixed(frac)}K`;
-}
+const headerTitleClass =
+  "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
 
 function formatArrowPair(from: number, to: number): string {
-  return `${from.toLocaleString()} -> ${to.toLocaleString()}`;
+  return `${from.toLocaleString()} → ${to.toLocaleString()}`;
 }
 
-/** Summary row: bold primary + muted secondary line (no card chrome). */
-function SummaryInline({ primary, secondary }: { primary: ReactNode; secondary?: ReactNode }) {
-  return (
-    <div className="flex min-w-0 flex-col gap-0.5">
-      <div className="font-['Inter',sans-serif] text-[14px] font-semibold leading-snug text-[#101828]">
-        {primary}
-      </div>
-      {secondary != null ? (
-        <div className="font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#6A7282]">
-          {secondary}
-        </div>
-      ) : null}
-    </div>
-  );
+function formatCoveragePair(fromPct: number, toPct: number): string {
+  return `${fromPct}% → ${toPct}%`;
 }
 
 function truncateSku(sku: string, max = 14): string {
@@ -58,7 +41,7 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const selectAllRef = useRef<HTMLInputElement>(null);
   const rows = MOCK_PRODUCT_TRANSFER_LOCATIONS;
-  const cards = PRODUCT_TRANSFER_SUMMARY_CARDS;
+  const summary = MOCK_PRODUCT_TRANSFER_SUMMARY;
   const allSelected = rows.length > 0 && rows.every((r) => selected[r.id]);
   const someSelected = rows.some((r) => selected[r.id]);
 
@@ -78,49 +61,11 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
   const detail = parentRow.productCellDetail;
   const breadcrumbProduct = `${detail.title} [${truncateSku(detail.sku)}]`;
 
-  const revenuePerLocation = Math.max(
-    0,
-    Math.round(parentRow.revenueIncreaseEur / Math.max(rows.length, 1))
-  );
-
-  const summaryRowPadding = 'px-4 py-3 align-middle';
-  const stickySummaryBg = 'bg-slate-50/90';
-
-  const renderSummaryRow = () => (
-    <tr key="summary" className={stickySummaryBg}>
-      <td
-        className={`sticky left-0 z-30 w-14 min-w-14 max-w-14 ${summaryRowPadding} shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${stickySummaryBg} ${tableRowHoverTd}`}
-      />
-      <td
-        className={`sticky left-14 z-20 min-w-[220px] max-w-[280px] ${summaryRowPadding} shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${stickySummaryBg} ${tableRowHoverTd}`}
-      />
-      <td className={`${summaryRowPadding} ${stickySummaryBg} ${tableRowHoverTd}`}>
-        <SummaryInline
-          primary={<span className="tabular-nums">{cards.transfersUnits.toLocaleString()} units</span>}
-          secondary={<span className="tabular-nums">{cards.transfersTrips} trips</span>}
-        />
-      </td>
-      <td className={`${summaryRowPadding} ${stickySummaryBg} ${tableRowHoverTd}`}>
-        <SummaryInline primary={formatRevenueIncreaseEurK(cards.revenueEurK * 1000)} />
-      </td>
-      <td className={`${summaryRowPadding} ${stickySummaryBg} ${tableRowHoverTd}`}>
-        <SummaryInline
-          primary={<span className="tabular-nums">{cards.recommendedUnits.toLocaleString()} units</span>}
-          secondary={<span className="tabular-nums">{cards.recommendedTrips} trips</span>}
-        />
-      </td>
-      <td className={`${summaryRowPadding} ${stickySummaryBg} ${tableRowHoverTd}`}>
-        <SummaryInline
-          primary={<span className="tabular-nums">{cards.salesL7d} L7D</span>}
-          secondary={<span className="tabular-nums">{cards.salesL30d} L30D</span>}
-        />
-      </td>
-      <td className={`min-w-[128px] text-right ${summaryRowPadding} ${stickySummaryBg} ${tableRowHoverTd}`}>
-        <div className="font-['Inter',sans-serif] text-[14px] font-semibold tabular-nums text-[#101828]">
-          {cards.forecastPerWeek.toFixed(2)} per wk
-        </div>
-      </td>
-    </tr>
+  const headerStack = (title: ReactNode, sub: ReactNode) => (
+    <div className="flex min-h-[52px] flex-col justify-center gap-1 py-[2px] text-left">
+      {title}
+      {sub}
+    </div>
   );
 
   const renderDataRow = (row: ProductTransferLocationRow) => (
@@ -137,43 +82,53 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
         />
       </td>
       <td
-        className={`sticky left-14 z-20 h-[86px] min-h-[86px] min-w-[220px] max-w-[280px] box-border bg-white px-4 py-3 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
+        className={`sticky left-14 z-20 h-[86px] min-h-[86px] min-w-min max-w-max box-border bg-white px-4 py-3 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
       >
-        <div className="flex min-w-0 items-start gap-2">
-          {row.transferHub ? (
-            <span className="mt-0.5 shrink-0 text-[#0267FF]" title="Receiving location" aria-label="Receiving location">
-              <AutoneReceivingLocationIcon size={16} />
-            </span>
-          ) : (
-            <span className="mt-0.5 inline-block w-4 shrink-0" aria-hidden />
-          )}
-          <div className="min-w-0">
-            <div className={tableCellPrimary}>{row.name}</div>
-            <div className={`mt-0.5 ${tableCellSecondary}`}>({row.code})</div>
+        <div className="min-w-0">
+          <div className="flex min-w-0 flex-nowrap items-center gap-1.5 leading-none">
+            <span className={`shrink-0 ${tableCellPrimary}`}>{row.name}</span>
+            {row.transferHub ? (
+              <span
+                className="inline-flex shrink-0 items-center justify-center text-[16px] leading-none text-[#101828]"
+                title="Receiving location"
+                aria-label="Receiving location"
+              >
+                <AutoneReceivingLocationIcon />
+              </span>
+            ) : null}
+            {row.locationFilter ? (
+              <span className="inline-flex shrink-0 text-[#6A7282]" title="Filtered" aria-label="Filtered">
+                <Filter size={16} strokeWidth={2} aria-hidden />
+              </span>
+            ) : null}
           </div>
+          <div className={`mt-0.5 ${tableCellSecondary}`}>{row.code}</div>
         </div>
       </td>
-      <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
-        <div className={tableCellPrimary}>{formatArrowPair(row.stock.from, row.stock.to)}</div>
+      <td className={`h-[86px] min-h-[86px] min-w-[112px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
+        <div className={`tabular-nums ${tableCellPrimary}`}>{formatArrowPair(row.stock.from, row.stock.to)}</div>
       </td>
-      <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
-        <div className={tableCellPrimary}>{formatRevenueIncreaseEurK(revenuePerLocation)}</div>
+      <td className={`h-[86px] min-h-[86px] min-w-[112px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
+        <div className={`tabular-nums ${tableCellPrimary}`}>{formatArrowPair(row.tu.from, row.tu.to)}</div>
       </td>
-      <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
-        <div className={tableCellPrimary}>{formatArrowPair(row.tu.from, row.tu.to)}</div>
-      </td>
-      <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
+      <td className={`h-[86px] min-h-[86px] min-w-[100px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <div className="flex min-w-0 flex-col gap-1">
-          <div className={tableCellPrimary}>{row.sales.l7d.toLocaleString()} L7D</div>
-          <div className={tableCellSecondary}>{row.sales.l30d.toLocaleString()} L30D</div>
+          <div className={`tabular-nums ${tableCellPrimary}`}>{row.sales.l7d.toLocaleString()}</div>
+          <div className={`tabular-nums ${tableCellSecondary}`}>{row.sales.l30d.toLocaleString()}</div>
         </div>
       </td>
-      <td className={`h-[86px] min-h-[86px] min-w-[128px] px-4 py-3 text-right align-middle ${tableRowHoverTd}`}>
-        <div className="inline-flex w-full items-center justify-end gap-1.5">
-          <span className={`tabular-nums ${tableCellPrimary}`}>
-            {row.forecastPerWeek.toFixed(2)} per wk
-          </span>
-          <AutoneHeaderInfoTooltip label="Forecast per week" content={HEADER_INFO_TOOLTIPS.forecastPerWk} />
+      <td className={`h-[86px] min-h-[86px] min-w-[112px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
+        <div className={`tabular-nums ${tableCellPrimary}`}>{row.forecastPerWeek.toFixed(2)}</div>
+      </td>
+      <td className={`h-[86px] min-h-[86px] min-w-[112px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
+        <div className={`tabular-nums ${tableCellPrimary}`}>{formatArrowPair(row.stockouts.from, row.stockouts.to)}</div>
+      </td>
+      <td className={`h-[86px] min-h-[86px] min-w-[140px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
+        <div className="flex min-w-0 flex-col gap-1">
+          <div className={`tabular-nums ${tableCellPrimary}`}>
+            {formatCoveragePair(row.coverage.fromPct, row.coverage.toPct)}
+          </div>
+          <div className={`tabular-nums ${tableCellSecondary}`}>{row.coverage.targetWeeks}</div>
         </div>
       </td>
     </tr>
@@ -203,16 +158,16 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
         data-name="Table container"
       >
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1100px] border-collapse">
+          <table className="w-full min-w-[1240px] border-collapse">
             <thead
               className="[&_th]:border-t-0 [&_th]:border-b-[0.5px] [&_th]:border-solid [&_th]:border-[#E3E8F0] [&_th]:bg-white [&_th]:font-['Inter',sans-serif]"
             >
-              <tr className="text-[14px] font-semibold leading-normal text-[#101828] [&_th]:whitespace-nowrap [&_th]:align-middle">
+              <tr className="[&_th]:whitespace-nowrap [&_th]:align-top">
                 <th
                   className="sticky left-0 z-30 w-14 min-w-14 max-w-14 bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                   scope="col"
                 >
-                  <label className="flex cursor-pointer items-center gap-2">
+                  <label className="flex min-h-[52px] cursor-pointer items-center py-[2px]">
                     <input
                       ref={selectAllRef}
                       type="checkbox"
@@ -224,63 +179,159 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
                   </label>
                 </th>
                 <th
-                  className="sticky left-14 z-20 min-w-[220px] bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                  className="sticky left-14 z-20 min-w-min max-w-max bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                   scope="col"
                 >
-                  Product details
-                </th>
-                <th className="min-w-[200px] px-4 py-[10px] text-left" scope="col">
-                  <span className="inline-flex items-center gap-2">
-                    <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                  {headerStack(
                     <AutoneHeaderInfoTooltip
-                      label="Transfers"
-                      rich={ASSORTMENT_HEADER_RICH.transfers}
-                      hoverWith={<span>Transfers</span>}
-                    />
-                  </span>
+                      label="Locations"
+                      rich={{
+                        title: 'Location',
+                        icon: 'info',
+                        body: HEADER_INFO_TOOLTIPS.locations,
+                      }}
+                      hoverWith={<span className={headerTitleClass}>Locations</span>}
+                    />,
+                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                      —
+                    </span>
+                  )}
                 </th>
-                <th className="min-w-[128px] px-4 py-[10px] text-left" scope="col">
-                  <span className="inline-flex items-center gap-2">
-                    <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                <th className="min-w-[120px] px-4 py-[10px] text-left" scope="col">
+                  {headerStack(
                     <AutoneHeaderInfoTooltip
-                      label="Revenue increase"
-                      rich={ASSORTMENT_HEADER_RICH.revenueIncrease}
-                      hoverWith={<span>Revenue increase</span>}
-                    />
-                    <ChevronDown size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
-                  </span>
+                      label="Stock"
+                      rich={{
+                        title: 'Stock',
+                        icon: 'info',
+                        body: HEADER_INFO_TOOLTIPS.stock,
+                        footer: {
+                          kind: 'footerCaption',
+                          text: formatArrowPair(summary.stock.from, summary.stock.to),
+                        },
+                      }}
+                      hoverWith={
+                        <span className={`inline-flex items-center gap-1 ${headerTitleClass}`}>
+                          Stock
+                          <ChevronDown size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+                        </span>
+                      }
+                    />,
+                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                      —
+                    </span>
+                  )}
                 </th>
-                <th className="min-w-[240px] px-4 py-[10px] text-left" scope="col">
-                  <span className="inline-flex items-center gap-2">
-                    <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                <th className="min-w-[120px] px-4 py-[10px] text-left" scope="col">
+                  {headerStack(
                     <AutoneHeaderInfoTooltip
-                      label="Recommended transfers"
-                      rich={ASSORTMENT_HEADER_RICH.recommendedTransfers}
-                      hoverWith={<span>Recommended transfers</span>}
-                    />
-                  </span>
+                      label="TU (transfer units)"
+                      rich={{
+                        title: 'TU',
+                        icon: 'info',
+                        body: HEADER_INFO_TOOLTIPS.tu,
+                        footer: {
+                          kind: 'footerCaption',
+                          text: formatArrowPair(summary.tu.from, summary.tu.to),
+                        },
+                      }}
+                      hoverWith={
+                        <span className={`inline-flex items-center gap-1 ${headerTitleClass}`}>
+                          TU
+                          <Pencil size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+                        </span>
+                      }
+                    />,
+                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                      —
+                    </span>
+                  )}
                 </th>
-                <th className="min-w-[168px] px-4 py-[10px] text-right" scope="col">
-                  <span className="inline-flex w-full items-center justify-end gap-2">
-                    <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                <th className="min-w-[120px] px-4 py-[10px] text-left" scope="col">
+                  {headerStack(
                     <AutoneHeaderInfoTooltip
-                      label="Sales (L7D / L30D)"
-                      rich={ASSORTMENT_HEADER_RICH.salesL7dL30d}
-                      hoverWith={<span>Sales</span>}
-                    />
-                  </span>
+                      label="Sales"
+                      rich={{
+                        ...ASSORTMENT_HEADER_RICH.salesL7dL30d,
+                        footer: {
+                          kind: 'salesMetrics',
+                          l7d: summary.sales.l7d.toLocaleString(),
+                          l30d: summary.sales.l30d.toLocaleString(),
+                        },
+                      }}
+                      hoverWith={<span className={headerTitleClass}>Sales</span>}
+                    />,
+                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                      —
+                    </span>
+                  )}
                 </th>
-                <th className="min-w-[140px] px-4 py-[10px] text-right" scope="col">
-                  <span className="inline-flex w-full items-center justify-end gap-1.5">
-                    <GripVertical className={tableHeaderGripIcon} aria-hidden />
-                    <span>Forecast per wk.</span>
-                    <AutoneHeaderInfoTooltip label="Forecast per week" content={HEADER_INFO_TOOLTIPS.forecastPerWk} />
-                  </span>
+                <th className="min-w-[120px] px-4 py-[10px] text-left" scope="col">
+                  {headerStack(
+                    <AutoneHeaderInfoTooltip
+                      label="Forecast per week"
+                      rich={{
+                        title: 'Forecast per wk.',
+                        icon: 'info',
+                        body: HEADER_INFO_TOOLTIPS.forecastPerWk,
+                        footer: {
+                          kind: 'footerCaption',
+                          text: `${summary.forecastPerWeek.toFixed(2)} per wk`,
+                        },
+                      }}
+                      hoverWith={<span className={headerTitleClass}>Forecast per wk.</span>}
+                    />,
+                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                      —
+                    </span>
+                  )}
+                </th>
+                <th className="min-w-[120px] px-4 py-[10px] text-left" scope="col">
+                  {headerStack(
+                    <AutoneHeaderInfoTooltip
+                      label="Stockouts"
+                      rich={{
+                        title: 'Stockouts',
+                        icon: 'info',
+                        body: HEADER_INFO_TOOLTIPS.stockouts,
+                        footer: {
+                          kind: 'footerCaption',
+                          text: formatArrowPair(summary.stockouts.from, summary.stockouts.to),
+                        },
+                      }}
+                      hoverWith={<span className={headerTitleClass}>Stockouts</span>}
+                    />,
+                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                      —
+                    </span>
+                  )}
+                </th>
+                <th className="min-w-[152px] px-4 py-[10px] text-left" scope="col">
+                  {headerStack(
+                    <AutoneHeaderInfoTooltip
+                      label="Coverage"
+                      richAppearance="light"
+                      richBubbleMaxWidthClass="max-w-[min(32rem,calc(100vw-24px))]"
+                      rich={{
+                        title: 'Coverage',
+                        icon: 'info',
+                        body: HEADER_INFO_TOOLTIPS.coverage,
+                        footer: {
+                          kind: 'transferTotals',
+                          unitsLine: 'before → after',
+                          tripsLine: 'target weeks',
+                        },
+                      }}
+                      hoverWith={<span className={headerTitleClass}>Coverage</span>}
+                    />,
+                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                      —
+                    </span>
+                  )}
                 </th>
               </tr>
             </thead>
             <tbody className="[&_td]:border-t-0 [&_td]:border-b-[0.5px] [&_td]:border-solid [&_td]:border-[#E3E8F0]">
-              {renderSummaryRow()}
               {rows.map((r) => renderDataRow(r))}
             </tbody>
           </table>

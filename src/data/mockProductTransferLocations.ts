@@ -5,6 +5,8 @@ export type ProductTransferLocationRow = {
   code: string;
   /** Show small “hub” glyph next to the location name */
   transferHub?: boolean;
+  /** Funnel icon next to the name (e.g. filtered / drill-down state) */
+  locationFilter?: boolean;
   stock: { from: number; to: number };
   tu: { from: number; to: number };
   sales: { l7d: number; l30d: number };
@@ -17,26 +19,18 @@ export type ProductTransferSummary = {
   stock: { from: number; to: number };
   tu: { from: number; to: number };
   sales: { l7d: number; l30d: number };
+  forecastPerWeek: number;
+  stockouts: { from: number; to: number };
 };
 
+/** Column sub-header totals (thead), aligned with product transfers screenshot. */
 export const MOCK_PRODUCT_TRANSFER_SUMMARY: ProductTransferSummary = {
   stock: { from: 222, to: 222 },
   tu: { from: 222, to: 222 },
   sales: { l7d: 3, l30d: 17 },
+  forecastPerWeek: 6.72,
+  stockouts: { from: 6, to: 12 },
 };
-
-/** Summary row aggregates — matches assortment-style totals row (design). */
-export const PRODUCT_TRANSFER_SUMMARY_CARDS = {
-  transfersUnits: 667,
-  transfersTrips: 47,
-  /** Display as €22.4K */
-  revenueEurK: 22.4,
-  recommendedUnits: 667,
-  recommendedTrips: 47,
-  salesL7d: 58,
-  salesL30d: 186,
-  forecastPerWeek: 44.21,
-} as const;
 
 export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
   {
@@ -55,6 +49,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     name: 'PR PP Nancy',
     code: '645',
     transferHub: true,
+    locationFilter: true,
     stock: { from: 2, to: 5 },
     tu: { from: 1, to: 3 },
     sales: { l7d: 0, l30d: 1 },

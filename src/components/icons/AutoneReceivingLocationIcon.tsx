@@ -1,40 +1,31 @@
 /**
- * Autone DS — "Receiving location" (Figma `13675:43243`, NEW Autone Design System 2.0).
- * Stroke icon: peaked roof + left wall + floor; right side stays open; arrow in the lower half (R→L).
- * DS colors: 07 Grey/800 `#212B36`, Base `#22272F` — use `currentColor` in UI.
+ * Autone DS 2.0 — "Receiving location" (Figma `14152:1320`, NEW Autone Design System 2.0).
+ * Line house with rounded joins; horizontal inbound arrow (R→L) through a gap in the right wall.
+ * Tokens: 07 Grey/800 `#212B36`, Base `#22272F` — use `currentColor` in UI (e.g. `text-[#101828]`).
+ * Default: `text-[16px]` + `size-[1em]` → 16×16px box; override with `className`.
  */
-export function AutoneReceivingLocationIcon({
-  size = 16,
-  className,
-  title,
-}: {
-  size?: number;
-  className?: string;
-  title?: string;
-}) {
+export function AutoneReceivingLocationIcon({ className, title }: { className?: string; title?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className={className}
+      className={['block size-[1em] shrink-0 text-[16px] leading-none', className].filter(Boolean).join(' ')}
       aria-hidden={title ? undefined : true}
       role={title ? 'img' : undefined}
     >
       {title ? <title>{title}</title> : null}
-      {/* House frame: left wall + roof; right side open above the floor (Figma). Floor closes the bottom. */}
+      {/* House: peaked roof, rounded bottom-left (Q), right wall gap for inbound arrow */}
       <path
-        d="M4.25 19.5V10.75L12 4.75l7.75 6M4.25 19.5h15.5"
+        d="M6 19.5H19.5V16M19.5 12.5V11.25L12 5.25L4.5 11.25V17.25Q4.5 19.5 6 19.5"
         stroke="currentColor"
         strokeWidth={1.5}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      {/* Inbound arrow (lower half, points left) */}
+      {/* Inbound arrow: shaft through gap + chevron head (R→L) */}
       <path
-        d="M20.75 14.25h-6.75M17.5 12l-3.25 2.25L17.5 16.5"
+        d="M20.75 14.25h-7M13.75 12l-2.75 2.25L13.75 16.5"
         stroke="currentColor"
         strokeWidth={1.5}
         strokeLinecap="round"
