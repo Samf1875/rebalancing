@@ -48,80 +48,90 @@ export function RebalancingWorkspaceSummaryBanner({
 
   if (dismissed) return null;
 
+  const leadBlock = (
+    <>
+      <div
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#2EB8C2] text-white"
+        aria-hidden
+      >
+        <RefreshCw size={20} strokeWidth={2} />
+      </div>
+      <div className="min-w-0 flex-1 grid grid-cols-1 gap-2 md:grid-cols-[auto_minmax(0,1fr)] md:gap-x-4 md:gap-y-1 md:items-center">
+        <div className="min-w-0 w-full max-w-prose md:w-fit md:max-w-full">
+          <p className="flex w-fit max-w-full flex-wrap items-baseline gap-x-1.5 gap-y-0.5 font-['Inter',sans-serif] text-sm leading-snug text-[#101828]">
+            <span className="font-semibold">{headline}</span>
+            {hidePrimaryMetric ? null : (
+              <>
+                <span className="text-[#D0D5DD]" aria-hidden>
+                  |
+                </span>
+                <span className={metricToneClass[primaryMetricTone]}>{primaryMetric}</span>
+              </>
+            )}
+            <span className="text-[#D0D5DD]" aria-hidden>
+              |
+            </span>
+            <span className={`${metricToneClass[secondaryMetricTone]} pr-[20px]`}>{secondaryMetric}</span>
+          </p>
+        </div>
+        <div className="min-w-0 max-w-prose md:max-w-none">
+          <p className="font-['Inter',sans-serif] text-xs font-normal leading-relaxed text-[#98A2B3]">
+            {subline}
+          </p>
+        </div>
+      </div>
+    </>
+  );
+
+  const actions = (
+    <div className="flex shrink-0 items-center gap-2">
+      <button
+        type="button"
+        onClick={() => setDetailsOpen((v) => !v)}
+        aria-expanded={detailsOpen}
+        className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#E3E8F0] bg-white px-3 font-['Inter',sans-serif] text-sm font-medium text-[#101828] transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#0267FF]"
+      >
+        Details
+        {detailsOpen ? (
+          <ChevronUp size={16} strokeWidth={2} className="shrink-0 text-[#667085]" aria-hidden />
+        ) : (
+          <ChevronDown size={16} strokeWidth={2} className="shrink-0 text-[#667085]" aria-hidden />
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={() => setDismissed(true)}
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#667085] transition-colors hover:bg-slate-100 hover:text-[#101828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#0267FF]"
+        aria-label="Dismiss summary"
+      >
+        <X size={18} strokeWidth={2} />
+      </button>
+    </div>
+  );
+
   return (
     <div
       className="w-full min-w-0 rounded-xl border border-[#E3E8F0] bg-white px-4 py-3 sm:px-5 sm:py-4"
       role="region"
       aria-label="Rebalancing summary"
     >
-      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-        <div className="flex min-w-0 flex-1 items-start gap-3">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#12171e] text-white"
-            aria-hidden
-          >
-            <RefreshCw size={20} strokeWidth={2} />
-          </div>
-          <div className="min-w-0 flex-1 grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-x-8 md:gap-y-1 md:items-start">
-            <div className="min-w-0 max-w-prose md:max-w-none">
-              <p className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 font-['Inter',sans-serif] text-sm leading-snug text-[#101828]">
-                <span className="font-semibold">{headline}</span>
-                {hidePrimaryMetric ? null : (
-                  <>
-                    <span className="text-[#D0D5DD]" aria-hidden>
-                      |
-                    </span>
-                    <span className={metricToneClass[primaryMetricTone]}>{primaryMetric}</span>
-                  </>
-                )}
-                <span className="text-[#D0D5DD]" aria-hidden>
-                  |
-                </span>
-                <span className={metricToneClass[secondaryMetricTone]}>{secondaryMetric}</span>
-              </p>
-            </div>
-            <div className="min-w-0 max-w-prose md:max-w-none">
-              <p className="font-['Inter',sans-serif] text-xs font-normal leading-relaxed text-[#98A2B3]">
-                {subline}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="flex shrink-0 items-center gap-2 self-start sm:mt-0.5">
-          <button
-            type="button"
-            onClick={() => setDetailsOpen((v) => !v)}
-            aria-expanded={detailsOpen}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#E3E8F0] bg-white px-3 font-['Inter',sans-serif] text-sm font-medium text-[#101828] transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#0267FF]"
-          >
-            Details
-            {detailsOpen ? (
-              <ChevronUp size={16} strokeWidth={2} className="shrink-0 text-[#667085]" aria-hidden />
-            ) : (
-              <ChevronDown size={16} strokeWidth={2} className="shrink-0 text-[#667085]" aria-hidden />
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => setDismissed(true)}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#667085] transition-colors hover:bg-slate-100 hover:text-[#101828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#0267FF]"
-            aria-label="Dismiss summary"
-          >
-            <X size={18} strokeWidth={2} />
-          </button>
-        </div>
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="flex min-w-0 flex-1 items-center gap-3">{leadBlock}</div>
+        {actions}
       </div>
 
       {detailsOpen ? (
-        <div className="mt-4 border-t border-[#E3E8F0] pt-4">
+        <div className="mt-2 w-full min-w-0 border-t border-[#E3E8F0] pt-[10px] text-left">
           <div
-            className={`grid min-w-0 grid-cols-1 gap-6 lg:gap-y-6 ${
-              showWorkspaceParameterDetails
-                ? 'lg:grid-cols-2 lg:gap-x-10'
-                : 'mx-auto w-full max-w-3xl lg:gap-x-0'
+            className={`grid min-w-0 w-full grid-cols-1 gap-4 text-left lg:gap-y-4 ${
+              showWorkspaceParameterDetails ? 'lg:grid-cols-2 lg:gap-x-10' : ''
             }`}
           >
-            <div className="min-w-0 space-y-3 max-w-prose md:max-w-none">
+            <div
+              className={`min-w-0 space-y-3 ${
+                showWorkspaceParameterDetails ? 'max-w-prose md:max-w-none' : 'w-full'
+              }`}
+            >
               {detailsIntroExtra ? (
                 <p className="font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
                   {detailsIntroExtra}

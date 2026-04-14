@@ -125,7 +125,11 @@ export function RebalancingTaskListScreen({ onOpenTask }: RebalancingTaskListScr
               : `${visibleTasks.length} rebalancings submitted`
           }
           secondaryMetricTone="muted"
-          subline={tab === 'ongoing' ? 'View, edit ongoing active rebalancing.' : 'View submitted rebalances.'}
+          subline={
+            tab === 'ongoing'
+              ? 'View and manage all active rebalancing batches in one place. Monitor progress, make edits, and ensure everything stays aligned with your strategy.'
+              : 'View submitted rebalances.'
+          }
           detailsIntroExtra={
             tab === 'submitted'
               ? 'View your submitted rebalancings.'
