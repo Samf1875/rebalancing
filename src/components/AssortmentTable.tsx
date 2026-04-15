@@ -907,16 +907,9 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`relative h-[86px] min-h-[86px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
+            className={`min-h-[86px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
           >
-            {row.showKpiBadge ? (
-              <div className="pointer-events-auto absolute bottom-2 right-3 z-10">
-                <AssortmentCellKpiTrigger align="end" {...kpiPopoverSales(row)} />
-              </div>
-            ) : null}
-            <div
-              className={`flex min-w-0 flex-col items-end gap-1 ${row.showKpiBadge ? 'pb-9 pr-10' : ''}`}
-            >
+            <div className="flex min-w-0 flex-col items-end gap-1">
               <div className={`${tableCellPrimary} tabular-nums`}>
                 {l7d.toLocaleString()}
                 {showPeriodLabels ? ' L7D' : ''}
@@ -925,6 +918,11 @@ export function AssortmentTable({
                 {l30d.toLocaleString()}
                 {showPeriodLabels ? ' L30D' : ''}
               </div>
+              {row.showKpiBadge ? (
+                <div className="pointer-events-auto mt-1">
+                  <AssortmentCellKpiTrigger align="end" {...kpiPopoverSales(row)} />
+                </div>
+              ) : null}
             </div>
           </td>
         );
@@ -933,19 +931,21 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`relative h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`min-h-[86px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
           >
-            {row.showKpiBadge ? (
-              <div className="pointer-events-auto absolute bottom-2 right-3 z-10">
-                <AssortmentCellKpiTrigger align="end" {...kpiPopoverForecast(row)} />
-              </div>
-            ) : null}
-            <span className={row.showKpiBadge ? 'block pb-9 pr-10' : undefined}>
-              {row.forecastPerWeek.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
+            <div className="flex min-w-0 flex-col items-end">
+              <span className={`${tableCellPrimary} tabular-nums`}>
+                {row.forecastPerWeek.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </span>
+              {row.showKpiBadge ? (
+                <div className="pointer-events-auto mt-1">
+                  <AssortmentCellKpiTrigger align="end" {...kpiPopoverForecast(row)} />
+                </div>
+              ) : null}
+            </div>
           </td>
         );
       case 'targetCoverage':
@@ -1143,13 +1143,8 @@ export function AssortmentTable({
                 </td>
                 {showProductDetails && (
                   <td
-                    className={`relative sticky left-14 z-20 min-h-[86px] w-[280px] min-w-[280px] max-w-[280px] box-border bg-white py-3 px-4 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
+                    className={`sticky left-14 z-20 min-h-[86px] w-[280px] min-w-[280px] max-w-[280px] box-border bg-white py-3 px-4 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
                   >
-                    {row.showKpiBadge ? (
-                      <div className="pointer-events-auto absolute bottom-3 right-3 z-10">
-                        <AssortmentCellKpiTrigger align="end" {...kpiPopoverProduct(row)} />
-                      </div>
-                    ) : null}
                     <div className="flex min-w-0 gap-3">
                       <div
                         className="relative h-[48px] w-[48px] shrink-0 overflow-hidden rounded bg-[#f5f5f5]"
@@ -1162,7 +1157,7 @@ export function AssortmentTable({
                           className="pointer-events-none absolute inset-0 size-full max-w-none object-contain"
                         />
                       </div>
-                      <div className={`min-w-0 flex-1 ${row.showKpiBadge ? 'pb-9 pr-10' : ''}`}>
+                      <div className="min-w-0 flex-1">
                         <div className={`min-w-0 ${tableCellPrimary}`}>{detail.title}</div>
                         <div className="mt-0.5 flex min-w-0 items-center gap-1">
                           <span className={`min-w-0 truncate ${tableCellSecondary}`}>{detail.sku}</span>
@@ -1187,6 +1182,11 @@ export function AssortmentTable({
                           </button>
                         </div>
                         <div className={`mt-0.5 ${tableCellSecondary}`}>{detail.colorLabel}</div>
+                        {row.showKpiBadge ? (
+                          <div className="pointer-events-auto mt-1">
+                            <AssortmentCellKpiTrigger align="start" {...kpiPopoverProduct(row)} />
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                   </td>

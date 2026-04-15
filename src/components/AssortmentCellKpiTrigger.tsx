@@ -20,8 +20,9 @@ import {
 
 const VIEWPORT_PAD = 12;
 
-/** Grey → black gradient (border + fill text); inner surface is white. */
-const kpiChipGradient = 'from-[#6b7280] via-[#3f4654] to-[#0f1117]';
+/** Matches assortment action chips outline; label uses app near-black. */
+const kpiChipBtn =
+  "pointer-events-auto inline-flex shrink-0 items-center rounded border border-[#E3E8F0] bg-white px-2 py-1 font-['Inter',sans-serif] text-[11px] font-semibold leading-none text-[#00050A] transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9CA3AF]";
 
 export type KpiDriverTone = 'warning' | 'positive' | 'negative';
 
@@ -264,7 +265,7 @@ export function AssortmentCellKpiTrigger({
       <button
         ref={triggerRef}
         type="button"
-        className={`pointer-events-auto inline-flex shrink-0 items-center rounded bg-gradient-to-br p-px shadow-sm transition-[filter,opacity] hover:brightness-110 active:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9CA3AF] ${kpiChipGradient}`}
+        className={kpiChipBtn}
         aria-label={`View KPI summary: ${title}`}
         aria-expanded={visible}
         aria-describedby={visible ? tooltipId : undefined}
@@ -286,13 +287,7 @@ export function AssortmentCellKpiTrigger({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="flex items-center justify-center rounded-[3px] bg-white px-2 py-1">
-          <span
-            className={`bg-gradient-to-br bg-clip-text font-['Inter',sans-serif] text-[11px] font-semibold leading-none text-transparent ${kpiChipGradient}`}
-          >
-            KPI
-          </span>
-        </span>
+        KPI
       </button>
       {visible &&
         rect &&
