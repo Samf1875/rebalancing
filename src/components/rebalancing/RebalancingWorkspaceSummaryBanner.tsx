@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { RefreshCw, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
+import { BarChart3, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { RefreshSyncIcon } from '../icons/RefreshSyncIcon';
 
 type MetricTone = 'emerald' | 'muted';
 
@@ -16,12 +17,18 @@ type RebalancingWorkspaceSummaryBannerProps = {
   secondaryMetricTone?: MetricTone;
   /** Optional lead paragraph at the top of the Details panel (e.g. task list). */
   detailsIntroExtra?: string;
+  /**
+   * When `showWorkspaceParameterDetails` is false, replaces `detailsIntroExtra` and the default explainer paragraph.
+   */
+  detailsBody?: ReactNode;
   /** Muted subline under the title metrics (default: workspace “Based on…” copy). */
   subline?: string;
   /** When true, omit the first metric segment and the separator after the headline (task list). */
   hidePrimaryMetric?: boolean;
   /** When false, hide Zero transfers / Time window rows and the “These parameters…” block in Details. */
   showWorkspaceParameterDetails?: boolean;
+  /** When set, shows a KPIs control in the banner actions that calls this handler. */
+  onOpenKpis?: () => void;
 };
 
 const metricToneClass: Record<MetricTone, string> = {
@@ -39,9 +46,11 @@ export function RebalancingWorkspaceSummaryBanner({
   secondaryMetric = '206 transfers suggested',
   secondaryMetricTone = 'muted',
   detailsIntroExtra,
+  detailsBody,
   subline = 'Based on: Last 7 days demand • Zero transfers included • Cross-location balancing',
   hidePrimaryMetric = false,
   showWorkspaceParameterDetails = true,
+  onOpenKpis,
 }: RebalancingWorkspaceSummaryBannerProps) {
   const [dismissed, setDismissed] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -54,7 +63,7 @@ export function RebalancingWorkspaceSummaryBanner({
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#2EB8C2] text-white"
         aria-hidden
       >
-        <RefreshCw size={20} strokeWidth={2} />
+        <RefreshSyncIcon size={24} className="text-inherit" />
       </div>
       <div className="min-w-0 flex-1 grid grid-cols-1 gap-2 md:grid-cols-[auto_minmax(0,1fr)] md:gap-x-4 md:gap-y-1 md:items-center">
         <div className="min-w-0 w-full max-w-prose md:w-fit md:max-w-full">
@@ -84,7 +93,19 @@ export function RebalancingWorkspaceSummaryBanner({
   );
 
   const actions = (
-    <div className="flex shrink-0 items-center gap-2">
+    <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+      {onOpenKpis ? (
+        <button
+          type="button"
+          onClick={onOpenKpis}
+          title="Key performance indicators"
+          aria-label="Rebalancing KPIs, Key performance indicators"
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-[#E3E8F0] bg-white px-3 font-['Inter',sans-serif] text-sm font-medium text-[#101828] transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#0267FF]"
+        >
+          <BarChart3 size={16} strokeWidth={2} className="shrink-0 text-[#667085]" aria-hidden />
+          <span className="leading-none">Rebalancing KPIs</span>
+        </button>
+      ) : null}
       <button
         type="button"
         onClick={() => setDetailsOpen((v) => !v)}
@@ -132,16 +153,22 @@ export function RebalancingWorkspaceSummaryBanner({
                 showWorkspaceParameterDetails ? 'max-w-prose md:max-w-none' : 'w-full'
               }`}
             >
-              {detailsIntroExtra ? (
-                <p className="font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
-                  {detailsIntroExtra}
-                </p>
-              ) : null}
-              <p className="font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
-                Rebalancing automatically identifies where inventory is out of line with demand and suggests transfers
-                to better match supply with demand. It enables stock movement between locations and prioritizes shifting
-                inventory from low-performing locations to those with higher demand.
-              </p>
+              {!showWorkspaceParameterDetails && detailsBody != null ? (
+                detailsBody
+              ) : (
+                <>
+                  {detailsIntroExtra ? (
+                    <p className="font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
+                      {detailsIntroExtra}
+                    </p>
+                  ) : null}
+                  <p className="font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]">
+                    Rebalancing automatically identifies where inventory is out of line with demand and suggests
+                    transfers to better match supply with demand. It enables stock movement between locations and
+                    prioritizes shifting inventory from low-performing locations to those with higher demand.
+                  </p>
+                </>
+              )}
             </div>
 
             {showWorkspaceParameterDetails ? (

@@ -8,6 +8,7 @@ import {
   ArrowDownWideNarrow,
   ChevronDown,
   Check,
+  BarChart3,
 } from 'lucide-react';
 import { AssortmentTable } from './AssortmentTable';
 import { ProductTransfersTable } from './ProductTransfersTable';
@@ -34,6 +35,7 @@ import {
 } from '../tableColumnCustomise';
 import { ColumnCustomiseDrawer } from './ColumnCustomiseDrawer';
 import { HowItWorksPanel } from './rebalancing/HowItWorksPanel';
+import { KpisPanel } from './rebalancing/KpisPanel';
 import { RebalancingOnboardingBanner } from './rebalancing/RebalancingOnboardingBanner';
 import { RebalancingWalkthrough } from './rebalancing/RebalancingWalkthrough';
 import { RebalancingWalkthroughFab } from './rebalancing/RebalancingWalkthroughFab';
@@ -141,6 +143,7 @@ export function MainContent({
   const [columnVisibility, setColumnVisibility] = useState(defaultTableColumnVisibility);
   const [rebalancingBannerDismissed, setRebalancingBannerDismissed] = useState(false);
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
+  const [kpisPanelOpen, setKpisPanelOpen] = useState(false);
   const [walkthroughOpen, setWalkthroughOpen] = useState(false);
   const [walkthroughStep, setWalkthroughStep] = useState(0);
   /** Products tab: row drill-down to per-location transfers for one assortment row */
@@ -576,6 +579,7 @@ export function MainContent({
         )}
 
         <HowItWorksPanel open={howItWorksOpen} onClose={() => setHowItWorksOpen(false)} />
+        <KpisPanel open={kpisPanelOpen} onClose={() => setKpisPanelOpen(false)} />
 
         <RebalancingWalkthrough
           open={walkthroughOpen}
@@ -694,9 +698,10 @@ export function MainContent({
             </div>
           </div>
 
-          <RebalancingWorkspaceSummaryBanner />
+          <RebalancingWorkspaceSummaryBanner onOpenKpis={() => setKpisPanelOpen(true)} />
 
-          <div className="flex w-full min-w-0 flex-wrap items-center justify-start gap-2">
+          <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2">
+            <div className="flex min-w-0 flex-1 flex-wrap items-center justify-start gap-2">
             <div className="relative min-w-0 max-w-full shrink" ref={sortMenuRef}>
               <div className="flex min-w-0 max-w-full items-stretch">
                 <button
@@ -850,6 +855,17 @@ export function MainContent({
                 </div>
               )}
             </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setKpisPanelOpen(true)}
+              title="Key performance indicators"
+              aria-label="Rebalancing KPIs, Key performance indicators"
+              className="flex h-12 shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-[#E3E8F0] bg-white px-3 font-['Inter',sans-serif] text-sm font-medium text-[#101828] transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#0267FF] sm:px-4"
+            >
+              <BarChart3 size={18} strokeWidth={2} className="shrink-0 text-[#667085]" aria-hidden />
+              <span className="leading-none">Rebalancing KPIs</span>
+            </button>
           </div>
         </div>
 

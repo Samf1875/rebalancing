@@ -53,6 +53,7 @@ const preSeasonRows: AssortmentRow[] = [
     scheduledAssortmentFinish: '2026-05-29',
     committed: true,
     productDrillMetrics: { skuLocations: 8, minQty: 17, inventory: 0, targetCoverageWk: 5, forecastSalesPerWk: 0 },
+    showKpiBadge: true,
   },
   {
     id: 'ps-2',
@@ -123,6 +124,7 @@ const preSeasonRows: AssortmentRow[] = [
     scheduledAssortmentStart: '2025-10-01',
     scheduledAssortmentFinish: '2026-05-28',
     committed: true,
+    showKpiBadge: true,
   },
   {
     id: 'ps-4',
@@ -189,6 +191,7 @@ const preSeasonRows: AssortmentRow[] = [
     scheduledAssortmentFinish: '2026-05-29',
     committed: true,
     productDrillMetrics: { skuLocations: 8, minQty: 16, inventory: 29, targetCoverageWk: 5, forecastSalesPerWk: 16 },
+    showKpiBadge: true,
   },
   /** Partially assorted — excluded from Pre-Season IA focus (shows filter effect vs All). */
   {

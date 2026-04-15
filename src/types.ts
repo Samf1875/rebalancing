@@ -74,6 +74,8 @@ export interface AssortmentRow {
     targetCoverageWk: number;
     forecastSalesPerWk: number;
   };
+  /** When true, product and key metric cells show a KPI hover badge (configured KPIs). */
+  showKpiBadge?: boolean;
 }
 
 export type ModalKind = 'edit-allocation' | 'product-group' | 'location-cluster' | 'assort' | null;
