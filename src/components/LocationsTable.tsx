@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect, type ReactNode } from 'react';
-import { ChevronDown, ChevronLeft, ChevronRight, GripVertical, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, GripVertical, Info } from 'lucide-react';
 import { HEADER_INFO_TOOLTIPS } from '../data/headerInfoTooltips';
 import { MOCK_LOCATION_ROWS, type LocationTableRow } from '../data/mockLocations';
 import {
@@ -7,6 +7,7 @@ import {
   type HeaderTooltipRich,
   type HeaderTooltipRichFooter,
 } from './AutoneHeaderInfoTooltip';
+import { AutoneArrowDownIcon } from './AutoneArrowDownIcon';
 
 function locationsTableHeaderRich(
   title: string,
@@ -75,7 +76,7 @@ function GripLabel({
       <GripVertical className={tableHeaderGripIcon} aria-hidden />
       <span>{label}</span>
       {info ? <Info size={14} className="shrink-0 text-[#6A7282]" aria-hidden /> : null}
-      {sort ? <ChevronDown size={14} className="shrink-0 text-[#6A7282]" aria-hidden /> : null}
+      {sort ? <AutoneArrowDownIcon size={14} className="text-[#6A7282]" /> : null}
     </>
   );
   if (align === 'right') {
@@ -203,18 +204,18 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
         </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
-        <CellGripInset align="left">
-          <div className="flex min-w-0 flex-col gap-1">
-            <div className={tableCellPrimary}>{row.transfersIn.units}</div>
-            <div className={tableCellSecondary}>{transfersSubline(row.transfersIn)}</div>
+        <CellGripInset align="right">
+          <div className="flex min-w-0 flex-col items-end gap-1">
+            <div className={`${tableCellPrimary} tabular-nums`}>{row.transfersIn.units}</div>
+            <div className={`${tableCellSecondary} text-right tabular-nums`}>{transfersSubline(row.transfersIn)}</div>
           </div>
         </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
-        <CellGripInset align="left">
-          <div className="flex min-w-0 flex-col gap-1">
-            <div className={tableCellPrimary}>{row.transfersOut.units}</div>
-            <div className={tableCellSecondary}>{transfersSubline(row.transfersOut)}</div>
+        <CellGripInset align="right">
+          <div className="flex min-w-0 flex-col items-end gap-1">
+            <div className={`${tableCellPrimary} tabular-nums`}>{row.transfersOut.units}</div>
+            <div className={`${tableCellSecondary} text-right tabular-nums`}>{transfersSubline(row.transfersOut)}</div>
           </div>
         </CellGripInset>
       </td>
@@ -224,10 +225,10 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
         </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] min-w-[200px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
-        <CellGripInset align="left">
-          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
-            <span className={tableCellPrimary}>{row.recommendedIn}</span>
-            <div className="flex shrink-0 items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <CellGripInset align="right">
+          <div className="flex min-w-0 flex-col items-end gap-2 text-right">
+            <span className={`tabular-nums ${tableCellPrimary}`}>{row.recommendedIn}</span>
+            <div className="flex shrink-0 items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
               <button type="button" className={recommendedTransferActionBtn} aria-label="Review">
                 REV
               </button>
@@ -328,16 +329,16 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
                 </span>
               </th>
               <th
-                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-left align-middle"
+                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-right align-middle"
                 scope="col"
               >
-                <GripLabel label="Transfers in" />
+                <GripLabel label="Transfers in" align="right" />
               </th>
               <th
-                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-left align-middle"
+                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-right align-middle"
                 scope="col"
               >
-                <GripLabel label="Transfers out" />
+                <GripLabel label="Transfers out" align="right" />
               </th>
               <th
                 className="h-[62px] min-h-[62px] max-h-[62px] min-w-[140px] box-border overflow-hidden px-4 py-0 text-right align-middle"
@@ -354,14 +355,14 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
                     )}
                     side="top"
                   />
-                  <ChevronDown size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
+                  <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
                 </span>
               </th>
               <th
-                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[220px] box-border overflow-hidden px-4 py-0 text-left align-middle"
+                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[220px] box-border overflow-hidden px-4 py-0 text-right align-middle"
                 scope="col"
               >
-                <span className="inline-flex items-center gap-2">
+                <span className="inline-flex w-full items-center justify-end gap-2">
                   <GripVertical className={tableHeaderGripIcon} aria-hidden />
                   <span className={tableHeaderGripInsetFont}>Recommended transfers in</span>
                   <AutoneHeaderInfoTooltip
@@ -507,18 +508,18 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
                 className={`sticky left-14 z-20 w-[180px] min-w-[180px] max-w-[180px] bg-white px-4 py-3 shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableCellPrimary}`}
               />
               <td className="px-4 py-3 align-middle">
-                <CellGripInset align="left">
-                  <div className="flex flex-col gap-1">
-                    <div className={tableCellPrimary}>{summary.transfersInUnits} units</div>
-                    <div className={tableCellSecondary}>{summary.transfersInTrips} trips</div>
+                <CellGripInset align="right">
+                  <div className="flex flex-col items-end gap-1 text-right">
+                    <div className={`${tableCellPrimary} tabular-nums`}>{summary.transfersInUnits} units</div>
+                    <div className={`${tableCellSecondary} tabular-nums`}>{summary.transfersInTrips} trips</div>
                   </div>
                 </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">
-                <CellGripInset align="left">
-                  <div className="flex flex-col gap-1">
-                    <div className={tableCellPrimary}>{summary.transfersOutUnits} units</div>
-                    <div className={tableCellSecondary}>{summary.transfersOutTrips} trips</div>
+                <CellGripInset align="right">
+                  <div className="flex flex-col items-end gap-1 text-right">
+                    <div className={`${tableCellPrimary} tabular-nums`}>{summary.transfersOutUnits} units</div>
+                    <div className={`${tableCellSecondary} tabular-nums`}>{summary.transfersOutTrips} trips</div>
                   </div>
                 </CellGripInset>
               </td>
@@ -530,8 +531,8 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
                 </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">
-                <CellGripInset align="left">
-                  <span className={tableCellPrimary}>{summary.recommendedIn} units</span>
+                <CellGripInset align="right">
+                  <span className={`tabular-nums ${tableCellPrimary}`}>{summary.recommendedIn} units</span>
                 </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">

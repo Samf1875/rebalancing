@@ -54,7 +54,7 @@ function TuBreakdownBadge({
     <button
       type="button"
       data-tu-badge=""
-      className={`inline-flex cursor-pointer items-center gap-0.5 rounded px-1 py-0.5 font-['Inter',sans-serif] text-[11px] font-semibold tabular-nums text-white outline-none transition-[box-shadow] focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-1 ${
+      className={`inline-flex h-[26px] w-[50px] shrink-0 cursor-pointer items-center justify-center gap-[5px] rounded-[2px] font-['Inter',sans-serif] text-[11px] font-semibold tabular-nums text-white outline-none transition-[box-shadow] focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-1 ${
         wh ? 'bg-[#A832D7]' : 'bg-[#2563EB]'
       } ${isOpen ? 'ring-2 ring-white ring-offset-1 ring-offset-transparent' : ''}`}
       aria-expanded={isOpen}
@@ -65,9 +65,9 @@ function TuBreakdownBadge({
       }}
     >
       {wh ? (
-        <Package className="size-3 shrink-0" strokeWidth={2} aria-hidden />
+        <Package className="size-[18px] shrink-0" strokeWidth={2} aria-hidden />
       ) : (
-        <Truck className="size-3 shrink-0" strokeWidth={2} aria-hidden />
+        <Truck className="size-[18px] shrink-0" strokeWidth={2} aria-hidden />
       )}
       {item.count}
     </button>
@@ -174,6 +174,13 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
     </div>
   );
 
+  const headerStackRight = (title: ReactNode, sub: ReactNode) => (
+    <div className="flex min-h-[52px] flex-col items-end justify-center gap-1 py-[2px] text-right">
+      {title}
+      {sub}
+    </div>
+  );
+
   const renderDataRow = (row: ProductTransferLocationRow) => (
     <tr key={row.id} className="bg-white">
       <td
@@ -211,18 +218,18 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
           <div className={`mt-0.5 ${tableCellSecondary}`}>{row.code}</div>
         </div>
       </td>
-      <td className={`min-h-[86px] min-w-[112px] px-4 py-3 align-top ${tableRowHoverTd}`}>
+      <td className={`min-h-[86px] min-w-[112px] px-4 py-3 text-right align-top ${tableRowHoverTd}`}>
         <div className={`tabular-nums ${tableCellPrimary}`}>{formatArrowPair(row.stock.from, row.stock.to)}</div>
       </td>
-      <td className={`min-h-[86px] min-w-[112px] px-4 py-3 align-top ${tableRowHoverTd}`}>
-        <div className="flex min-w-0 flex-col gap-0">
+      <td className={`min-h-[86px] min-w-[112px] px-4 py-3 text-right align-top ${tableRowHoverTd}`}>
+        <div className="flex min-w-0 flex-col items-end gap-0">
           <div className="tabular-nums text-[14px] font-semibold leading-normal">
             <span className="text-[#101828]">{row.tu.from.toLocaleString()}</span>
             <span className="mx-0.5 font-normal text-[#9CA3AF]">→</span>
             <span className="text-[#101828]">{row.tu.to.toLocaleString()}</span>
           </div>
           {showTuBreakdown && row.tuBreakdown != null && row.tuBreakdown.length > 0 ? (
-            <div className="mt-2 flex flex-wrap gap-1">
+            <div className="mt-2 flex w-full flex-wrap justify-end gap-1">
               {row.tuBreakdown.map((item, idx) => (
                 <TuBreakdownBadge
                   key={`${row.id}-tu-${idx}`}
@@ -239,20 +246,20 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
           ) : null}
         </div>
       </td>
-      <td className={`min-h-[86px] min-w-[100px] px-4 py-3 align-top ${tableRowHoverTd}`}>
-        <div className="flex min-w-0 flex-col gap-1">
+      <td className={`min-h-[86px] min-w-[100px] px-4 py-3 text-right align-top ${tableRowHoverTd}`}>
+        <div className="flex min-w-0 flex-col items-end gap-1">
           <div className={`tabular-nums ${tableCellPrimary}`}>{row.sales.l7d.toLocaleString()}</div>
           <div className={`tabular-nums ${tableCellSecondary}`}>{row.sales.l30d.toLocaleString()}</div>
         </div>
       </td>
-      <td className={`min-h-[86px] min-w-[112px] px-4 py-3 align-top ${tableRowHoverTd}`}>
+      <td className={`min-h-[86px] min-w-[112px] px-4 py-3 text-right align-top ${tableRowHoverTd}`}>
         <div className={`tabular-nums ${tableCellPrimary}`}>{row.forecastPerWeek.toFixed(2)}</div>
       </td>
-      <td className={`min-h-[86px] min-w-[112px] px-4 py-3 align-top ${tableRowHoverTd}`}>
+      <td className={`min-h-[86px] min-w-[112px] px-4 py-3 text-right align-top ${tableRowHoverTd}`}>
         <div className={`tabular-nums ${tableCellPrimary}`}>{formatArrowPair(row.stockouts.from, row.stockouts.to)}</div>
       </td>
-      <td className={`min-h-[86px] min-w-[140px] px-4 py-3 align-top ${tableRowHoverTd}`}>
-        <div className="flex min-w-0 flex-col gap-1">
+      <td className={`min-h-[86px] min-w-[140px] px-4 py-3 text-right align-top ${tableRowHoverTd}`}>
+        <div className="flex min-w-0 flex-col items-end gap-1">
           <div className={`tabular-nums ${tableCellPrimary}`}>
             {formatCoveragePair(row.coverage.fromPct, row.coverage.toPct)}
           </div>
@@ -325,8 +332,8 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
                     </span>
                   )}
                 </th>
-                <th className="min-w-[120px] px-4 py-[10px] text-left" scope="col">
-                  {headerStack(
+                <th className="min-w-[120px] px-4 py-[10px] text-right" scope="col">
+                  {headerStackRight(
                     <AutoneHeaderInfoTooltip
                       label="Stock"
                       rich={{
@@ -350,9 +357,9 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
                     </span>
                   )}
                 </th>
-                <th className="min-w-[120px] px-4 py-[10px] text-left" scope="col">
-                  {headerStack(
-                    <span className="inline-flex items-center gap-1">
+                <th className="min-w-[120px] px-4 py-[10px] text-right" scope="col">
+                  {headerStackRight(
+                    <span className="inline-flex items-center justify-end gap-1">
                       <AutoneHeaderInfoTooltip
                         label="TU (transfer units)"
                         rich={{
@@ -385,8 +392,8 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
                     </span>
                   )}
                 </th>
-                <th className="min-w-[120px] px-4 py-[10px] text-left" scope="col">
-                  {headerStack(
+                <th className="min-w-[120px] px-4 py-[10px] text-right" scope="col">
+                  {headerStackRight(
                     <AutoneHeaderInfoTooltip
                       label="Sales"
                       rich={{
@@ -424,8 +431,8 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
                     </span>
                   )}
                 </th>
-                <th className="min-w-[120px] px-4 py-[10px] text-left" scope="col">
-                  {headerStack(
+                <th className="min-w-[120px] px-4 py-[10px] text-right" scope="col">
+                  {headerStackRight(
                     <AutoneHeaderInfoTooltip
                       label="Stockouts"
                       rich={{
@@ -444,8 +451,8 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
                     </span>
                   )}
                 </th>
-                <th className="min-w-[152px] px-4 py-[10px] text-left" scope="col">
-                  {headerStack(
+                <th className="min-w-[152px] px-4 py-[10px] text-right" scope="col">
+                  {headerStackRight(
                     <AutoneHeaderInfoTooltip
                       label="Coverage"
                       topAlign="start"
@@ -491,7 +498,7 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
                 role="dialog"
                 aria-label={`${detailLabel} at ${popRow.name}`}
                 data-tu-popover=""
-                className="w-[min(18rem,calc(100vw-24px))] rounded-lg border-2 bg-white p-3 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.15)]"
+                className="w-[min(18rem,calc(100vw-24px))] rounded-[2px] border-2 bg-white p-3 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.15)]"
                 style={{ ...tuPopoverStyle, borderColor: accent, visibility: tuPopoverStyle.visibility ?? 'hidden' }}
               >
                 <p className="font-['Inter',sans-serif] text-sm font-semibold leading-snug text-[#101828]">
@@ -509,7 +516,7 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
                       {detailLabel}
                     </span>
                   </div>
-                  <span className="shrink-0 rounded-md bg-[#F2F4F7] px-2 py-1 font-['Inter',sans-serif] text-sm font-semibold tabular-nums text-[#101828]">
+                  <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-2 py-1 font-['Inter',sans-serif] text-sm font-semibold tabular-nums text-[#101828]">
                     {popItem.count}
                   </span>
                 </div>

@@ -422,9 +422,9 @@ export function AssortmentTable({
     switch (columnId) {
       case 'sales':
         return (
-          <th key={columnId} className={`min-w-[128px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-left align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col justify-center">
-              <span className="inline-flex items-center gap-2">
+          <th key={columnId} className={`min-w-[128px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
+            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+              <span className="inline-flex w-full items-center justify-end gap-2">
                 {gripDragHandle(columnId, 'Revenue increase')}
                 <AutoneHeaderInfoTooltip
                   label="Revenue increase"
@@ -440,11 +440,11 @@ export function AssortmentTable({
         return (
           <th
             key={columnId}
-            className={`min-w-[220px] max-w-[280px] h-[62px] min-h-[62px] max-h-[62px] box-border px-3 py-0 text-left align-middle ${theadCellBg}`}
+            className={`min-w-[220px] max-w-[280px] h-[62px] min-h-[62px] max-h-[62px] box-border px-3 py-0 text-right align-middle ${theadCellBg}`}
             {...d}
           >
-            <div className="flex h-full min-h-0 flex-col justify-center">
-              <span className="inline-flex items-center gap-2">
+            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+              <span className="inline-flex w-full items-center justify-end gap-2">
                 {gripDragHandle(columnId, 'Revenue Increase KPIs')}
                 <span className="leading-snug">Revenue Increase KPIs</span>
               </span>
@@ -453,9 +453,9 @@ export function AssortmentTable({
         );
       case 'transfers':
         return (
-          <th key={columnId} className={`min-w-[200px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-left align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col justify-center">
-              <span className="inline-flex items-center gap-2">
+          <th key={columnId} className={`min-w-[200px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
+            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+              <span className="inline-flex w-full items-center justify-end gap-2">
                 {gripDragHandle(columnId, 'Transfers')}
                 <AutoneHeaderInfoTooltip
                   label="Transfers"
@@ -481,11 +481,11 @@ export function AssortmentTable({
         return (
           <th
             key={columnId}
-            className={`min-w-[220px] max-w-[280px] h-[62px] min-h-[62px] max-h-[62px] box-border px-3 py-0 text-left align-middle ${theadCellBg}`}
+            className={`min-w-[220px] max-w-[280px] h-[62px] min-h-[62px] max-h-[62px] box-border px-3 py-0 text-right align-middle ${theadCellBg}`}
             {...d}
           >
-            <div className="flex h-full min-h-0 flex-col justify-center">
-              <span className="inline-flex items-center gap-2">
+            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+              <span className="inline-flex w-full items-center justify-end gap-2">
                 {gripDragHandle(columnId, 'Transfer KPIs')}
                 <span className="leading-snug">Transfer KPIs</span>
               </span>
@@ -494,9 +494,9 @@ export function AssortmentTable({
         );
       case 'scheduleStart':
         return (
-          <th key={columnId} className={`min-w-[240px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-left align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col justify-center">
-              <span className="inline-flex items-center gap-2">
+          <th key={columnId} className={`min-w-[240px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
+            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+              <span className="inline-flex w-full items-center justify-end gap-2">
                 {gripDragHandle(columnId, 'Recommended transfers')}
                 <AutoneHeaderInfoTooltip
                   label="Recommended transfers"
@@ -576,9 +576,9 @@ export function AssortmentTable({
         );
       case 'targetCoverage':
         return (
-          <th key={columnId} className={`min-w-[128px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-left align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-start justify-center">
-              <span className="inline-flex items-center gap-2">
+          <th key={columnId} className={`min-w-[128px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
+            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+              <span className="inline-flex w-full items-center justify-end gap-2">
                 {gripDragHandle(columnId, 'Stockouts')}
                 <AutoneHeaderInfoTooltip
                   label="Stockouts"
@@ -603,9 +603,9 @@ export function AssortmentTable({
         );
       case 'gripLocations':
         return (
-          <th key={columnId} className={`min-w-[120px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-left align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-start justify-center">
-              <span className="inline-flex items-center gap-2">
+          <th key={columnId} className={`min-w-[120px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
+            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+              <span className="inline-flex w-full items-center justify-end gap-2">
                 {gripDragHandle(columnId, 'Locations')}
                 <AutoneHeaderInfoTooltip
                   label="Locations"
@@ -630,9 +630,9 @@ export function AssortmentTable({
         );
       case 'gripOverstocks':
         return (
-          <th key={columnId} className={`min-w-[120px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-left align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-start justify-center">
-              <span className="inline-flex items-center gap-1.5">
+          <th key={columnId} className={`min-w-[120px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
+            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+              <span className="inline-flex w-full items-center justify-end gap-1.5">
                 {gripDragHandle(columnId, 'Overstocks')}
                 <AutoneHeaderInfoTooltip
                   label="Overstocks"
@@ -657,9 +657,9 @@ export function AssortmentTable({
         );
       case 'gripUnderstocks':
         return (
-          <th key={columnId} className={`min-w-[120px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-left align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-start justify-center">
-              <span className="inline-flex items-center gap-1.5">
+          <th key={columnId} className={`min-w-[120px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
+            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+              <span className="inline-flex w-full items-center justify-end gap-1.5">
                 {gripDragHandle(columnId, 'Understocks')}
                 <AutoneHeaderInfoTooltip
                   label="Understocks"
@@ -684,9 +684,9 @@ export function AssortmentTable({
         );
       case 'gripDepth':
         return (
-          <th key={columnId} className={`min-w-[100px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-left align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-start justify-center">
-              <span className="inline-flex items-center gap-1.5">
+          <th key={columnId} className={`min-w-[100px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
+            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+              <span className="inline-flex w-full items-center justify-end gap-1.5">
                 {gripDragHandle(columnId, 'Depth')}
                 <AutoneHeaderInfoTooltip
                   label="Depth"
@@ -712,9 +712,9 @@ export function AssortmentTable({
         );
       case 'gripWarehouseUnits':
         return (
-          <th key={columnId} className={`min-w-[128px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-left align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-start justify-center">
-              <span className="inline-flex items-center gap-1.5">
+          <th key={columnId} className={`min-w-[128px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
+            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+              <span className="inline-flex w-full items-center justify-end gap-1.5">
                 {gripDragHandle(columnId, 'Warehouse units')}
                 <AutoneHeaderInfoTooltip
                   label="Warehouse units"
@@ -817,21 +817,21 @@ export function AssortmentTable({
     switch (columnId) {
       case 'sales':
         return (
-          <td key={columnId} className={`h-[86px] min-h-[86px] py-3 px-4 align-middle ${tableRowHoverTd}`}>
-            <div className={tableCellPrimary}>{formatRevenueIncreaseEurK(row.revenueIncreaseEur)}</div>
+          <td key={columnId} className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}>
+            <div className={`${tableCellPrimary} tabular-nums`}>{formatRevenueIncreaseEurK(row.revenueIncreaseEur)}</div>
           </td>
         );
       case 'revenueIncreaseKpis':
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] min-w-[220px] max-w-[280px] py-3 px-4 align-middle ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] min-w-[220px] max-w-[280px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
           >
-            <div className="flex min-w-0 flex-col gap-2">
+            <div className="flex min-w-0 flex-col items-end gap-2">
               {revenueIncreaseKpisLines(row).map((line) => (
-                <div key={line.label} className="flex min-w-0 flex-col gap-0.5">
+                <div key={line.label} className="flex min-w-0 flex-col items-end gap-0.5">
                   <div className={`${tableCellPrimary} tabular-nums`}>{line.value}</div>
-                  <div className={tableCellSecondary}>{line.label}</div>
+                  <div className={`${tableCellSecondary} text-right`}>{line.label}</div>
                 </div>
               ))}
             </div>
@@ -839,12 +839,12 @@ export function AssortmentTable({
         );
       case 'transfers':
         return (
-          <td key={columnId} className={`h-[86px] min-h-[86px] py-3 px-4 align-middle ${tableRowHoverTd}`}>
-            <div className="flex min-w-0 flex-col gap-1">
-              <div className={tableCellPrimary}>
+          <td key={columnId} className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}>
+            <div className="flex min-w-0 flex-col items-end gap-1">
+              <div className={`${tableCellPrimary} tabular-nums`}>
                 {row.transfers.l7d.toLocaleString()} L7D
               </div>
-              <div className={tableCellSecondary}>
+              <div className={`${tableCellSecondary} tabular-nums`}>
                 {row.transfers.l30d.toLocaleString()} L30D
               </div>
             </div>
@@ -854,13 +854,13 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] min-w-[220px] max-w-[280px] py-3 px-4 align-middle ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] min-w-[220px] max-w-[280px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
           >
-            <div className="flex min-w-0 flex-col gap-2">
+            <div className="flex min-w-0 flex-col items-end gap-2">
               {transferKpisLines(row).map((line) => (
-                <div key={line.label} className="flex min-w-0 flex-col gap-0.5">
+                <div key={line.label} className="flex min-w-0 flex-col items-end gap-0.5">
                   <div className={`${tableCellPrimary} tabular-nums`}>{line.value}</div>
-                  <div className={tableCellSecondary}>{line.label}</div>
+                  <div className={`${tableCellSecondary} text-right`}>{line.label}</div>
                 </div>
               ))}
             </div>
@@ -870,18 +870,16 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] min-w-[240px] py-3 px-4 align-middle ${tableRowHoverTd}`}
+            className={`min-h-[86px] min-w-[240px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
           >
-            <div className="flex min-w-0 flex-wrap items-center justify-start gap-x-3 gap-y-2 text-left">
-              <div className="flex min-w-0 flex-col items-start gap-1">
-                <div className={tableCellPrimary}>
-                  {row.recommendedTransfers.primary.toLocaleString()}
-                </div>
-                <div className={tableCellSecondary}>
-                  {row.recommendedTransfers.secondary.toLocaleString()}
-                </div>
+            <div className="flex min-w-0 flex-col items-end gap-2 text-right">
+              <div className={`${tableCellPrimary} tabular-nums`}>
+                {row.recommendedTransfers.primary.toLocaleString()}
               </div>
-              <div className="flex shrink-0 items-center gap-1">
+              <div className={`${tableCellSecondary} tabular-nums`}>
+                {row.recommendedTransfers.secondary.toLocaleString()}
+              </div>
+              <div className="flex shrink-0 items-center justify-end gap-1">
                 <button
                   type="button"
                   className={recommendedTransferActionBtn}
@@ -952,7 +950,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-left align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
           >
             {row.stockouts.from.toLocaleString()} → {row.stockouts.to.toLocaleString()}
           </td>
@@ -961,7 +959,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-left align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
           >
             {row.locationsTransition.from.toLocaleString()} → {row.locationsTransition.to.toLocaleString()}
           </td>
@@ -970,7 +968,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-left align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
           >
             {row.overstocksTransition.from.toLocaleString()} → {row.overstocksTransition.to.toLocaleString()}
           </td>
@@ -979,7 +977,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-left align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
           >
             {row.understocksTransition.from.toLocaleString()} → {row.understocksTransition.to.toLocaleString()}
           </td>
@@ -988,7 +986,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-left align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
           >
             {row.depthTransition.from.toFixed(1)} → {row.depthTransition.to.toFixed(1)}
           </td>
@@ -997,7 +995,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-left align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
           >
             {row.warehouseUnitsTransition.from.toLocaleString()} →{' '}
             {row.warehouseUnitsTransition.to.toLocaleString()}

@@ -122,15 +122,15 @@ export function LocationProductsDrillView({ location, onBack }: LocationProducts
       <td className={`h-[86px] min-h-[86px] min-w-[120px] px-4 py-3 text-right align-middle ${tableRowHoverTd}`}>
         <span className={`tabular-nums ${tableCellPrimary}`}>{formatEurPlain(row.revenueEur)}</span>
       </td>
-      <td className={`h-[86px] min-h-[86px] min-w-[220px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
-        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
-          <div className="flex min-w-0 flex-col tabular-nums">
+      <td className={`h-[86px] min-h-[86px] min-w-[220px] px-4 py-3 text-right align-middle ${tableRowHoverTd}`}>
+        <div className="flex min-w-0 flex-col items-end gap-2">
+          <div className="flex min-w-0 flex-col items-end tabular-nums">
             <span className={tableCellPrimary}>{row.recommendedUnits}</span>
             {row.recommendedTrips > 0 ? (
               <span className={tableCellSecondary}>{row.recommendedTrips} trips</span>
             ) : null}
           </div>
-          <div className="flex shrink-0 items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <div className="flex shrink-0 items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
             {row.badges.includes('rev') ? (
               <span className={recommendedBadgeBtn} aria-hidden>
                 REV
@@ -212,8 +212,8 @@ export function LocationProductsDrillView({ location, onBack }: LocationProducts
                   </div>
                 </th>
                 <th className="h-[62px] min-h-[62px] max-h-[62px] min-w-[100px] bg-white px-4 py-0 text-right align-top" scope="col">
-                  <div className="flex h-full min-h-0 flex-col items-end justify-center">
-                    <span className="inline-flex items-center justify-end gap-2">
+                  <div className="flex h-full min-h-0 w-full flex-col items-end justify-center">
+                    <span className="inline-flex w-full items-center justify-end gap-2">
                       <GripVertical className={tableHeaderGripIcon} aria-hidden />
                       <span className={tableHeaderGripFont}>Transfers In</span>
                       <AutoneHeaderInfoTooltip
@@ -234,8 +234,8 @@ export function LocationProductsDrillView({ location, onBack }: LocationProducts
                   </div>
                 </th>
                 <th className="h-[62px] min-h-[62px] max-h-[62px] min-w-[100px] bg-white px-4 py-0 text-right align-top" scope="col">
-                  <div className="flex h-full min-h-0 flex-col items-end justify-center">
-                    <span className="inline-flex items-center justify-end gap-2">
+                  <div className="flex h-full min-h-0 w-full flex-col items-end justify-center">
+                    <span className="inline-flex w-full items-center justify-end gap-2">
                       <GripVertical className={tableHeaderGripIcon} aria-hidden />
                       <span className={tableHeaderGripFont}>Transfers Out</span>
                       <AutoneHeaderInfoTooltip
@@ -260,8 +260,8 @@ export function LocationProductsDrillView({ location, onBack }: LocationProducts
                   scope="col"
                   data-header="revenue"
                 >
-                  <div className="flex h-full min-h-0 flex-col items-end justify-center">
-                    <span className="inline-flex items-center justify-end gap-2">
+                  <div className="flex h-full min-h-0 w-full flex-col items-end justify-center">
+                    <span className="inline-flex w-full items-center justify-end gap-2">
                       <GripVertical className={tableHeaderGripIcon} aria-hidden />
                       <span className={tableHeaderGripFont}>Revenue increase</span>
                       <AutoneHeaderInfoTooltip
@@ -287,8 +287,8 @@ export function LocationProductsDrillView({ location, onBack }: LocationProducts
                   scope="col"
                   data-header="recommended"
                 >
-                  <div className="flex h-full min-h-0 flex-col items-end justify-center">
-                    <span className="inline-flex items-center justify-end gap-2">
+                  <div className="flex h-full min-h-0 w-full flex-col items-end justify-center">
+                    <span className="inline-flex w-full items-center justify-end gap-2">
                       <GripVertical className={tableHeaderGripIcon} aria-hidden />
                       <span className={tableHeaderGripFont}>Recommended transfers</span>
                       <AutoneHeaderInfoTooltip
@@ -313,8 +313,8 @@ export function LocationProductsDrillView({ location, onBack }: LocationProducts
                   scope="col"
                   data-header="sales"
                 >
-                  <div className="flex h-full min-h-0 flex-col items-end justify-center">
-                    <span className="inline-flex items-center justify-end gap-2">
+                  <div className="flex h-full min-h-0 w-full flex-col items-end justify-center">
+                    <span className="inline-flex w-full items-center justify-end gap-2">
                       <GripVertical className={tableHeaderGripIcon} aria-hidden />
                       <span className={tableHeaderGripFont}>Sales</span>
                       <AutoneHeaderInfoTooltip

@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { GripVertical, MoreVertical, Search } from 'lucide-react';
 import {
   MOCK_REBALANCING_TASKS,
@@ -53,7 +54,12 @@ function RebalancingModuleDetailsBody({
 
 type RebalancingTaskListScreenProps = {
   onOpenTask: (task: RebalancingTaskRow) => void;
+  /** Optional — called when the user chooses Re-create from the row actions menu. */
+  onRecreateTask?: (task: RebalancingTaskRow) => void;
 };
+
+const TASK_ACTIONS_MENU_MIN_PX = 168;
+const TASK_ACTIONS_VIEWPORT_PAD = 12;
 
 /** Matches `AutoneHeaderInfoTooltip` trigger + AssortmentTable header row typography (sentence-style labels, no all-caps) */
 const HEADER_COLUMN_LABEL_CLASS =
@@ -61,6 +67,9 @@ const HEADER_COLUMN_LABEL_CLASS =
 
 const thClass =
   'h-[62px] min-h-[62px] max-h-[62px] box-border overflow-hidden px-4 py-0 text-left align-middle';
+
+const thClassRight =
+  'h-[62px] min-h-[62px] max-h-[62px] box-border overflow-hidden px-4 py-0 text-right align-middle';
 
 /** Align cell text with label after grip (18px) + gap (8px) inside `px-4` header cells */
 const thGripLabel = (label: string) => (
@@ -75,15 +84,37 @@ const thGripLabel = (label: string) => (
   </span>
 );
 
+/** Numeric columns: grip + label grouped to the right edge */
+const thGripLabelRight = (label: string) => (
+  <span className="inline-flex min-h-0 max-h-[62px] w-full items-center justify-end gap-2">
+    <GripVertical
+      size={18}
+      strokeWidth={2}
+      className="shrink-0 text-[#9CA3AF]"
+      aria-hidden
+    />
+    <span className={HEADER_COLUMN_LABEL_CLASS}>{label}</span>
+  </span>
+);
+
 /** Align cell text with label text after grip+gap in header */
 const dataCellPad = 'py-3 pl-[42px] pr-4';
 
-export function RebalancingTaskListScreen({ onOpenTask }: RebalancingTaskListScreenProps) {
+/** Numeric columns — right-aligned, no grip offset */
+const dataCellPadRight = 'py-3 px-4 text-right';
+
+export function RebalancingTaskListScreen({ onOpenTask, onRecreateTask }: RebalancingTaskListScreenProps) {
   const [tab, setTab] = useState<'ongoing' | 'submitted'>('ongoing');
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchWrapRef = useRef<HTMLDivElement>(null);
+  const [taskActionsMenu, setTaskActionsMenu] = useState<{
+    task: RebalancingTaskRow;
+    top: number;
+    left: number;
+  } | null>(null);
+  const taskActionsMenuRef = useRef<HTMLDivElement>(null);
 
   const visibleTasks = useMemo(() => {
     const list = tab === 'ongoing' ? MOCK_REBALANCING_TASKS : MOCK_SUBMITTED_REBALANCING_TASKS;
@@ -119,6 +150,27 @@ export function RebalancingTaskListScreen({ onOpenTask }: RebalancingTaskListScr
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
   }, [searchOpen]);
+
+  useEffect(() => {
+    if (!taskActionsMenu) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setTaskActionsMenu(null);
+    };
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (t.closest('[data-task-actions-menu]') || t.closest('[data-task-actions-trigger]')) return;
+      setTaskActionsMenu(null);
+    };
+    const onScroll = () => setTaskActionsMenu(null);
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onDown);
+    window.addEventListener('scroll', onScroll, true);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onDown);
+      window.removeEventListener('scroll', onScroll, true);
+    };
+  }, [taskActionsMenu]);
 
   return (
     <div
@@ -219,17 +271,17 @@ export function RebalancingTaskListScreen({ onOpenTask }: RebalancingTaskListScr
               <th scope="col" className={thClass}>
                 {thGripLabel('Name')}
               </th>
-              <th scope="col" className={thClass}>
-                {thGripLabel('Created')}
+              <th scope="col" className={thClassRight}>
+                {thGripLabelRight('Created')}
               </th>
-              <th scope="col" className={thClass}>
-                {thGripLabel('Unique trips')}
+              <th scope="col" className={thClassRight}>
+                {thGripLabelRight('Unique trips')}
               </th>
-              <th scope="col" className={thClass}>
-                {thGripLabel('Transfer units')}
+              <th scope="col" className={thClassRight}>
+                {thGripLabelRight('Transfer units')}
               </th>
-              <th scope="col" className={thClass}>
-                {thGripLabel('Transfer value')}
+              <th scope="col" className={thClassRight}>
+                {thGripLabelRight('Transfer value')}
               </th>
               <th
                 className="h-[62px] min-h-[62px] max-h-[62px] w-12 box-border overflow-hidden px-2 py-0 align-middle"
@@ -250,26 +302,45 @@ export function RebalancingTaskListScreen({ onOpenTask }: RebalancingTaskListScr
                     {task.name}
                   </span>
                 </td>
-                <td className={`${dataCellPad} align-middle font-['Inter',sans-serif] text-sm text-[#101828]`}>
-                  <div className="flex flex-col gap-0.5 leading-tight">
+                <td className={`${dataCellPadRight} align-middle font-['Inter',sans-serif] text-sm text-[#101828]`}>
+                  <div className="flex flex-col items-end gap-0.5 leading-tight text-right">
                     <span className="whitespace-nowrap">{task.createdLabel}</span>
                     <span className="font-['Inter',sans-serif] text-xs text-[#6B7280]">{task.creator}</span>
                   </div>
                 </td>
-                <td className={`${dataCellPad} align-middle font-['Inter',sans-serif] text-sm tabular-nums text-[#101828]`}>
+                <td className={`${dataCellPadRight} align-middle font-['Inter',sans-serif] text-sm tabular-nums text-[#101828]`}>
                   {task.uniqueTrips.toLocaleString()}
                 </td>
-                <td className={`${dataCellPad} align-middle font-['Inter',sans-serif] text-sm tabular-nums text-[#101828]`}>
+                <td className={`${dataCellPadRight} align-middle font-['Inter',sans-serif] text-sm tabular-nums text-[#101828]`}>
                   {task.transferUnits.toLocaleString()}
                 </td>
-                <td className={`${dataCellPad} align-middle font-['Inter',sans-serif] text-sm tabular-nums font-medium text-[#101828]`}>
+                <td className={`${dataCellPadRight} align-middle font-['Inter',sans-serif] text-sm tabular-nums font-medium text-[#101828]`}>
                   {formatTransferValueEur(task.transferValueEur)}
                 </td>
                 <td className="px-2 py-3 align-middle" onClick={(e) => e.stopPropagation()}>
                   <button
                     type="button"
-                    className="flex h-9 w-9 items-center justify-center rounded text-[#6B7280] transition-colors hover:bg-slate-100 hover:text-[#101828]"
+                    data-task-actions-trigger=""
+                    className="flex h-9 w-9 items-center justify-center rounded text-[#6B7280] transition-colors hover:bg-slate-100 hover:text-[#101828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#0267FF]"
                     aria-label={`Actions for ${task.name}`}
+                    aria-expanded={taskActionsMenu?.task.id === task.id}
+                    aria-haspopup="menu"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const left = Math.max(
+                        TASK_ACTIONS_VIEWPORT_PAD,
+                        Math.min(
+                          rect.right - TASK_ACTIONS_MENU_MIN_PX,
+                          window.innerWidth - TASK_ACTIONS_MENU_MIN_PX - TASK_ACTIONS_VIEWPORT_PAD
+                        )
+                      );
+                      setTaskActionsMenu((prev) =>
+                        prev?.task.id === task.id
+                          ? null
+                          : { task, top: rect.bottom + 4, left }
+                      );
+                    }}
                   >
                     <MoreVertical size={18} strokeWidth={2} aria-hidden />
                   </button>
@@ -286,6 +357,34 @@ export function RebalancingTaskListScreen({ onOpenTask }: RebalancingTaskListScr
           </tbody>
         </table>
       </div>
+
+      {taskActionsMenu != null &&
+        createPortal(
+          <div
+            ref={taskActionsMenuRef}
+            data-task-actions-menu=""
+            role="menu"
+            aria-label="Task actions"
+            className="fixed z-[90] min-w-[168px] overflow-hidden rounded-lg border border-[#E3E8F0] bg-white py-1 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.12),0_4px_8px_-4px_rgba(15,23,42,0.08)]"
+            style={{
+              top: taskActionsMenu.top,
+              left: taskActionsMenu.left,
+            }}
+          >
+            <button
+              type="button"
+              role="menuitem"
+              className="w-full px-3 py-2.5 text-left font-['Inter',sans-serif] text-sm font-medium text-[#101828] transition-colors hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none"
+              onClick={() => {
+                onRecreateTask?.(taskActionsMenu.task);
+                setTaskActionsMenu(null);
+              }}
+            >
+              Re-create
+            </button>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

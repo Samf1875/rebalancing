@@ -861,10 +861,12 @@ export function MainContent({
               onClick={() => setKpisPanelOpen(true)}
               title="Key performance indicators"
               aria-label="Rebalancing KPIs, Key performance indicators"
-              className="flex h-12 shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-[#E3E8F0] bg-white px-3 font-['Inter',sans-serif] text-sm font-medium text-[#101828] transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#0267FF] sm:px-4"
+              className="flex h-12 min-h-12 shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border border-[#e9eaeb] bg-white px-4 text-[#101828] transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#0267FF]"
             >
               <BarChart3 size={18} strokeWidth={2} className="shrink-0 text-[#667085]" aria-hidden />
-              <span className="leading-none">Rebalancing KPIs</span>
+              <span className="font-['Inter',sans-serif] text-sm font-medium leading-none">
+                Rebalancing KPIs
+              </span>
             </button>
           </div>
         </div>

@@ -12,7 +12,7 @@ const tableCellLocationName =
   "font-['Inter',sans-serif] text-[14px] font-normal leading-normal text-[#101828]";
 const tableCellSecondary =
   "font-['Inter',sans-serif] text-[12px] font-normal leading-normal text-[#6A7282]";
-/** Products column body — centered, medium weight per design. */
+/** Products column body — right-aligned, medium weight. */
 const tableCellProducts =
   "font-['Inter',sans-serif] text-[14px] font-medium leading-normal tabular-nums text-[#101828]";
 const tableCellProductsNa =
@@ -34,8 +34,9 @@ const stickyReceivingTd = `sticky left-[calc(3.5rem+200px)] z-[15] ${tripLocCol}
 /** Label row typography — grip wrapper uses the same so `1lh` matches the text span. */
 const tripThLabelRowEnd =
   "inline-flex items-center justify-end gap-2 font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
-const tripThLabelRowCenter =
-  "inline-flex items-center justify-center gap-2 font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
+/** Full-width cell label (sticky location columns) — `inline-flex` would shrink-wrap and misalign. */
+const tripThLabelCellStart =
+  "flex w-full items-center justify-start font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
 /** Match cap / font-size of 14px label (`1em`), not full line box (`1lh`). */
 const tripThGripWrap =
   "inline-flex h-[1em] w-[1em] shrink-0 items-center justify-center self-center font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#6A7282]";
@@ -117,14 +118,14 @@ export function TripsTable() {
           aria-label={`Select trip ${row.sendingName} → ${row.receivingName}`}
         />
       </td>
-      <td className={`px-4 py-3 align-middle ${stickySendingTd} ${tableRowHoverTd}`}>
-        <div className="flex flex-col gap-0.5">
+      <td className={`px-4 py-3 text-left align-middle ${stickySendingTd} ${tableRowHoverTd}`}>
+        <div className="flex w-full flex-col items-start gap-0.5">
           <div className={tableCellLocationName}>{row.sendingName}</div>
           <div className={tableCellSecondary}>{row.sendingId}</div>
         </div>
       </td>
-      <td className={`px-4 py-3 align-middle ${stickyReceivingTd} ${tableRowHoverTd}`}>
-        <div className="flex flex-col gap-0.5">
+      <td className={`px-4 py-3 text-left align-middle ${stickyReceivingTd} ${tableRowHoverTd}`}>
+        <div className="flex w-full flex-col items-start gap-0.5">
           <div className={tableCellLocationName}>{row.receivingName}</div>
           <div className={tableCellSecondary}>{row.receivingId}</div>
         </div>
@@ -150,7 +151,7 @@ export function TripsTable() {
           {renderBadges(row.badges)}
         </div>
       </td>
-      <td className="min-w-[120px] px-4 py-3 align-middle text-center">
+      <td className="min-w-[120px] px-4 py-3 align-middle text-right">
         {row.productCount == null ? (
           <span className={tableCellProductsNa}>N/A</span>
         ) : (
@@ -189,10 +190,10 @@ export function TripsTable() {
                 </label>
               </th>
               <th className={stickySendingTh} scope="col">
-                Sending location
+                <span className={tripThLabelCellStart}>Sending location</span>
               </th>
               <th className={stickyReceivingTh} scope="col">
-                Receiving location
+                <span className={tripThLabelCellStart}>Receiving location</span>
               </th>
               <th className={`min-w-[140px] text-right ${tripThCell} ${theadBg}`} scope="col">
                 <span className={tripThLabelRowEnd}>
@@ -254,8 +255,8 @@ export function TripsTable() {
                   <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
                 </span>
               </th>
-              <th className={`min-w-[120px] text-center ${tripThCell} ${theadBg}`} scope="col">
-                <span className={tripThLabelRowCenter}>
+              <th className={`min-w-[120px] text-right ${tripThCell} ${theadBg}`} scope="col">
+                <span className={`${tripThLabelRowEnd} w-full`}>
                   <TripColumnGrip />
                   <span>Products</span>
                 </span>
