@@ -1,9 +1,12 @@
 import { ArrowLeft, Download, ExternalLink, Share2, Upload } from 'lucide-react';
+import type { PrototypeVersionId } from '../lib/prototypeVersion';
 
 type RebalancingHeaderMode = 'taskList' | 'workspace';
 
 type HeaderProps = {
   activeMainNavId?: string;
+  /** In-app prototype variant (from Layout rail; state-only). */
+  prototypeVersion?: PrototypeVersionId;
   /** Rebalancing header: return to Replenishment workspace. */
   onSwitchBack?: () => void;
   /** First visit: task list uses Switch back + Create new; afterward workspace actions. */
@@ -16,6 +19,7 @@ type HeaderProps = {
 
 export function Header({
   activeMainNavId = 'home',
+  prototypeVersion = 'v1',
   onSwitchBack,
   rebalancingHeaderMode = 'workspace',
   onCreateNewRebalancing,
@@ -24,6 +28,8 @@ export function Header({
   onSubmitRebalancing,
 }: HeaderProps) {
   const isRebalancing = activeMainNavId === 'refresh';
+  const prototypeSubtitle =
+    prototypeVersion !== 'v1' ? ` · Prototype ${prototypeVersion.toUpperCase()}` : '';
 
   if (isRebalancing) {
     const taskList = rebalancingHeaderMode === 'taskList';
@@ -38,6 +44,7 @@ export function Header({
           </h1>
           <p className="text-sm font-normal leading-snug text-[#a6aaaf]">
             Optimize your inventory between points of sales
+            {prototypeSubtitle}
           </p>
         </div>
         <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
@@ -110,6 +117,7 @@ export function Header({
           <div className="flex flex-wrap items-center gap-1 text-sm leading-none">
             <span className="font-normal text-[#a6aaaf]">
               Manage your assortment and initial allocations
+              {prototypeSubtitle}
             </span>
             <span className="font-normal text-[#878d94]">•</span>
             <a

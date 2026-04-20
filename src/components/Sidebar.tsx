@@ -2,10 +2,8 @@ import { useId, useState, type ComponentType } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { SCRATCHPAD_852_24160_TOGGLE_PATH } from '../assets/sidebarEdgeToggle85224160';
 import { RefreshSyncIcon } from './icons/RefreshSyncIcon';
+import { AutoneLogoMark } from './icons/AutoneLogoMark';
 
-/** Autone logo mark — Monotone / autone-logo (Figma 12210:36296 → 12207:7487) */
-const AUTONE_LOGO_MARK =
-  'https://www.figma.com/api/mcp/asset/c5ee9218-b879-4260-83b3-109275a3e743';
 /** Full wordmark pieces (Figma AutoneLogo 12207:7492 → 12207:7490 + 12207:7491) */
 const AUTONE_LOGO_MARK_EXPANDED =
   'https://www.figma.com/api/mcp/asset/69833f17-f272-4a51-9709-ccd76d53c85d';
@@ -22,17 +20,6 @@ const EDGE_TOGGLE_LEFT_COLLAPSED = 56;
 /** User avatar — Figma NEW Autone DS 2.0 Sidebar expanded (12299:63282 → Avatar image) */
 const USER_AVATAR_SRC =
   'https://www.figma.com/api/mcp/asset/1219bd98-c11e-416a-b2e3-9f49046e360c';
-/** UK flag — Sidebar element Icon=uk (Figma 12349:171770 → 10027:30853) */
-const UK_FLAG_SRC =
-  'https://www.figma.com/api/mcp/asset/6556f56e-8904-422b-8817-09a712cea858';
-/** Chat — Sidebar element Icon=chat (Figma 12353:173526 → 12353:173494) */
-const SIDEBAR_CHAT_ICON_SRC =
-  'https://www.figma.com/api/mcp/asset/e6b40e9c-d822-47ec-81cd-89204f8f1316';
-/** Currency — Sidebar element Icon=circle-dollar (Figma 12718:7152 → 4605:27967) */
-const SIDEBAR_CURRENCY_ICON_VECTOR =
-  'https://www.figma.com/api/mcp/asset/96c77157-ecfd-4da2-ad27-e5fd6f309f8f';
-const SIDEBAR_CURRENCY_ICON_ELLIPSE =
-  'https://www.figma.com/api/mcp/asset/816d86d5-bbf1-4b47-bfcb-b7f610c0bbc1';
 
 const SIDEBAR_INACTIVE_ICON = 'text-[#9AA4B2]';
 
@@ -60,9 +47,6 @@ function SidebarUserAvatarImage({ alt }: { alt: string }) {
     </div>
   );
 }
-/** Chat/Currency imgs: default white glyph; `group-hover` → ~#0267FF like `text-inherit` nav icons. */
-const SIDEBAR_RASTER_ICON_HOVER =
-  'brightness-0 invert transition-[filter] duration-200 ease-out group-hover:[filter:brightness(0)_saturate(100%)_invert(27%)_sepia(100%)_saturate(7499%)_hue-rotate(208deg)_brightness(101%)_contrast(101%)]';
 
 type NavIconProps = { size?: number; strokeWidth?: number; className?: string };
 type LucideLike = ComponentType<NavIconProps>;
@@ -557,39 +541,121 @@ function SidebarHistoryClockIcon({ className }: Pick<NavIconProps, 'className'>)
   );
 }
 
+/** Chat — Sidebar element Icon=chat (Figma 12350:172509 → 12353:173494). */
 function SidebarChatIcon() {
   return (
-    <div className="relative shrink-0 size-6" aria-hidden>
-      <div className="absolute inset-[4.58%]">
-        <img
-          src={SIDEBAR_CHAT_ICON_SRC}
-          alt=""
-          className={`absolute block size-full max-w-none object-contain ${SIDEBAR_RASTER_ICON_HOVER}`}
-        />
+    <div
+      className="relative shrink-0 size-6 text-white transition-colors group-hover:text-[#0267FF]"
+      aria-hidden
+      data-node-id="I12350:172509;12203:35386"
+    >
+      <div className="absolute inset-[4.58%]" data-node-id="I12350:172509;12203:35386;12353:173494">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 18.167 18.167"
+          fill="none"
+          className="absolute block size-full max-w-none"
+        >
+          <path
+            d="M9.08301 0C14.0993 0.000175944 18.1668 4.06668 18.167 9.08301C18.1668 14.0993 14.0993 18.1668 9.08301 18.167C8.05918 18.167 7.15758 18.0197 6.31055 17.7168C5.95237 17.5887 5.68849 17.4942 5.49707 17.4277C5.40163 17.3946 5.32718 17.3704 5.27148 17.3525C5.24426 17.3438 5.22298 17.3367 5.20703 17.332C5.19935 17.3298 5.19274 17.3283 5.18848 17.3271C5.18557 17.3264 5.18336 17.3255 5.18262 17.3252C4.77707 17.2299 4.51065 17.3073 4.1709 17.4688C3.84936 17.6216 3.2802 17.9722 2.59766 18.0859C1.58046 18.2552 0.675542 17.4223 0.759766 16.3945C0.790682 16.0188 0.932497 15.6867 1.03809 15.4531C1.16184 15.1794 1.2377 15.0323 1.2832 14.874C1.46423 14.2437 1.25147 13.7914 0.836914 12.8965C0.299457 11.7363 4.77694e-05 10.4432 0 9.08301C0.000175813 4.06668 4.06668 0.000175809 9.08301 0ZM5.75 8.25C5.28976 8.25 4.91602 8.62277 4.91602 9.08301C4.91602 9.54325 5.28976 9.91602 5.75 9.91602C6.21009 9.91584 6.58301 9.54314 6.58301 9.08301C6.58301 8.62288 6.21009 8.25018 5.75 8.25ZM9.08301 8.25C8.62277 8.25 8.25 8.62277 8.25 9.08301C8.25 9.54325 8.62277 9.91602 9.08301 9.91602C9.54324 9.91602 9.91602 9.54324 9.91602 9.08301C9.91602 8.62277 9.54325 8.25 9.08301 8.25ZM12.416 8.25C11.9559 8.25018 11.583 8.62288 11.583 9.08301C11.583 9.54314 11.9559 9.91584 12.416 9.91602C12.8763 9.91602 13.25 9.54325 13.25 9.08301C13.25 8.62277 12.8763 8.25 12.416 8.25Z"
+            fill="currentColor"
+          />
+        </svg>
       </div>
     </div>
   );
 }
 
+/** Currency — Sidebar element Icon=circle-dollar (Figma 12718:7365 → Vector + Ellipse). */
 function SidebarCurrencyIcon() {
   return (
-    <div className="relative size-6 shrink-0" aria-hidden>
+    <div
+      className="relative size-6 shrink-0 text-white transition-colors group-hover:text-[#0267FF]"
+      aria-hidden
+      data-node-id="I12718:7365;12203:35386"
+    >
       <div className="absolute inset-[8.33%]">
         <div className="absolute -inset-[4.5%]">
-          <img
-            src={SIDEBAR_CURRENCY_ICON_VECTOR}
-            alt=""
-            className={`block size-full max-w-none object-contain ${SIDEBAR_RASTER_ICON_HOVER}`}
-          />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 18.1667 18.1667"
+            fill="none"
+            className="block size-full max-w-none"
+          >
+            <path
+              d="M12.4167 1.44341C11.3959 0.997413 10.2685 0.75 9.08333 0.75C4.48096 0.75 0.75 4.48096 0.75 9.08333C0.75 13.6857 4.48096 17.4167 9.08333 17.4167C13.6857 17.4167 17.4167 13.6857 17.4167 9.08333C17.4167 7.20696 16.7965 5.47543 15.75 4.08252M6.58323 10.75C6.58323 11.6705 7.32942 12.4167 8.2499 12.4167H10.1304C10.9328 12.4167 11.5832 11.7662 11.5832 10.9638C11.5832 10.3385 11.1831 9.78328 10.5898 9.58553L7.57665 8.58114C6.98339 8.38339 6.58323 7.8282 6.58323 7.20285C6.58323 6.40046 7.23369 5.75 8.03608 5.75H9.91656C10.837 5.75 11.5832 6.49619 11.5832 7.41667M9.08323 4.5V13.6667"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <circle
+              cx="9.08333"
+              cy="9.08333"
+              r="8.33333"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
       </div>
-      <div className="absolute inset-[8.33%]">
-        <div className="absolute -inset-[4.5%]">
-          <img
-            src={SIDEBAR_CURRENCY_ICON_ELLIPSE}
-            alt=""
-            className={`block size-full max-w-none object-contain ${SIDEBAR_RASTER_ICON_HOVER}`}
-          />
+    </div>
+  );
+}
+
+/** Language UK flag — Sidebar element Icon=uk (Figma 12350:172510 → Element). Blue field is `bg-[#1a47b8]`. */
+function SidebarLanguageUkIcon() {
+  return (
+    <div className="relative size-6 shrink-0 overflow-hidden" aria-hidden data-node-id="I12350:172510;12203:35386">
+      <div
+        className="absolute inset-[20.83%_4.17%_16.67%_4.17%] flex flex-col items-center justify-center overflow-hidden rounded-[0.676px] bg-[#1a47b8] shadow-[0px_0px_0.055px_0px_rgba(66,71,76,0.32),0px_0.442px_0.662px_0px_rgba(66,71,76,0.08)]"
+        data-name="language-icon"
+        data-node-id="I12350:172510;12203:35386;10027:30852"
+      >
+        <div className="relative h-[15px] w-full shrink-0" data-node-id="I12350:172510;12203:35386;10027:30853">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 18.3333 15"
+            fill="none"
+            className="pointer-events-none absolute inset-0 block size-full max-w-none"
+          >
+            <g id="Element">
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M1.95029 0H0V2.5L16.3725 15L18.3333 15V12.5L1.95029 0Z"
+                fill="white"
+              />
+              <path
+                d="M0.650483 0L18.3333 13.5354V15L17.6981 15L0 1.45056V0H0.650483Z"
+                fill="#F93939"
+              />
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M16.5873 0H18.3333V2.5C18.3333 2.5 6.99269 10.8281 1.74603 15H0V12.5L16.5873 0Z"
+                fill="white"
+              />
+              <path
+                d="M18.3333 0H17.7412L0 13.5471V15H0.650483L18.3333 1.46151V0Z"
+                fill="#F93939"
+              />
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M6.66729 0H11.6813V4.62682H18.3333V10.3701H11.6813V15H6.66729V10.3701H0V4.62682H6.66729V0Z"
+                fill="white"
+              />
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M7.7193 0H10.614V5.76923H18.3333V9.23077H10.614V15H7.7193V9.23077H0V5.76923H7.7193V0Z"
+                fill="#F93939"
+              />
+            </g>
+          </svg>
         </div>
       </div>
     </div>
@@ -720,14 +786,8 @@ export function Sidebar({
               </div>
             </div>
           ) : (
-            <div className="relative size-6 shrink-0" data-name="Vector" data-node-id="12207:7487">
-              <img
-                src={AUTONE_LOGO_MARK}
-                alt="Autone"
-                className="absolute inset-0 size-full max-w-none object-contain brightness-0 invert"
-                width={24}
-                height={24}
-              />
+            <div className="relative size-6 shrink-0 text-white" data-name="Vector" data-node-id="12207:7487">
+              <AutoneLogoMark className="absolute inset-0 size-full" />
             </div>
           )}
         </div>
@@ -851,7 +911,7 @@ export function Sidebar({
           }`}
           aria-label="Chat"
           data-name="Sidebar element"
-          data-node-id="12353:173526"
+          data-node-id="12350:172509"
         >
           <SidebarChatIcon />
           {expanded && (
@@ -868,7 +928,7 @@ export function Sidebar({
           }`}
           aria-label="Currency"
           data-name="Sidebar element"
-          data-node-id="12718:7152"
+          data-node-id="12718:7365"
         >
           <SidebarCurrencyIcon />
           {expanded && (
@@ -885,22 +945,9 @@ export function Sidebar({
           }`}
           aria-label="Language (UK)"
           data-name="Sidebar element"
-          data-node-id="12349:171770"
+          data-node-id="12350:172510"
         >
-          <div className="relative size-6 shrink-0 overflow-hidden">
-            <div
-              className="absolute inset-[20.83%_4.17%_16.67%_4.17%] flex flex-col items-center justify-center overflow-hidden rounded-[0.676px] bg-[#1a47b8] shadow-[0px_0px_0.055px_0px_rgba(66,71,76,0.32),0px_0.442px_0.662px_0px_rgba(66,71,76,0.08)]"
-              data-name="uk"
-            >
-              <div className="relative h-[15px] w-full shrink-0">
-                <img
-                  src={UK_FLAG_SRC}
-                  alt=""
-                  className="absolute inset-0 size-full max-w-none object-cover"
-                />
-              </div>
-            </div>
-          </div>
+          <SidebarLanguageUkIcon />
           {expanded && (
             <span className="min-w-0 flex-1 text-left font-normal leading-snug break-words text-white group-hover:text-[#0267FF]">
               English

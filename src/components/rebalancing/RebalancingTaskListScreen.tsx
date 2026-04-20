@@ -29,25 +29,27 @@ function RebalancingModuleDetailsBody({
         <p className={titleSm}>{contextTitle}</p>
         <p className={p}>{contextDescription}</p>
       </div>
-      <p className={titleSm}>Rebalancing Module</p>
-      <p className={p}>Manage and optimize how stock is redistributed across your network.</p>
-      <p className={p}>
-        Rebalancing allows you to move inventory between alternate sources—such as stores or local warehouses—rather
-        than relying on default replenishment from distribution centers. This helps ensure the right products are
-        available in the right locations at the right time.
-      </p>
-      <p className={p}>Use rebalancing to support three key strategies:</p>
-      <ul className="list-none space-y-2 pl-0 font-['Inter',sans-serif] text-sm leading-relaxed text-[#475467]">
-        <li>Optimize – Balance stock across locations to maintain consistent coverage and assortment</li>
-        <li>Consolidate – Shift inventory to high-performing locations to maximize sell-through</li>
-        <li>
-          Clean up – Return excess or underperforming stock to warehouses to free up space and prepare for next actions
-        </li>
-      </ul>
-      <p className={p}>
-        Rebalancing can be applied across different geographical scopes, from local regions to global networks, giving
-        you flexibility to respond to demand at any level.
-      </p>
+      <div className="space-y-3">
+        <p className={titleSm}>Rebalancing Module</p>
+        <p className={p}>Manage and optimize how stock is redistributed across your network.</p>
+        <p className={p}>
+          Rebalancing allows you to move inventory between alternate sources such as stores or local warehouses rather
+          than relying on default replenishment from distribution centers. This helps ensure the right products are
+          available in the right locations at the right time.
+        </p>
+        <p className={p}>Use rebalancing to support three key strategies:</p>
+        <ul className="list-none space-y-2 pl-0 font-['Inter',sans-serif] text-sm leading-relaxed text-[#475467]">
+          <li>Optimize – Balance stock across locations to maintain consistent coverage and assortment</li>
+          <li>Consolidate – Shift inventory to high-performing locations to maximize sell-through</li>
+          <li>
+            Clean up – Return excess or underperforming stock to warehouses to free up space and prepare for next actions
+          </li>
+        </ul>
+        <p className={p}>
+          Rebalancing can be applied across different geographical scopes, from local regions to global networks, giving
+          you flexibility to respond to demand at any level.
+        </p>
+      </div>
     </div>
   );
 }
