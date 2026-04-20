@@ -33,19 +33,11 @@ import {
   type TableColumnVisibilityKey,
 } from '../../../tableColumnCustomise';
 import { ColumnCustomiseDrawer } from '../../ColumnCustomiseDrawer';
-import { HowItWorksPanel } from '../HowItWorksPanel';
 import { KpisPanel } from '../KpisPanel';
-import { RebalancingOnboardingBanner } from '../RebalancingOnboardingBanner';
 import { RebalancingWalkthrough } from '../RebalancingWalkthrough';
 import { RebalancingWalkthroughFab } from '../RebalancingWalkthroughFab';
-import { RebalancingWorkspaceSummaryBanner } from '../RebalancingWorkspaceSummaryBanner';
 import type { PrototypeVersionId } from '../../../lib/prototypeVersion';
-import {
-  isBannerDismissed,
-  clearBannerDismissed,
-  setBannerDismissed,
-  setWalkthroughCompleted,
-} from '../../../lib/rebalancingOnboardingStorage';
+import { setWalkthroughCompleted } from '../../../lib/rebalancingOnboardingStorage';
 
 type FocusView = 'products' | 'locations' | 'trips';
 
@@ -134,8 +126,6 @@ export function RebalancingPrototypeV3({
   const filtersMenuId = useId();
   const [columnCustomiseOpen, setColumnCustomiseOpen] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState(defaultTableColumnVisibility);
-  const [rebalancingBannerDismissed, setRebalancingBannerDismissed] = useState(false);
-  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
   const [kpisPanelOpen, setKpisPanelOpen] = useState(false);
   const [walkthroughOpen, setWalkthroughOpen] = useState(false);
   const [walkthroughStep, setWalkthroughStep] = useState(0);
@@ -150,10 +140,6 @@ export function RebalancingPrototypeV3({
     return () => {
       if (optimisingToSuccessTimeoutRef.current) clearTimeout(optimisingToSuccessTimeoutRef.current);
     };
-  }, []);
-
-  useEffect(() => {
-    setRebalancingBannerDismissed(isBannerDismissed());
   }, []);
 
   useEffect(() => {
@@ -534,21 +520,6 @@ export function RebalancingPrototypeV3({
         className="flex min-h-0 min-w-0 w-full flex-1 flex-col gap-4 overflow-y-auto bg-white px-6 pt-4 pb-12"
         data-walkthrough-root
       >
-        {!rebalancingBannerDismissed && (
-          <RebalancingOnboardingBanner
-            onDismiss={() => {
-              setBannerDismissed();
-              setRebalancingBannerDismissed(true);
-            }}
-            onStartWalkthrough={() => {
-              setWalkthroughStep(0);
-              setWalkthroughOpen(true);
-            }}
-            onOpenHowItWorks={() => setHowItWorksOpen(true)}
-          />
-        )}
-
-        <HowItWorksPanel open={howItWorksOpen} onClose={() => setHowItWorksOpen(false)} />
         <KpisPanel open={kpisPanelOpen} onClose={() => setKpisPanelOpen(false)} />
 
         <RebalancingWalkthrough
@@ -667,8 +638,6 @@ export function RebalancingPrototypeV3({
               </div>
             </div>
           </div>
-
-          <RebalancingWorkspaceSummaryBanner onOpenKpis={() => setKpisPanelOpen(true)} />
 
           <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2">
             <div className="flex min-w-0 flex-1 flex-wrap items-center justify-start gap-2">
@@ -990,11 +959,11 @@ export function RebalancingPrototypeV3({
         />
       )}
 
-      {rebalancingBannerDismissed && !walkthroughOpen && (
+      {!walkthroughOpen && (
         <RebalancingWalkthroughFab
           onOpen={() => {
-            clearBannerDismissed();
-            setRebalancingBannerDismissed(false);
+            setWalkthroughStep(0);
+            setWalkthroughOpen(true);
           }}
         />
       )}
