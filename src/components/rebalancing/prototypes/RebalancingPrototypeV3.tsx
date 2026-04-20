@@ -34,10 +34,7 @@ import {
 } from '../../../tableColumnCustomise';
 import { ColumnCustomiseDrawer } from '../../ColumnCustomiseDrawer';
 import { KpisPanel } from '../KpisPanel';
-import { RebalancingWalkthrough } from '../RebalancingWalkthrough';
-import { RebalancingWalkthroughFab } from '../RebalancingWalkthroughFab';
 import type { PrototypeVersionId } from '../../../lib/prototypeVersion';
-import { setWalkthroughCompleted } from '../../../lib/rebalancingOnboardingStorage';
 
 type FocusView = 'products' | 'locations' | 'trips';
 
@@ -127,8 +124,6 @@ export function RebalancingPrototypeV3({
   const [columnCustomiseOpen, setColumnCustomiseOpen] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState(defaultTableColumnVisibility);
   const [kpisPanelOpen, setKpisPanelOpen] = useState(false);
-  const [walkthroughOpen, setWalkthroughOpen] = useState(false);
-  const [walkthroughStep, setWalkthroughStep] = useState(0);
   /** Products tab: row drill-down to per-location transfers for one assortment row */
   const [productTransfersDrillRowId, setProductTransfersDrillRowId] = useState<string | null>(null);
   /** Locations tab: row drill-down to per-location product list */
@@ -516,19 +511,8 @@ export function RebalancingPrototypeV3({
         </div>
       )}
 
-      <div
-        className="flex min-h-0 min-w-0 w-full flex-1 flex-col gap-4 overflow-y-auto bg-white px-6 pt-4 pb-12"
-        data-walkthrough-root
-      >
+      <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col gap-4 overflow-y-auto bg-white px-6 pt-4 pb-12">
         <KpisPanel open={kpisPanelOpen} onClose={() => setKpisPanelOpen(false)} />
-
-        <RebalancingWalkthrough
-          open={walkthroughOpen}
-          stepIndex={walkthroughStep}
-          onStepIndexChange={setWalkthroughStep}
-          onClose={() => setWalkthroughOpen(false)}
-          onComplete={() => setWalkthroughCompleted()}
-        />
 
         {/* Top bar: tabs + trip controls; second row: search, sort, filter, settings */}
         <div
@@ -956,15 +940,6 @@ export function RebalancingPrototypeV3({
           onRequestRevert={(selected) => setConfirmCommitRevert({ action: 'revert', rows: selected })}
           onCommit={onCommit}
           onRevert={onRevert}
-        />
-      )}
-
-      {!walkthroughOpen && (
-        <RebalancingWalkthroughFab
-          onOpen={() => {
-            setWalkthroughStep(0);
-            setWalkthroughOpen(true);
-          }}
         />
       )}
     </main>
