@@ -2,13 +2,8 @@ import { useId, useState, type ComponentType } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { SCRATCHPAD_852_24160_TOGGLE_PATH } from '../assets/sidebarEdgeToggle85224160';
 import { RefreshSyncIcon } from './icons/RefreshSyncIcon';
+import { AutoneLogoExpanded } from './icons/AutoneLogoExpanded';
 import { AutoneLogoMark } from './icons/AutoneLogoMark';
-
-/** Full wordmark pieces (Figma AutoneLogo 12207:7492 → 12207:7490 + 12207:7491) */
-const AUTONE_LOGO_MARK_EXPANDED =
-  'https://www.figma.com/api/mcp/asset/69833f17-f272-4a51-9709-ccd76d53c85d';
-const AUTONE_LOGO_WORDMARK =
-  'https://www.figma.com/api/mcp/asset/0f978b8f-318c-4152-a43c-cdaba4f9e270';
 
 /** Content width ~240px + horizontal padding (px-4 × 2) so nav labels are not clipped. */
 const SIDEBAR_EXPANDED_WIDTH = 272;
@@ -765,26 +760,7 @@ export function Sidebar({
           data-node-id="12203:5564"
         >
           {expanded ? (
-            <div className="flex h-6 items-center gap-[5.924px]" data-node-id="12207:7492">
-              <div className="relative size-6 shrink-0">
-                <img
-                  src={AUTONE_LOGO_MARK_EXPANDED}
-                  alt=""
-                  className="absolute inset-0 size-full max-w-none object-contain brightness-0 invert"
-                  width={24}
-                  height={24}
-                />
-              </div>
-              <div className="relative h-[23.971px] w-[112px] max-w-full shrink-0">
-                <img
-                  src={AUTONE_LOGO_WORDMARK}
-                  alt="Autone"
-                  className="absolute inset-0 size-full max-w-none object-contain object-left brightness-0 invert"
-                  width={112}
-                  height={24}
-                />
-              </div>
-            </div>
+            <AutoneLogoExpanded />
           ) : (
             <div className="relative size-6 shrink-0 text-white" data-name="Vector" data-node-id="12207:7487">
               <AutoneLogoMark className="absolute inset-0 size-full" />

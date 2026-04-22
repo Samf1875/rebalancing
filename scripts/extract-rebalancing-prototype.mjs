@@ -61,6 +61,7 @@ import { RebalancingTaskListScreen } from './rebalancing/RebalancingTaskListScre
 import { RebalancingPrototypeV1 } from './rebalancing/prototypes/RebalancingPrototypeV1';
 import { RebalancingPrototypeV2 } from './rebalancing/prototypes/RebalancingPrototypeV2';
 import { RebalancingPrototypeV3 } from './rebalancing/prototypes/RebalancingPrototypeV3';
+import { RebalancingPrototypeV4 } from './rebalancing/prototypes/RebalancingPrototypeV4';
 
 type MainContentProps = {
   /** Primary sidebar selection — assortment UI only when Rebalancing (\`refresh\`) is active. */
@@ -80,6 +81,8 @@ function rebalancingWorkspaceForVersion(prototypeVersion: PrototypeVersionId) {
       return <RebalancingPrototypeV2 prototypeVersion={prototypeVersion} />;
     case 'v3':
       return <RebalancingPrototypeV3 prototypeVersion={prototypeVersion} />;
+    case 'v4':
+      return <RebalancingPrototypeV4 prototypeVersion={prototypeVersion} />;
     default:
       return <RebalancingPrototypeV1 prototypeVersion="v1" />;
   }

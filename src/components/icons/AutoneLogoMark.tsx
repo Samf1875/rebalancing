@@ -1,8 +1,12 @@
+import type { SVGProps } from 'react';
+
 /**
  * Collapsed-rail Autone monogram (24×24).
  * Figma: NEW Autone Design System 2.0 — `autone-logo` 12210:36296 (Vector).
  */
-export function AutoneLogoMark({ className }: { className?: string }) {
+export function AutoneLogoMark({ className, ...rest }: SVGProps<SVGSVGElement>) {
+  const decorative =
+    rest['aria-hidden'] === true || rest['aria-hidden'] === 'true';
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -10,10 +14,17 @@ export function AutoneLogoMark({ className }: { className?: string }) {
       height={24}
       viewBox="0 0 24 24"
       fill="none"
+      {...rest}
       className={className}
-      role="img"
-      aria-label="Autone"
       data-node-id="12210:36296"
+      role={decorative ? undefined : (rest.role as string | undefined) ?? 'img'}
+      aria-label={
+        decorative
+          ? undefined
+          : typeof rest['aria-label'] === 'string'
+            ? rest['aria-label']
+            : 'Autone'
+      }
     >
       <path
         fillRule="evenodd"

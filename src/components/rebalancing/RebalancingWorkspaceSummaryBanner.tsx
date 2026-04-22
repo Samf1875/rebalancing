@@ -29,6 +29,8 @@ type RebalancingWorkspaceSummaryBannerProps = {
   showWorkspaceParameterDetails?: boolean;
   /** When set, shows a KPIs control in the banner actions that calls this handler. */
   onOpenKpis?: () => void;
+  /** `onboarding`: labeled metrics, structured scope lines, primary “Understand” CTA, safer dismiss label. */
+  variant?: 'default' | 'onboarding';
 };
 
 const metricToneClass: Record<MetricTone, string> = {
@@ -51,13 +53,60 @@ export function RebalancingWorkspaceSummaryBanner({
   hidePrimaryMetric = false,
   showWorkspaceParameterDetails = true,
   onOpenKpis,
+  variant = 'default',
 }: RebalancingWorkspaceSummaryBannerProps) {
   const [dismissed, setDismissed] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   if (dismissed) return null;
 
-  const leadBlock = (
+  const isOnboarding = variant === 'onboarding';
+
+  const leadBlock = isOnboarding ? (
+    <>
+      <div
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#2EB8C2] text-white"
+        aria-hidden
+      >
+        <RefreshSyncIcon size={24} className="text-inherit" />
+      </div>
+      <div className="min-w-0 flex-1 flex flex-col gap-3">
+        <p className="font-['Inter',sans-serif] text-sm font-semibold text-[#101828]">{headline} summary</p>
+        <div
+          className={`grid min-w-0 grid-cols-1 gap-3 ${hidePrimaryMetric ? 'sm:grid-cols-1' : 'sm:grid-cols-2'}`}
+        >
+          {hidePrimaryMetric ? null : (
+            <div className="min-w-0 rounded-lg border border-[#E3E8F0] bg-[#f9fafb] p-3">
+              <div className="font-['Inter',sans-serif] text-xs font-medium text-[#667085]">Potential uplift</div>
+              <div className={`mt-1 font-['Inter',sans-serif] text-base leading-snug ${metricToneClass[primaryMetricTone]}`}>
+                {primaryMetric}
+              </div>
+            </div>
+          )}
+          <div className="min-w-0 rounded-lg border border-[#E3E8F0] bg-[#f9fafb] p-3">
+            <div className="font-['Inter',sans-serif] text-xs font-medium text-[#667085]">Suggested transfers</div>
+            <div className={`mt-1 font-['Inter',sans-serif] text-base leading-snug ${metricToneClass[secondaryMetricTone]}`}>
+              {secondaryMetric}
+            </div>
+          </div>
+        </div>
+        <ul className="flex min-w-0 flex-col gap-1.5 font-['Inter',sans-serif] text-xs leading-relaxed text-[#475467] sm:flex-row sm:flex-wrap sm:gap-x-6">
+          <li>
+            <span className="font-semibold text-[#344054]">Time window: </span>
+            Last 7 days demand
+          </li>
+          <li>
+            <span className="font-semibold text-[#344054]">Zero transfers: </span>
+            Included in scope
+          </li>
+          <li>
+            <span className="font-semibold text-[#344054]">Balancing: </span>
+            Cross-location
+          </li>
+        </ul>
+      </div>
+    </>
+  ) : (
     <>
       <div
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#2EB8C2] text-white"
@@ -94,6 +143,15 @@ export function RebalancingWorkspaceSummaryBanner({
 
   const actions = (
     <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+      {isOnboarding ? (
+        <button
+          type="button"
+          onClick={() => setDetailsOpen(true)}
+          className="inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-lg border border-[#0267FF] bg-[#0267FF] px-3 font-['Inter',sans-serif] text-sm font-medium text-white transition-colors hover:bg-[#0258e6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#0267FF]"
+        >
+          Understand these numbers
+        </button>
+      ) : null}
       {onOpenKpis ? (
         <button
           type="button"
@@ -123,7 +181,7 @@ export function RebalancingWorkspaceSummaryBanner({
         type="button"
         onClick={() => setDismissed(true)}
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#667085] transition-colors hover:bg-slate-100 hover:text-[#101828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#0267FF]"
-        aria-label="Dismiss summary"
+        aria-label={isOnboarding ? 'Hide summary for now' : 'Dismiss summary'}
       >
         <X size={18} strokeWidth={2} />
       </button>

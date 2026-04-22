@@ -1,0 +1,53 @@
+---
+description: Holistic Figma variable audit for pages and components (surface, border, text, icon roles)
+globs: "**/*.{tsx,jsx,vue,css,scss}"
+alwaysApply: false
+---
+
+# Check Figma variables (`/check-variables`)
+
+When asked to check variables, audit **Figma design tokens / CSS variables** (not JS runtime variables) against **semantic role**: each token must match how the element is used in the UI.
+
+## 1. Clarify the target
+
+State whether the input is a **page**, **component**, or **other UI** (section, pattern, etc.) before listing issues.
+
+## 2. Read the UI holistically
+
+Before judging individual tokens, note structure and hierarchy:
+
+- Page background
+- Surface fills (cards, panels, inputs, chips, etc.)
+- Borders (dividers, outlines, hairlines)
+- Text colors (primary, secondary, muted, links, errors)
+- Icon colors
+- Secondary / tertiary nested UI
+
+## 3. Verify each token in context
+
+For every styled element, the **variable role** must match the **element role**:
+
+| Token kind   | Used on                          |
+| ------------ | -------------------------------- |
+| Surface      | Filled areas, backgrounds, wells |
+| Border       | Strokes, outlines, dividers      |
+| Text         | Typography color only           |
+| Icon         | SVG / icon glyph color          |
+
+Flag **misapplication** (e.g. text token on a surface fill, icon token on body copy, surface token on a border).
+
+## 4. Output format
+
+- **One line per issue** (file + element or selector + what’s wrong + what role it should use).
+- If nothing is wrong:
+
+`All variables applied correctly.`
+
+### Example issue lines
+
+```text
+src/pages/Dashboard.tsx — card container uses `--color-text-primary` as background; use a surface token.
+src/components/Button.tsx — border uses `--color-icon-muted`; use a border token.
+```
+
+Do not bundle multiple problems into one paragraph; keep each issue a single scannable line.
