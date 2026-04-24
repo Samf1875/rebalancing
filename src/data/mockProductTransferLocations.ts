@@ -1,6 +1,9 @@
 /** Purple “warehouse / box” vs blue “transfer / truck” chips in the TU column (design mock). */
 export type TuBreakdownItem = { kind: 'warehouse' | 'transfer'; count: number };
 
+/** Back-of-house storage state for the product transfers table. */
+export type ProductTransferStorageCapacity = 'saturated' | 'spaceRemaining';
+
 /** Location-level transfer rows for the product drill-down “Transfers” table (per design mock). */
 export type ProductTransferLocationRow = {
   id: string;
@@ -18,6 +21,7 @@ export type ProductTransferLocationRow = {
   forecastPerWeek: number;
   stockouts: { from: number; to: number };
   coverage: { fromPct: number; toPct: number; targetWeeks: number };
+  storageCapacity: ProductTransferStorageCapacity;
 };
 
 export type ProductTransferSummary = {
@@ -49,6 +53,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     forecastPerWeek: 0.77,
     stockouts: { from: 0, to: 0 },
     coverage: { fromPct: 100, toPct: 100, targetWeeks: 1 },
+    storageCapacity: 'spaceRemaining',
   },
   {
     id: 'loc-645',
@@ -67,6 +72,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     forecastPerWeek: 0.9,
     stockouts: { from: 1, to: 0 },
     coverage: { fromPct: 40, toPct: 80, targetWeeks: 2 },
+    storageCapacity: 'saturated',
   },
   {
     id: 'loc-644',
@@ -83,6 +89,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     forecastPerWeek: 0.24,
     stockouts: { from: 2, to: 1 },
     coverage: { fromPct: 25, toPct: 60, targetWeeks: 2 },
+    storageCapacity: 'saturated',
   },
   {
     id: 'loc-003',
@@ -98,5 +105,6 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     forecastPerWeek: 0.12,
     stockouts: { from: 4, to: 6 },
     coverage: { fromPct: 0, toPct: 0, targetWeeks: 1 },
+    storageCapacity: 'spaceRemaining',
   },
 ];

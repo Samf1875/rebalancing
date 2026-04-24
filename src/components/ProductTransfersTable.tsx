@@ -9,8 +9,24 @@ import {
   MOCK_PRODUCT_TRANSFER_LOCATIONS,
   MOCK_PRODUCT_TRANSFER_SUMMARY,
   type ProductTransferLocationRow,
+  type ProductTransferStorageCapacity,
   type TuBreakdownItem,
 } from '../data/mockProductTransferLocations';
+
+function storageCapacityPill(phase: ProductTransferStorageCapacity) {
+  if (phase === 'saturated') {
+    return (
+      <span className="inline-flex max-w-full items-center justify-center rounded-full bg-[#FEE4E2] px-2.5 py-1 font-['Inter',sans-serif] text-[12px] font-medium text-[#B42318]">
+        Saturated
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex max-w-full items-center justify-center rounded-full bg-[#F2F4F7] px-2.5 py-1 font-['Inter',sans-serif] text-[12px] font-medium text-[#101828]">
+      Space remaining
+    </span>
+  );
+}
 import { AutoneHeaderInfoTooltip } from './AutoneHeaderInfoTooltip';
 
 const tableCellPrimary =
@@ -89,16 +105,8 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
   } | null>(null);
   const [tuPopoverStyle, setTuPopoverStyle] = useState<CSSProperties>({});
   const tuPopoverPanelRef = useRef<HTMLDivElement>(null);
-  const selectAllRef = useRef<HTMLInputElement>(null);
   const rows = MOCK_PRODUCT_TRANSFER_LOCATIONS;
   const summary = MOCK_PRODUCT_TRANSFER_SUMMARY;
-  const allSelected = rows.length > 0 && rows.every((r) => selected[r.id]);
-  const someSelected = rows.some((r) => selected[r.id]);
-
-  useEffect(() => {
-    const el = selectAllRef.current;
-    if (el) el.indeterminate = someSelected && !allSelected;
-  }, [someSelected, allSelected]);
 
   const openTuBadgePopover = (payload: { rowId: string; index: number; rect: DOMRect }) => {
     setTuBadgePopover((prev) =>
@@ -155,10 +163,6 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
       window.removeEventListener('scroll', onScroll, true);
     };
   }, [tuBadgePopover]);
-
-  const toggleAll = (checked: boolean) => {
-    setSelected(checked ? Object.fromEntries(rows.map((r) => [r.id, true])) : {});
-  };
 
   const toggleRow = (id: string, checked: boolean) => {
     setSelected((prev) => ({ ...prev, [id]: checked }));
@@ -266,6 +270,9 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
           <div className={`tabular-nums ${tableCellSecondary}`}>{row.coverage.targetWeeks}</div>
         </div>
       </td>
+      <td className={`min-h-[86px] min-w-[160px] px-4 py-3 text-center align-middle ${tableRowHoverTd}`}>
+        {storageCapacityPill(row.storageCapacity)}
+      </td>
     </tr>
   );
 
@@ -278,7 +285,7 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
         <button
           type="button"
           onClick={onBack}
-          className="text-left text-[#0267FF] underline-offset-2 hover:underline"
+          className="text-left font-normal text-[#667085] transition-colors hover:text-[#101828] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0267FF]"
         >
           {breadcrumbProduct}
         </button>
@@ -293,7 +300,7 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
         data-name="Table container"
       >
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1240px] border-collapse">
+          <table className="w-full min-w-[1400px] border-collapse">
             <thead
               className="[&_th]:border-t-0 [&_th]:border-b-[0.5px] [&_th]:border-solid [&_th]:border-[#E3E8F0] [&_th]:bg-white [&_th]:font-['Inter',sans-serif]"
             >
@@ -301,18 +308,8 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
                 <th
                   className="sticky left-0 z-30 w-14 min-w-14 max-w-14 bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                   scope="col"
-                >
-                  <label className="flex min-h-[52px] cursor-pointer items-center py-[2px]">
-                    <input
-                      ref={selectAllRef}
-                      type="checkbox"
-                      checked={allSelected}
-                      onChange={(e) => toggleAll(e.target.checked)}
-                      className="h-4 w-4 rounded border-2 border-[#e9eaeb] bg-white text-sky-600 focus:ring-sky-500"
-                      aria-label="Select all locations"
-                    />
-                  </label>
-                </th>
+                  aria-label="Selection"
+                />
                 <th
                   className="sticky left-14 z-20 min-w-min max-w-max bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                   scope="col"
@@ -472,6 +469,25 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
                       —
                     </span>
                   )}
+                </th>
+                <th className="min-w-[160px] bg-[#F9FAFB] px-4 py-[10px] text-left" scope="col">
+                  <div className="flex min-h-[52px] flex-col justify-center py-[2px]">
+                    <AutoneHeaderInfoTooltip
+                      label="Storage capacity"
+                      topAlign="start"
+                      rich={{
+                        title: 'Storage capacity',
+                        icon: 'info',
+                        body: HEADER_INFO_TOOLTIPS.storageCapacity,
+                      }}
+                      hoverWith={
+                        <span className={`text-left font-['Inter',sans-serif] text-[14px] font-semibold leading-tight text-[#101828]`}>
+                          <span className="block">Storage</span>
+                          <span className="block">capacity</span>
+                        </span>
+                      }
+                    />
+                  </div>
                 </th>
               </tr>
             </thead>

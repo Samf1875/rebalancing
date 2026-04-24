@@ -11,7 +11,7 @@ export const TABLE_COLUMN_CUSTOMISE_OPTIONS = [
   { id: 'overstocks', label: 'Overstocks' },
   { id: 'understocks', label: 'Understocks' },
   { id: 'depth', label: 'Depth' },
-  { id: 'warehouseUnits', label: 'Warehouse units' },
+  { id: 'warehouseUnits', label: 'Warehouse units in scope' },
 ] as const;
 
 export type TableColumnVisibilityKey = (typeof TABLE_COLUMN_CUSTOMISE_OPTIONS)[number]['id'];

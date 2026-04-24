@@ -21,8 +21,10 @@ export const HEADER_INFO_TOOLTIPS = {
     'Coverage as a share of target before and after rebalancing, and the coverage target in weeks.',
   depth:
     'The average number of units per product, before & after transfers.',
+  storageCapacity:
+    'Whether back-of-house storage is at capacity or has free space, after the proposed transfers.',
   warehouseUnits:
-    'The total number of units across your warehouses, before & after transfers.',
+    'The total number of units across your warehouses in this scope, before & after transfers.',
   tripsTransfers:
     'Total units moving on the proposed trips in this view. Each row shows the transfer size for that route.',
   tripsRecommendedTransfers:

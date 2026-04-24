@@ -32,37 +32,6 @@ function formatCoverageWeeks(n: number): string {
   return `${n} ${n === 1 ? 'week' : 'weeks'}`;
 }
 
-/** Deterministic demo KPI lines for Transfer KPIs column (varies per row id). */
-function hashRowId(id: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < id.length; i++) {
-    h ^= id.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return Math.abs(h);
-}
-
-function transferKpisLines(row: AssortmentRow): { label: string; value: string }[] {
-  const h = hashRowId(row.id);
-  const r = (m: number) => h % m;
-  const t = row.transfers.l7d;
-  return [
-    { label: 'Fill rate', value: `${88 + r(11)}%` },
-    { label: 'Units moved', value: (t + r(200)).toLocaleString() },
-  ];
-}
-
-/** Demo KPI lines for Revenue Increase KPIs column (derived from row + revenue uplift). */
-function revenueIncreaseKpisLines(row: AssortmentRow): { label: string; value: string }[] {
-  const h = hashRowId(`${row.id}:revkpi`);
-  const r = (m: number) => h % m;
-  const k = row.revenueIncreaseEur / 1000;
-  return [
-    { label: 'Uplift vs baseline', value: `€${(k * (0.85 + r(25) / 100)).toFixed(1)}K` },
-    { label: 'Attribution conf.', value: `${68 + r(30)}%` },
-  ];
-}
-
 /** Revenue increase column: €211.7K vs €7.96K (1 vs 2 decimal places in K). */
 function formatRevenueIncreaseEurK(eur: number): string {
   const k = eur / 1000;
@@ -182,9 +151,7 @@ const theadCellBg = 'bg-white';
 /** Columns with grip handles — reorderable (IA after post–Stockouts block). */
 const BASE_GRIP_COLUMN_IDS = [
   'transfers',
-  'transferKpis',
   'sales',
-  'revenueIncreaseKpis',
   'scheduleStart',
   'scheduleEnd',
   'forecastPerWeek',
@@ -212,8 +179,6 @@ const DRILL_GRIP_ID_SET = new Set<string>(DRILL_GRIP_COLUMN_IDS);
 
 const GRIP_VISIBILITY_KEY: Partial<Record<GripColumnId, TableColumnVisibilityKey>> = {
   transfers: 'transfers',
-  transferKpis: 'transfers',
-  revenueIncreaseKpis: 'revenueIncrease',
   scheduleEnd: 'sales',
   forecastPerWeek: 'forecastPerWk',
   scheduleStart: 'recommendedTransfers',
@@ -254,7 +219,7 @@ export function AssortmentTable({
   rows,
   designOnly = false,
   onSelectRow,
-  onSelectAll,
+  onSelectAll: _onSelectAll,
   onAssort: _onAssort,
   onUnassort: _onUnassort,
   onSumIaChange: _onSumIaChange,
@@ -269,8 +234,6 @@ export function AssortmentTable({
   columnVisibility: columnVisibilityProp,
   onRowClick,
 }: AssortmentTableProps) {
-  const allSelected = rows.length > 0 && rows.every((r) => r.selected);
-
   const mergedColumnVisibility = {
     ...defaultTableColumnVisibility(),
     ...columnVisibilityProp,
@@ -436,21 +399,6 @@ export function AssortmentTable({
             </div>
           </th>
         );
-      case 'revenueIncreaseKpis':
-        return (
-          <th
-            key={columnId}
-            className={`min-w-[220px] max-w-[280px] h-[62px] min-h-[62px] max-h-[62px] box-border px-3 py-0 text-right align-middle ${theadCellBg}`}
-            {...d}
-          >
-            <div className="flex h-full min-h-0 flex-col items-end justify-center">
-              <span className="inline-flex w-full items-center justify-end gap-2">
-                {gripDragHandle(columnId, 'Revenue Increase KPIs')}
-                <span className="leading-snug">Revenue Increase KPIs</span>
-              </span>
-            </div>
-          </th>
-        );
       case 'transfers':
         return (
           <th key={columnId} className={`min-w-[200px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
@@ -473,21 +421,6 @@ export function AssortmentTable({
                   }}
                   hoverWith={<span>Transfers</span>}
                 />
-              </span>
-            </div>
-          </th>
-        );
-      case 'transferKpis':
-        return (
-          <th
-            key={columnId}
-            className={`min-w-[220px] max-w-[280px] h-[62px] min-h-[62px] max-h-[62px] box-border px-3 py-0 text-right align-middle ${theadCellBg}`}
-            {...d}
-          >
-            <div className="flex h-full min-h-0 flex-col items-end justify-center">
-              <span className="inline-flex w-full items-center justify-end gap-2">
-                {gripDragHandle(columnId, 'Transfer KPIs')}
-                <span className="leading-snug">Transfer KPIs</span>
               </span>
             </div>
           </th>
@@ -715,25 +648,25 @@ export function AssortmentTable({
           <th key={columnId} className={`min-w-[128px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
             <div className="flex h-full min-h-0 flex-col items-end justify-center">
               <span className="inline-flex w-full items-center justify-end gap-1.5">
-                {gripDragHandle(columnId, 'Warehouse units')}
+                {gripDragHandle(columnId, 'Warehouse units in scope')}
                 <AutoneHeaderInfoTooltip
-                  label="Warehouse units"
+                  label="Warehouse units in scope"
                   side="left"
                   rich={{
-                    title: 'Warehouse units',
+                    title: 'Warehouse units in scope',
                     icon: 'info',
                     body: HEADER_INFO_TOOLTIPS.warehouseUnits,
                     ...(agg
                       ? {
                           footer: {
                             kind: 'footerStackedCaption' as const,
-                            title: 'Warehouse units',
+                            title: 'Warehouse units in scope',
                             valueLine: `${agg.warehouse.from.toLocaleString()} → ${agg.warehouse.to.toLocaleString()}`,
                           },
                         }
                       : {}),
                   }}
-                  hoverWith={<span>Warehouse units</span>}
+                  hoverWith={<span>Warehouse units in scope</span>}
                 />
               </span>
             </div>
@@ -821,22 +754,6 @@ export function AssortmentTable({
             <div className={`${tableCellPrimary} tabular-nums`}>{formatRevenueIncreaseEurK(row.revenueIncreaseEur)}</div>
           </td>
         );
-      case 'revenueIncreaseKpis':
-        return (
-          <td
-            key={columnId}
-            className={`h-[86px] min-h-[86px] min-w-[220px] max-w-[280px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
-          >
-            <div className="flex min-w-0 flex-col items-end gap-2">
-              {revenueIncreaseKpisLines(row).map((line) => (
-                <div key={line.label} className="flex min-w-0 flex-col items-end gap-0.5">
-                  <div className={`${tableCellPrimary} tabular-nums`}>{line.value}</div>
-                  <div className={`${tableCellSecondary} text-right`}>{line.label}</div>
-                </div>
-              ))}
-            </div>
-          </td>
-        );
       case 'transfers':
         return (
           <td key={columnId} className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}>
@@ -847,22 +764,6 @@ export function AssortmentTable({
               <div className={`${tableCellSecondary} tabular-nums`}>
                 {row.transfers.l30d.toLocaleString()} L30D
               </div>
-            </div>
-          </td>
-        );
-      case 'transferKpis':
-        return (
-          <td
-            key={columnId}
-            className={`h-[86px] min-h-[86px] min-w-[220px] max-w-[280px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
-          >
-            <div className="flex min-w-0 flex-col items-end gap-2">
-              {transferKpisLines(row).map((line) => (
-                <div key={line.label} className="flex min-w-0 flex-col items-end gap-0.5">
-                  <div className={`${tableCellPrimary} tabular-nums`}>{line.value}</div>
-                  <div className={`${tableCellSecondary} text-right`}>{line.label}</div>
-                </div>
-              ))}
             </div>
           </td>
         );
@@ -1056,11 +957,11 @@ export function AssortmentTable({
           className={`w-full border-collapse ${
             productDrillDownActive
               ? showRecommendationColumns
-                ? 'min-w-[2910px]'
-                : 'min-w-[2680px]'
+                ? 'min-w-[2470px]'
+                : 'min-w-[2240px]'
               : showRecommendationColumns
-                ? 'min-w-[2410px]'
-                : 'min-w-[2200px]'
+                ? 'min-w-[1970px]'
+                : 'min-w-[1760px]'
           }`}
         >
           <thead
@@ -1070,30 +971,15 @@ export function AssortmentTable({
               <th
                 className={`sticky left-0 z-30 h-[62px] min-h-[62px] max-h-[62px] w-14 min-w-14 max-w-14 box-border ${theadCellBg} px-4 py-0 text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
                 scope="col"
-              >
-                <div className="flex h-full min-h-0 flex-col justify-center gap-2">
-                  <label className="flex cursor-pointer items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={allSelected}
-                      onChange={(e) => onSelectAll(e.target.checked)}
-                      className="h-4 w-4 rounded border-2 border-[#e9eaeb] bg-white text-sky-600 focus:ring-sky-500"
-                    />
-                  </label>
-                </div>
-              </th>
+                aria-label="Selection"
+              />
               {showProductDetails && (
                 <th
                   className={`sticky left-14 z-20 h-[62px] min-h-[62px] max-h-[62px] w-[280px] min-w-[280px] max-w-[280px] box-border ${theadCellBg} px-4 py-0 text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
                   scope="col"
                 >
                   <div className="flex h-full min-h-0 flex-col justify-center gap-2">
-                    <AutoneHeaderInfoTooltip
-                      label="Product details"
-                      rich={ASSORTMENT_HEADER_RICH.productDetails}
-                      richBubbleMaxWidthClass="max-w-[min(18rem,calc(100vw-24px))]"
-                      hoverWith={<span>Product details</span>}
-                    />
+                    <span>Product details</span>
                   </div>
                 </th>
               )}

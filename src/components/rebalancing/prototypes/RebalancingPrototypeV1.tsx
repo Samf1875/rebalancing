@@ -568,7 +568,7 @@ export function RebalancingPrototypeV1({
             </div>
             <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="font-['Inter',sans-serif] text-sm font-semibold leading-normal text-[#101828]">
+                <span className="font-['Inter',sans-serif] text-xs font-semibold leading-normal text-[#101828]">
                   Trip type:
                 </span>
                 <div
@@ -580,10 +580,10 @@ export function RebalancingPrototypeV1({
                     type="button"
                     aria-pressed={tripType === 'rebalancing'}
                     onClick={() => setTripType('rebalancing')}
-                    className={`font-['Inter',sans-serif] text-sm leading-normal transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#0267FF] ${
+                    className={`font-['Inter',sans-serif] text-xs leading-normal transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#0267FF] ${
                       tripType === 'rebalancing'
-                        ? 'rounded border border-[#E5E7EB] bg-[#F3F4F6] px-3 py-2 font-bold text-[#0F172A]'
-                        : 'rounded border border-transparent bg-transparent px-3 py-2 font-normal text-[#6B7280] hover:text-[#374151]'
+                        ? 'rounded border border-[#E5E7EB] bg-[#F3F4F6] px-2.5 py-1.5 font-bold text-[#0F172A]'
+                        : 'rounded border border-transparent bg-transparent px-2.5 py-1.5 font-normal text-[#6B7280] hover:text-[#374151]'
                     }`}
                   >
                     Rebalancing
@@ -592,10 +592,10 @@ export function RebalancingPrototypeV1({
                     type="button"
                     aria-pressed={tripType === 'replenishment'}
                     onClick={() => setTripType('replenishment')}
-                    className={`font-['Inter',sans-serif] text-sm leading-normal transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#0267FF] ${
+                    className={`font-['Inter',sans-serif] text-xs leading-normal transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#0267FF] ${
                       tripType === 'replenishment'
-                        ? 'rounded border border-[#E5E7EB] bg-[#F3F4F6] px-3 py-2 font-bold text-[#0F172A]'
-                        : 'rounded border border-transparent bg-transparent px-3 py-2 font-normal text-[#6B7280] hover:text-[#374151]'
+                        ? 'rounded border border-[#E5E7EB] bg-[#F3F4F6] px-2.5 py-1.5 font-bold text-[#0F172A]'
+                        : 'rounded border border-transparent bg-transparent px-2.5 py-1.5 font-normal text-[#6B7280] hover:text-[#374151]'
                     }`}
                   >
                     Replenishment
@@ -604,7 +604,7 @@ export function RebalancingPrototypeV1({
               </div>
               <div className="hidden h-6 w-px shrink-0 bg-[#e9eaeb] sm:block" aria-hidden />
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-normal text-[#4b535c] whitespace-nowrap">
+                <span className="text-xs font-normal text-[#4b535c] whitespace-nowrap">
                   Include zero transfers
                 </span>
                 <button
@@ -628,8 +628,8 @@ export function RebalancingPrototypeV1({
 
           <RebalancingWorkspaceSummaryBanner onOpenKpis={() => setKpisPanelOpen(true)} />
 
-          <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2">
-            <div className="flex min-w-0 flex-1 flex-wrap items-center justify-start gap-2">
+          <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2">
+            <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2">
             <div className="relative min-w-0 max-w-full shrink" ref={sortMenuRef}>
               <div className="flex min-w-0 max-w-full items-stretch">
                 <button
