@@ -1,7 +1,5 @@
 import { useState, type ReactNode } from 'react';
 import { BarChart3, ChevronDown, ChevronUp, X } from 'lucide-react';
-import { RefreshSyncIcon } from '../icons/RefreshSyncIcon';
-
 type MetricTone = 'emerald' | 'muted';
 
 type RebalancingWorkspaceSummaryBannerProps = {
@@ -64,12 +62,6 @@ export function RebalancingWorkspaceSummaryBanner({
 
   const leadBlock = isOnboarding ? (
     <>
-      <div
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#2EB8C2] text-white"
-        aria-hidden
-      >
-        <RefreshSyncIcon size={24} className="text-inherit" />
-      </div>
       <div className="min-w-0 flex-1 flex flex-col gap-3">
         <p className="font-['Inter',sans-serif] text-sm font-semibold text-[#101828]">{headline} summary</p>
         <div
@@ -108,12 +100,6 @@ export function RebalancingWorkspaceSummaryBanner({
     </>
   ) : (
     <>
-      <div
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#2EB8C2] text-white"
-        aria-hidden
-      >
-        <RefreshSyncIcon size={24} className="text-inherit" />
-      </div>
       <div className="min-w-0 flex-1 grid grid-cols-1 gap-2 md:grid-cols-[auto_minmax(0,1fr)] md:gap-x-4 md:gap-y-1 md:items-center">
         <div className="min-w-0 w-full max-w-prose md:w-fit md:max-w-full">
           <p className="flex w-fit max-w-full flex-wrap items-baseline gap-x-1.5 gap-y-0.5 font-['Inter',sans-serif] text-sm leading-snug text-[#101828]">
@@ -190,7 +176,7 @@ export function RebalancingWorkspaceSummaryBanner({
 
   return (
     <div
-      className="w-full min-w-0 rounded-xl border border-[#E3E8F0] bg-white px-4 py-3 sm:px-5 sm:py-4"
+      className="w-full min-w-0 rounded-xl border-[0.5px] border-solid border-[#E3E8F0] bg-white px-4 py-3 sm:px-5 sm:py-4"
       role="region"
       aria-label="Rebalancing summary"
     >

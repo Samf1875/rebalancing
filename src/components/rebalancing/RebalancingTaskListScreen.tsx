@@ -75,7 +75,7 @@ const thClassRight =
 
 /** Align cell text with label after grip (18px) + gap (8px) inside `px-4` header cells */
 const thGripLabel = (label: string) => (
-  <span className="inline-flex max-h-[62px] min-h-0 items-center gap-2">
+  <span className="flex h-full items-center gap-2">
     <GripVertical
       size={18}
       strokeWidth={2}
@@ -88,7 +88,7 @@ const thGripLabel = (label: string) => (
 
 /** Numeric columns: grip + label grouped to the right edge */
 const thGripLabelRight = (label: string) => (
-  <span className="inline-flex min-h-0 max-h-[62px] w-full items-center justify-end gap-2">
+  <span className="flex h-full w-full items-center justify-end gap-2">
     <GripVertical
       size={18}
       strokeWidth={2}
@@ -268,7 +268,7 @@ export function RebalancingTaskListScreen({ onOpenTask, onRecreateTask }: Rebala
 
       <div className="min-w-0 overflow-x-auto rounded-lg border-[0.5px] border-solid border-[#E3E8F0]">
         <table className="w-full min-w-[720px] border-collapse">
-          <thead>
+          <thead className="[&_th]:border-t-0 [&_th]:border-b-[0.5px] [&_th]:border-solid [&_th]:border-[#E3E8F0]">
             <tr className="h-[62px] min-h-[62px] max-h-[62px] text-left [&_th]:whitespace-nowrap">
               <th scope="col" className={thClass}>
                 {thGripLabel('Name')}

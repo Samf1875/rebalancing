@@ -1,5 +1,29 @@
 /** Purple “warehouse / box” vs blue “transfer / truck” chips in the TU column (design mock). */
-export type TuBreakdownItem = { kind: 'warehouse' | 'transfer'; count: number };
+export type TuBreakdownItem =
+  | { kind: 'warehouse'; count: number }
+  | {
+      kind: 'transfer';
+      count: number;
+      /**
+       * Source/origin location id for this transfer chunk; the destination is the parent row.
+       * Used to look up live stock / forecast / coverage values from the rows array, so the
+       * popover always reflects the same numbers shown in the table itself.
+       */
+      fromLocationId: string;
+      /** Trip classification (e.g. "Rebalancing", "Replenishment") */
+      tripType: string;
+      /** Revenue uplift driven by this recommendation, in EUR */
+      revenueIncrease: number;
+      /** Free-form bullet reasons displayed in the recommendation popover */
+      reasons: string[];
+    }
+  /** Outlined purple chip representing units already in-transit toward the destination. */
+  | {
+      kind: 'in-transit';
+      count: number;
+      /** Optional explanatory note shown beneath the count in the hover popover */
+      note?: string;
+    };
 
 /** Back-of-house storage state for the product transfers table. */
 export type ProductTransferStorageCapacity = 'saturated' | 'spaceRemaining';
@@ -65,8 +89,22 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     tu: { from: 2, to: 5 },
     tuBreakdown: [
       { kind: 'warehouse', count: 2 },
-      { kind: 'transfer', count: 2 },
-      { kind: 'transfer', count: 1 },
+      {
+        kind: 'transfer',
+        count: 2,
+        fromLocationId: 'loc-610',
+        tripType: 'Rebalancing',
+        revenueIncrease: 540,
+        reasons: ['Increase visibility at PR PP Nancy from 2 to 4', 'Increase revenue'],
+      },
+      {
+        kind: 'transfer',
+        count: 1,
+        fromLocationId: 'loc-644',
+        tripType: 'Rebalancing',
+        revenueIncrease: 210,
+        reasons: ['Increase visibility at PR PP Nancy from 4 to 5', 'Increase revenue'],
+      },
     ],
     sales: { l7d: 0, l30d: 1 },
     forecastPerWeek: 0.9,
@@ -82,13 +120,55 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     stock: { from: 1, to: 3 },
     tu: { from: 1, to: 3 },
     tuBreakdown: [
-      { kind: 'transfer', count: 1 },
-      { kind: 'transfer', count: 1 },
+      {
+        kind: 'transfer',
+        count: 1,
+        fromLocationId: 'loc-610',
+        tripType: 'Rebalancing',
+        revenueIncrease: 320,
+        reasons: ['Increase visibility at GL PP Biarritz from 1 to 2', 'Increase revenue'],
+      },
+      {
+        kind: 'transfer',
+        count: 1,
+        fromLocationId: 'loc-645',
+        tripType: 'Rebalancing',
+        revenueIncrease: 180,
+        reasons: ['Increase visibility at GL PP Biarritz from 2 to 3', 'Increase revenue'],
+      },
     ],
     sales: { l7d: 0, l30d: 0 },
     forecastPerWeek: 0.24,
     stockouts: { from: 2, to: 1 },
     coverage: { fromPct: 25, toPct: 60, targetWeeks: 2 },
+    storageCapacity: 'saturated',
+  },
+  {
+    id: 'loc-660',
+    name: 'PR AC Toulon',
+    code: '660',
+    transferHub: true,
+    stock: { from: 1, to: 2 },
+    tu: { from: 1, to: 2 },
+    tuBreakdown: [
+      {
+        kind: 'in-transit',
+        count: 1,
+        note: 'No transfers out recommended because stock is in transit',
+      },
+      {
+        kind: 'transfer',
+        count: 1,
+        fromLocationId: 'loc-610',
+        tripType: 'Replenishment',
+        revenueIncrease: 140,
+        reasons: ['Cover stockout risk at PR AC Toulon', 'Increase revenue'],
+      },
+    ],
+    sales: { l7d: 0, l30d: 0 },
+    forecastPerWeek: 0,
+    stockouts: { from: 3, to: 1 },
+    coverage: { fromPct: 0, toPct: 0, targetWeeks: 2 },
     storageCapacity: 'saturated',
   },
   {
@@ -99,7 +179,14 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     tu: { from: 1, to: 2 },
     tuBreakdown: [
       { kind: 'warehouse', count: 1 },
-      { kind: 'transfer', count: 1 },
+      {
+        kind: 'transfer',
+        count: 1,
+        fromLocationId: 'loc-610',
+        tripType: 'Replenishment',
+        revenueIncrease: 95,
+        reasons: ['Cover stockout risk at SU PP Vieille du templ...', 'Increase revenue'],
+      },
     ],
     sales: { l7d: 0, l30d: 0 },
     forecastPerWeek: 0.12,

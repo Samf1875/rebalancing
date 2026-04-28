@@ -50,8 +50,8 @@ function ElementsGridIcon({ className }: Pick<NavIconProps, 'className'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={24}
-      height={24}
+      width={18}
+      height={18}
       viewBox="0 0 20 20"
       fill="none"
       className={['shrink-0', className ?? 'text-white'].join(' ')}
@@ -109,8 +109,8 @@ function ReorderCubeIcon({ className }: Pick<NavIconProps, 'className'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={24}
-      height={24}
+      width={18}
+      height={18}
       viewBox="0 0 20 20"
       fill="none"
       className={['shrink-0', className ?? 'text-white'].join(' ')}
@@ -152,8 +152,8 @@ function HomeAssortIcon({ className }: Pick<NavIconProps, 'className'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={24}
-      height={24}
+      width={18}
+      height={18}
       viewBox="0 0 20 20"
       fill="none"
       className={['shrink-0', className ?? 'text-white'].join(' ')}
@@ -195,8 +195,8 @@ function BuyBagIcon({ className }: Pick<NavIconProps, 'className'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={24}
-      height={24}
+      width={18}
+      height={18}
       viewBox="0 0 20 20"
       fill="none"
       className={['shrink-0', className ?? 'text-white'].join(' ')}
@@ -224,8 +224,8 @@ function IdeaBulbIcon({ className }: Pick<NavIconProps, 'className'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={24}
-      height={24}
+      width={18}
+      height={18}
       viewBox="0 0 15 19"
       fill="none"
       className={['shrink-0', className ?? 'text-white'].join(' ')}
@@ -243,8 +243,8 @@ function AssortmentDotsIcon({ className }: Pick<NavIconProps, 'className'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={24}
-      height={24}
+      width={18}
+      height={18}
       viewBox="0 0 20 20"
       fill="none"
       className={['shrink-0', className ?? 'text-white'].join(' ')}
@@ -347,8 +347,8 @@ function SidebarCalendarIcon({ className }: Pick<NavIconProps, 'className'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={24}
-      height={24}
+      width={18}
+      height={18}
       viewBox="0 0 20 20"
       fill="none"
       className={['shrink-0', className ?? 'text-white'].join(' ')}
@@ -409,8 +409,8 @@ function SidebarHistoryIcon({ className }: Pick<NavIconProps, 'className'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={24}
-      height={24}
+      width={18}
+      height={18}
       viewBox="0 0 20 20"
       fill="none"
       className={['shrink-0', className ?? 'text-white'].join(' ')}
@@ -501,8 +501,8 @@ function SidebarHistoryClockIcon({ className }: Pick<NavIconProps, 'className'>)
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={24}
-      height={24}
+      width={18}
+      height={18}
       viewBox="0 0 20 20"
       fill="none"
       className={['shrink-0', className ?? 'text-[#08A16A]'].join(' ')}
@@ -540,7 +540,7 @@ function SidebarHistoryClockIcon({ className }: Pick<NavIconProps, 'className'>)
 function SidebarChatIcon() {
   return (
     <div
-      className="relative shrink-0 size-6 text-white transition-colors group-hover:text-[#0267FF]"
+      className="relative shrink-0 size-[18px] text-white transition-colors group-hover:text-[#0267FF]"
       aria-hidden
       data-node-id="I12350:172509;12203:35386"
     >
@@ -565,7 +565,7 @@ function SidebarChatIcon() {
 function SidebarCurrencyIcon() {
   return (
     <div
-      className="relative size-6 shrink-0 text-white transition-colors group-hover:text-[#0267FF]"
+      className="relative size-[18px] shrink-0 text-white transition-colors group-hover:text-[#0267FF]"
       aria-hidden
       data-node-id="I12718:7365;12203:35386"
     >
@@ -603,7 +603,7 @@ function SidebarCurrencyIcon() {
 /** Language UK flag — Sidebar element Icon=uk (Figma 12350:172510 → Element). Blue field is `bg-[#1a47b8]`. */
 function SidebarLanguageUkIcon() {
   return (
-    <div className="relative size-6 shrink-0 overflow-hidden" aria-hidden data-node-id="I12350:172510;12203:35386">
+    <div className="relative size-[18px] shrink-0 overflow-hidden" aria-hidden data-node-id="I12350:172510;12203:35386">
       <div
         className="absolute inset-[20.83%_4.17%_16.67%_4.17%] flex flex-col items-center justify-center overflow-hidden rounded-[0.676px] bg-[#1a47b8] shadow-[0px_0px_0.055px_0px_rgba(66,71,76,0.32),0px_0.442px_0.662px_0px_rgba(66,71,76,0.08)]"
         data-name="language-icon"
@@ -792,13 +792,13 @@ export function Sidebar({
                 ) : item.id === 'reorder' ? (
                   <ReorderCubeIcon className="text-inherit" />
                 ) : item.id === 'refresh' ? (
-                  <RefreshSyncIcon className="text-inherit" />
+                  <RefreshSyncIcon size={18} className="text-inherit" />
                 ) : item.id === 'buy' ? (
                   <BuyBagIcon className="text-inherit" />
                 ) : item.id === 'bulb' ? (
                   <IdeaBulbIcon className="text-inherit" />
                 ) : Icon ? (
-                  <Icon size={24} strokeWidth={1.5} className="shrink-0 text-inherit" aria-hidden />
+                  <Icon size={18} strokeWidth={1.5} className="shrink-0 text-inherit" aria-hidden />
                 ) : null}
                 {expanded && (
                   <>
@@ -834,7 +834,7 @@ export function Sidebar({
                 ) : item.id === 'settings' ? (
                   <SidebarHistoryIcon className="text-inherit" />
                 ) : Icon ? (
-                  <Icon size={24} strokeWidth={1.5} className="shrink-0 text-inherit" aria-hidden />
+                  <Icon size={18} strokeWidth={1.5} className="shrink-0 text-inherit" aria-hidden />
                 ) : null}
                 {expanded && (
                   <span className="min-w-0 flex-1 text-left font-medium leading-snug break-words">{item.label}</span>
