@@ -106,7 +106,7 @@ function TuBreakdownBadge({
       onBlur={onClose}
     >
       {item.kind === 'transfer' ? (
-        <Truck className="size-[18px] shrink-0" strokeWidth={2} aria-hidden />
+        <Truck className="size-[18px] shrink-0 -scale-x-100" strokeWidth={2} aria-hidden />
       ) : (
         <Package className="size-[18px] shrink-0" strokeWidth={2} aria-hidden />
       )}
