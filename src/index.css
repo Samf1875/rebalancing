@@ -35,8 +35,18 @@
 }
 
 :root {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Roboto, sans-serif;
+  font-family: 'InterVariable', 'Inter', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, sans-serif;
+  /*
+   * Inter v4 ships several digit-shaping OpenType features. We enable a combination
+   * to guarantee a clean "no-foot" `1` in every context:
+   *   `cv01` — Alternate one (toggles the foot serif on the `1` character)
+   *   `ss01` — Alternate / open digits stylistic set (overrides all numeral shapes)
+   * `cv01` and `ss01` live in different feature namespaces from `tnum`, so
+   * Tailwind's `tabular-nums` utility (which sets `font-variant-numeric: tabular-nums`)
+   * still works alongside them.
+   */
+  font-feature-settings: 'cv01', 'ss01';
   line-height: 1.5;
   font-weight: 400;
   font-synthesis: none;
@@ -48,6 +58,24 @@
   --Tokens-Background: #12171e;
   /* OKLCH components for `oklch(var(--border) / var(--tw-border-opacity))` */
   --border: 92% 0.004 264;
+}
+
+/*
+ * `font-feature-settings` is inherited, but in some browsers it gets reset on
+ * elements that also set `font-variant-numeric` (e.g. Tailwind's `tabular-nums`).
+ * Force the no-foot "1" features on every element so digits render consistently
+ * regardless of which numeric variant utilities are applied.
+ */
+*,
+::before,
+::after {
+  font-feature-settings: 'cv01', 'ss01';
+}
+
+@supports (font-variation-settings: normal) {
+  :root {
+    font-family: 'InterVariable', system-ui, sans-serif;
+  }
 }
 
 body {

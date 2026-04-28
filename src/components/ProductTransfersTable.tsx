@@ -84,12 +84,16 @@ function TuBreakdownBadge({
 
   const colorClasses =
     item.kind === 'warehouse'
-      ? 'bg-[#A832D7] text-white'
+      ? 'bg-[#6864E6] text-white'
       : item.kind === 'transfer'
-        ? 'bg-[#2563EB] text-white'
-        : 'bg-white text-[#A832D7] border border-[#A832D7]';
+        ? 'bg-[#2EB8C2] text-white'
+        : item.kind === 'transfer-out'
+          ? 'bg-white text-[#2EB8C2] border border-[#2EB8C2]'
+          : 'bg-white text-[#6864E6] border border-[#6864E6]';
   const openRingClasses =
-    item.kind === 'in-transit' ? '' : 'ring-2 ring-white ring-offset-1 ring-offset-transparent';
+    item.kind === 'in-transit' || item.kind === 'transfer-out'
+      ? ''
+      : 'ring-2 ring-white ring-offset-1 ring-offset-transparent';
 
   return (
     <button
@@ -107,11 +111,62 @@ function TuBreakdownBadge({
     >
       {item.kind === 'transfer' ? (
         <Truck className="size-[18px] shrink-0 -scale-x-100" strokeWidth={2} aria-hidden />
+      ) : item.kind === 'transfer-out' ? (
+        <Truck className="size-[18px] shrink-0" strokeWidth={2} aria-hidden />
       ) : (
         <Package className="size-[18px] shrink-0" strokeWidth={2} aria-hidden />
       )}
       {item.count}
     </button>
+  );
+}
+
+function RowFilterButton({ rowName }: { rowName: string }) {
+  const [hovered, setHovered] = useState(false);
+  const [rect, setRect] = useState<DOMRect | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+
+  const handleEnter = () => {
+    if (buttonRef.current) setRect(buttonRef.current.getBoundingClientRect());
+    setHovered(true);
+  };
+  const handleLeave = () => setHovered(false);
+  const handleFocus = () => {
+    if (buttonRef.current) setRect(buttonRef.current.getBoundingClientRect());
+    setHovered(true);
+  };
+
+  return (
+    <>
+      <button
+        ref={buttonRef}
+        type="button"
+        aria-label={`Filter network by connections to ${rowName}`}
+        className="inline-flex shrink-0 cursor-pointer text-[#6A7282] opacity-0 outline-none transition-opacity duration-150 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0267FF] hover:text-[#101828]"
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
+        onFocus={handleFocus}
+        onBlur={handleLeave}
+      >
+        <Filter size={16} strokeWidth={2} aria-hidden />
+      </button>
+      {hovered && rect
+        ? createPortal(
+            <div
+              role="tooltip"
+              className="pointer-events-none fixed z-[70] whitespace-nowrap rounded-full bg-[#12171E] px-3 py-1.5 font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-white shadow-[0_8px_24px_-4px_rgba(15,23,42,0.25)]"
+              style={{
+                left: rect.left + rect.width / 2,
+                top: rect.top - 8,
+                transform: 'translate(-50%, -100%)',
+              }}
+            >
+              Filter network by connections to this location
+            </div>,
+            document.body
+          )
+        : null}
+    </>
   );
 }
 
@@ -149,6 +204,138 @@ function TransferPopReason({ label }: { label: ReactNode }) {
       </span>
       <span className={transferPopRowText}>{label}</span>
     </div>
+  );
+}
+
+const WHY_NOT_MOVED_REASONS: Array<{ title: string; bodyLines: string[] }> = [
+  {
+    title: 'Warehouse can still supply',
+    bodyLines: [
+      'If the warehouse has enough stock, Sol will not suggest moving items between stores.',
+      'This keeps replenishment faster and lower cost.',
+    ],
+  },
+  {
+    title: 'Stock target limits',
+    bodyLines: [
+      'Each store has a target level of stock.',
+      'If moving this SKU would take the receiving store over its limit, Sol will not move it.',
+    ],
+  },
+  {
+    title: 'Low value move',
+    bodyLines: [
+      'Sol only suggests moves that add enough value.',
+      'If the expected uplift is too low, the move is skipped.',
+    ],
+  },
+  {
+    title: 'Better move found',
+    bodyLines: [
+      'The SKU may have had other possible destinations.',
+      'Sol chose a higher value option instead.',
+    ],
+  },
+  {
+    title: 'Trip is full',
+    bodyLines: [
+      'Each transfer has a limit.',
+      'Higher value items may have filled the trip first.',
+    ],
+  },
+  {
+    title: 'No storage space',
+    bodyLines: [
+      'The receiving store may not have space for more stock in that category.',
+    ],
+  },
+];
+
+function WhyNotMovedSection() {
+  return (
+    <>
+      <p className={`${transferPopSection} mb-2`}>Why wasn’t this SKU moved?</p>
+      <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#475467]">
+        Sol may leave a unit behind for a few reasons. Most often, it’s due to one or more of
+        these:
+      </p>
+      <ol className="mt-3 flex flex-col gap-3">
+        {WHY_NOT_MOVED_REASONS.map((reason, idx) => (
+          <li key={reason.title} className="flex gap-3">
+            <span
+              aria-hidden
+              className="mt-[1px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#6864E6]/15 font-['Inter',sans-serif] text-[11px] font-semibold leading-none text-[#6864E6]"
+            >
+              {idx + 1}
+            </span>
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <p className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                {reason.title}
+              </p>
+              {reason.bodyLines.map((line, lineIdx) => (
+                <p
+                  key={lineIdx}
+                  className="font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#475467]"
+                >
+                  {line}
+                </p>
+              ))}
+            </div>
+          </li>
+        ))}
+      </ol>
+      <p className="mt-4 border-t border-[#E3E8F0] pt-3 font-['Inter',sans-serif] text-[11px] font-normal italic leading-relaxed text-[#6A7282]">
+        Sol runs multiple passes. Only the final reason from the last run is shown.
+      </p>
+
+      <div className="mt-4 border-t border-[#E3E8F0] pt-4">
+        <p className={`${transferPopSection} mb-2`}>Example: why this SKU wasn’t moved</p>
+        <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#475467]">
+          You have <span className="font-semibold text-[#101828]">1 unit of a white tee
+          (Small)</span> at <span className="font-semibold text-[#101828]">Oxford Street</span>.
+        </p>
+        <p className="mt-2 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#475467]">
+          Sol looked at sending it to these stores, but did not include them:
+        </p>
+        <ul className="mt-3 flex flex-col gap-1.5">
+          {[
+            { store: 'Shoreditch', reason: 'would exceed stock target' },
+            { store: 'Richmond', reason: 'no storage space' },
+            { store: 'Peckham', reason: 'trip is full' },
+            { store: 'Camberwell', reason: 'trip is full' },
+          ].map(({ store, reason }) => (
+            <li
+              key={store}
+              className="flex items-baseline gap-2 font-['Inter',sans-serif] text-[12px] leading-snug"
+            >
+              <span aria-hidden className="size-1 shrink-0 rounded-full bg-[#6864E6]" />
+              <span className="font-semibold text-[#101828]">{store}</span>
+              <span aria-hidden className="text-[#9CA3AF]">—</span>
+              <span className="text-[#475467]">{reason}</span>
+            </li>
+          ))}
+        </ul>
+
+        <p className={`${transferPopSection} mt-4 mb-2`}>How this is shown in the UI</p>
+        <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#475467]">
+          To make this clear, we show:
+        </p>
+        <ul className="mt-2 flex flex-col gap-1.5 font-['Inter',sans-serif] text-[12px] leading-snug text-[#101828]">
+          <li className="flex items-start gap-2">
+            <span aria-hidden className="mt-[6px] size-1 shrink-0 rounded-full bg-[#6864E6]" />
+            <span>Each store that was considered</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span aria-hidden className="mt-[6px] size-1 shrink-0 rounded-full bg-[#6864E6]" />
+            <span>The reason it was not selected</span>
+          </li>
+        </ul>
+
+        <p className="mt-3 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#475467]">
+          This helps explain why the SKU was left behind.
+        </p>
+      </div>
+    </>
   );
 }
 
@@ -298,6 +485,260 @@ function TransferBadgePopoverContent({
   );
 }
 
+function TransferOutBadgePopoverContent({
+  popRow,
+  popItem,
+  rows,
+}: {
+  popRow: ProductTransferLocationRow;
+  popItem: Extract<TuBreakdownItem, { kind: 'transfer-out' }>;
+  rows: ProductTransferLocationRow[];
+}) {
+  const destinationRow = popItem.toLocationId
+    ? rows.find((r) => r.id === popItem.toLocationId)
+    : undefined;
+  const destinationName = destinationRow?.name ?? 'Multiple destinations';
+  const availableToSend = popRow.stock.from;
+  return (
+    <>
+      <p className="flex items-center gap-1 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+        <span>{popRow.name}</span>
+        <span className="mx-0.5 font-normal text-[#9CA3AF]">→</span>
+        <span>{destinationName}</span>
+      </p>
+      <div className="my-1.5 border-t border-[#E3E8F0]" />
+
+      <p className={`${transferPopSection} mb-1.5`}>Transfer info</p>
+      <div className="flex flex-col gap-1.5">
+        <TransferPopRow
+          icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+          label="Transfer units"
+          value={popItem.count.toLocaleString()}
+        />
+        <TransferPopRow
+          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
+          label="Available to send"
+          value={availableToSend.toLocaleString()}
+        />
+        {popItem.tripType ? (
+          <TransferPopRow
+            icon={<ArrowLeftRight className="size-3.5" strokeWidth={2} aria-hidden />}
+            label="Trip type"
+            value={popItem.tripType}
+          />
+        ) : null}
+      </div>
+
+      <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation</p>
+      <div className="flex flex-col gap-1.5">
+        <TransferPopRow
+          icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+          label="Transfer units"
+          value={popItem.count.toLocaleString()}
+        />
+        {typeof popItem.revenueIncrease === 'number' ? (
+          <TransferPopRow
+            icon={<TrendingUp className="size-3.5" strokeWidth={2} aria-hidden />}
+            label="Revenue increase"
+            value={formatCurrencyEur(popItem.revenueIncrease)}
+          />
+        ) : null}
+      </div>
+
+      {popItem.reasons && popItem.reasons.length > 0 ? (
+        <>
+          <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation reasons</p>
+          <div className="flex flex-col gap-1.5">
+            {popItem.reasons.map((reason, idx) => (
+              <TransferPopReason key={`${popRow.id}-out-reason-${idx}`} label={reason} />
+            ))}
+          </div>
+        </>
+      ) : null}
+
+      <div className="my-2 border-t border-[#E3E8F0]" />
+
+      <p className={`${transferPopSection} mb-1.5`}>Total stock</p>
+      <div className="flex flex-col gap-1.5">
+        <TransferPopRow
+          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
+          label={popRow.name}
+          value={formatStockArrow(popRow.stock.from, popRow.stock.to)}
+        />
+        <TransferPopRow
+          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
+          label={destinationName}
+          value={
+            destinationRow
+              ? formatStockArrow(destinationRow.stock.from, destinationRow.stock.to)
+              : '—'
+          }
+        />
+      </div>
+
+      <p className={`${transferPopSection} mt-2 mb-1.5`}>Total weeks coverage</p>
+      <div className="flex flex-col gap-1.5">
+        <TransferPopRow
+          icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
+          label={popRow.name}
+          value={formatWeeksCoverageArrow(
+            popRow.stock,
+            popRow.forecastPerWeek,
+            popRow.coverage.targetWeeks
+          )}
+        />
+        <TransferPopRow
+          icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
+          label={destinationName}
+          value={
+            destinationRow
+              ? formatWeeksCoverageArrow(
+                  destinationRow.stock,
+                  destinationRow.forecastPerWeek,
+                  destinationRow.coverage.targetWeeks
+                )
+              : '—'
+          }
+        />
+      </div>
+    </>
+  );
+}
+
+function InTransitBadgePopoverContent({
+  popRow,
+  popItem,
+  rows,
+  onMoreDetail,
+}: {
+  popRow: ProductTransferLocationRow;
+  popItem: Extract<TuBreakdownItem, { kind: 'in-transit' }>;
+  rows: ProductTransferLocationRow[];
+  onMoreDetail: () => void;
+}) {
+  const sourceRow = popItem.fromLocationId
+    ? rows.find((r) => r.id === popItem.fromLocationId)
+    : undefined;
+  const sourceName = sourceRow?.name ?? 'Origin warehouse';
+  return (
+    <>
+      <p className="flex items-center gap-1 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+        <span>{sourceName}</span>
+        <span className="mx-0.5 font-normal text-[#9CA3AF]">→</span>
+        <span>{popRow.name}</span>
+      </p>
+      <div className="my-1.5 border-t border-[#E3E8F0]" />
+
+      <p className={`${transferPopSection} mb-1.5`}>In-transit info</p>
+      <div className="flex flex-col gap-1.5">
+        <TransferPopRow
+          icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+          label="Stock in-transit"
+          value={popItem.count.toLocaleString()}
+        />
+        {popItem.tripType ? (
+          <TransferPopRow
+            icon={<ArrowLeftRight className="size-3.5" strokeWidth={2} aria-hidden />}
+            label="Trip type"
+            value={popItem.tripType}
+          />
+        ) : null}
+        {popItem.eta ? (
+          <TransferPopRow
+            icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
+            label="ETA"
+            value={popItem.eta}
+          />
+        ) : null}
+      </div>
+
+      {popItem.note ? (
+        <>
+          <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation reasons</p>
+          <div className="flex flex-col gap-1.5">
+            <TransferPopReason label={popItem.note} />
+          </div>
+        </>
+      ) : null}
+
+      <div className="my-2 border-t border-[#E3E8F0]" />
+
+      <p className={`${transferPopSection} mb-1.5`}>Total stock</p>
+      <div className="flex flex-col gap-1.5">
+        {sourceRow ? (
+          <TransferPopRow
+            icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
+            label={sourceName}
+            value={formatStockArrow(sourceRow.stock.from, sourceRow.stock.to)}
+          />
+        ) : null}
+        <TransferPopRow
+          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
+          label={popRow.name}
+          value={formatStockArrow(popRow.stock.from, popRow.stock.to)}
+        />
+      </div>
+
+      <p className={`${transferPopSection} mt-2 mb-1.5`}>Total weeks coverage</p>
+      <div className="flex flex-col gap-1.5">
+        {sourceRow ? (
+          <TransferPopRow
+            icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
+            label={sourceName}
+            value={formatWeeksCoverageArrow(
+              sourceRow.stock,
+              sourceRow.forecastPerWeek,
+              sourceRow.coverage.targetWeeks
+            )}
+          />
+        ) : null}
+        <TransferPopRow
+          icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
+          label={popRow.name}
+          value={formatWeeksCoverageArrow(
+            popRow.stock,
+            popRow.forecastPerWeek,
+            popRow.coverage.targetWeeks
+          )}
+        />
+      </div>
+
+      <div className="my-2 border-t border-[#E3E8F0]" />
+
+      <p className={`${transferPopSection} mb-1.5`}>Why wasn’t this SKU/Unit moved?</p>
+      <p className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+        Sol may leave a unit behind if:
+      </p>
+      <ul className="mt-1.5 flex flex-col gap-1 font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#101828]">
+        <li className="flex gap-1.5">
+          <span aria-hidden className="mt-[5px] size-1 shrink-0 rounded-full bg-[#6864E6]" />
+          <span>Moving it would leave the sending store too low on stock</span>
+        </li>
+        <li className="flex gap-1.5">
+          <span aria-hidden className="mt-[5px] size-1 shrink-0 rounded-full bg-[#6864E6]" />
+          <span>The receiving store doesn’t need it enough</span>
+        </li>
+        <li className="flex gap-1.5">
+          <span aria-hidden className="mt-[5px] size-1 shrink-0 rounded-full bg-[#6864E6]" />
+          <span>The receiving store has no space</span>
+        </li>
+        <li className="flex gap-1.5">
+          <span aria-hidden className="mt-[5px] size-1 shrink-0 rounded-full bg-[#6864E6]" />
+          <span>The trip is already full</span>
+        </li>
+      </ul>
+
+      <button
+        type="button"
+        onClick={onMoreDetail}
+        className="mt-2 inline-block cursor-pointer font-['Inter',sans-serif] text-[11px] font-medium leading-snug text-[#0267FF] underline-offset-2 outline-none hover:underline focus-visible:underline"
+      >
+        More detail...
+      </button>
+    </>
+  );
+}
+
 type ProductTransfersTableProps = {
   parentRow: AssortmentRow;
   onBack: () => void;
@@ -312,13 +753,22 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
     rect: DOMRect;
   } | null>(null);
   const [tuPopoverStyle, setTuPopoverStyle] = useState<CSSProperties>({});
-  const [detailPhase, setDetailPhase] = useState<'closed' | 'open' | 'closing'>('closed');
-  const [morphRect, setMorphRect] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+  const [warehouseDetail, setWarehouseDetail] = useState<{
+    rowName: string;
+    count: number;
+    weeksCoverage: string;
+    stockOnHand: number;
+    reasons: string[];
+  } | null>(null);
+  const [inTransitDetail, setInTransitDetail] = useState<{
+    rowName: string;
+    count: number;
+    weeksCoverage: string;
+    note?: string;
+  } | null>(null);
   const tuPopoverPanelRef = useRef<HTMLDivElement>(null);
   const tuCloseTimerRef = useRef<number | null>(null);
   const tableContainerRef = useRef<HTMLDivElement>(null);
-  const detailCardRef = useRef<HTMLDivElement>(null);
-  const detailBackdropRef = useRef<HTMLDivElement>(null);
   const rows = MOCK_PRODUCT_TRANSFER_LOCATIONS;
   const summary = MOCK_PRODUCT_TRANSFER_SUMMARY;
 
@@ -343,6 +793,20 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
   };
 
   useEffect(() => () => cancelTuClose(), []);
+
+  useEffect(() => {
+    if (!warehouseDetail) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setWarehouseDetail(null);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [warehouseDetail]);
 
   useLayoutEffect(() => {
     if (!tuBadgePopover) {
@@ -405,81 +869,19 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
     };
   }, [tuBadgePopover]);
 
-  const requestCloseDetail = () => {
-    setDetailPhase((p) => (p === 'open' ? 'closing' : p));
-  };
-
   useEffect(() => {
-    if (detailPhase === 'closed') return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') requestCloseDetail();
-    };
-    document.addEventListener('keydown', onKey);
+    if (!inTransitDetail) return;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setInTransitDetail(null);
+    };
+    document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('keydown', onKey);
       document.body.style.overflow = prevOverflow;
+      document.removeEventListener('keydown', onKey);
     };
-  }, [detailPhase]);
-
-  useLayoutEffect(() => {
-    const card = detailCardRef.current;
-    const backdrop = detailBackdropRef.current;
-    if (!card || !backdrop) return;
-
-    const computeMorphTransform = () => {
-      const cardRect = card.getBoundingClientRect();
-      if (!morphRect || cardRect.width === 0 || cardRect.height === 0) {
-        return { transform: 'scale(0.94)', transformOrigin: 'center center' };
-      }
-      const dx = morphRect.left + morphRect.width / 2 - (cardRect.left + cardRect.width / 2);
-      const dy = morphRect.top + morphRect.height / 2 - (cardRect.top + cardRect.height / 2);
-      const sx = Math.max(0.05, morphRect.width / cardRect.width);
-      const sy = Math.max(0.05, morphRect.height / cardRect.height);
-      return {
-        transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`,
-        transformOrigin: 'center center',
-      };
-    };
-
-    if (detailPhase === 'open') {
-      const start = computeMorphTransform();
-      card.style.transition = 'none';
-      backdrop.style.transition = 'none';
-      card.style.transformOrigin = start.transformOrigin;
-      card.style.transform = start.transform;
-      card.style.opacity = '0';
-      backdrop.style.opacity = '0';
-      void card.offsetWidth;
-      card.style.transition =
-        'transform 280ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease-out';
-      backdrop.style.transition = 'opacity 220ms ease-out';
-      const raf = requestAnimationFrame(() => {
-        if (!detailCardRef.current || !detailBackdropRef.current) return;
-        detailCardRef.current.style.transform = 'translate(0px, 0px) scale(1, 1)';
-        detailCardRef.current.style.opacity = '1';
-        detailBackdropRef.current.style.opacity = '1';
-      });
-      return () => cancelAnimationFrame(raf);
-    }
-
-    if (detailPhase === 'closing') {
-      const end = computeMorphTransform();
-      card.style.transition =
-        'transform 220ms cubic-bezier(0.4, 0, 1, 1), opacity 180ms ease-in';
-      backdrop.style.transition = 'opacity 180ms ease-in';
-      card.style.transformOrigin = end.transformOrigin;
-      card.style.transform = end.transform;
-      card.style.opacity = '0';
-      backdrop.style.opacity = '0';
-      const t = window.setTimeout(() => {
-        setDetailPhase('closed');
-        setMorphRect(null);
-      }, 240);
-      return () => window.clearTimeout(t);
-    }
-  }, [detailPhase, morphRect]);
+  }, [inTransitDetail]);
 
   const toggleRow = (id: string, checked: boolean) => {
     setSelected((prev) => ({ ...prev, [id]: checked }));
@@ -505,8 +907,11 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
   const renderDataRow = (row: ProductTransferLocationRow) => {
     const isSaturated = row.storageCapacity === 'saturated';
     const rowBgClass = isSaturated ? 'bg-[#FEF3F2]' : 'bg-white';
+    const isSendingHub = row.tuBreakdown?.some((item) => item.kind === 'transfer-out') ?? false;
+    const hubDirection: 'in' | 'out' = isSendingHub ? 'out' : 'in';
+    const hubLabel = isSendingHub ? 'Sending location' : 'Receiving location';
     return (
-    <tr key={row.id} className={rowBgClass}>
+    <tr key={row.id} className={`group ${rowBgClass}`}>
       <td
         className={`sticky left-0 z-30 min-h-[86px] w-14 min-w-14 max-w-14 box-border ${rowBgClass} px-4 py-3 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
       >
@@ -524,24 +929,18 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
         <div className="min-w-0">
           <div className="flex w-full min-w-0 flex-nowrap items-center gap-1.5 leading-none">
             <span className={`shrink-0 ${tableCellPrimary}`}>{row.name}</span>
-            {row.transferHub || row.locationFilter ? (
-              <span className="ml-auto flex shrink-0 items-center gap-1.5 pl-3">
-                {row.transferHub ? (
-                  <span
-                    className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]"
-                    title="Receiving location"
-                    aria-label="Receiving location"
-                  >
-                    <AutoneReceivingLocationIcon />
-                  </span>
-                ) : null}
-                {row.locationFilter ? (
-                  <span className="inline-flex shrink-0 text-[#6A7282]" title="Filtered" aria-label="Filtered">
-                    <Filter size={16} strokeWidth={2} aria-hidden />
-                  </span>
-                ) : null}
-              </span>
-            ) : null}
+            <span className="ml-auto flex shrink-0 items-center gap-1.5 pl-3">
+              <RowFilterButton rowName={row.name} />
+              {row.transferHub ? (
+                <span
+                  className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]"
+                  title={hubLabel}
+                  aria-label={hubLabel}
+                >
+                  <AutoneReceivingLocationIcon direction={hubDirection} />
+                </span>
+              ) : null}
+            </span>
           </div>
           <div className={`mt-0.5 ${tableCellSecondary}`}>{row.code}</div>
         </div>
@@ -833,9 +1232,13 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
             const popRow = rows.find((r) => r.id === tuBadgePopover.rowId);
             const popItem = popRow?.tuBreakdown?.[tuBadgePopover.index];
             if (!popRow || !popItem) return null;
-            const accent = popItem.kind === 'transfer' ? '#2563EB' : '#A832D7';
+            const accent =
+              popItem.kind === 'transfer' || popItem.kind === 'transfer-out' ? '#2EB8C2' : '#6864E6';
             const isTransfer = popItem.kind === 'transfer';
+            const isTransferOut = popItem.kind === 'transfer-out';
             const isInTransit = popItem.kind === 'in-transit';
+            const isExtensiveTransfer = isTransfer || isTransferOut;
+            const isWidePopover = isExtensiveTransfer || isInTransit;
             const detailLabel =
               popItem.kind === 'warehouse'
                 ? 'Stock on-hand'
@@ -847,7 +1250,7 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
               forecast > 0
                 ? `${(popItem.count / forecast).toFixed(1)} weeks`
                 : 'N/A (0 forecast)';
-            const ariaLabel = isTransfer
+            const ariaLabel = isExtensiveTransfer
               ? `Transfer details for ${popRow.name}`
               : `${detailLabel} at ${popRow.name}`;
             return createPortal(
@@ -857,7 +1260,7 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
                 aria-label={ariaLabel}
                 data-tu-popover=""
                 className={`${
-                  isTransfer
+                  isWidePopover
                     ? 'w-[min(19rem,calc(100vw-24px))] p-2.5'
                     : 'w-[min(18rem,calc(100vw-24px))] p-2.5'
                 } rounded-[2px] border-2 bg-white shadow-[0_8px_24px_-4px_rgba(15,23,42,0.15)]`}
@@ -867,71 +1270,26 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
               >
                 {isTransfer && popItem.kind === 'transfer' ? (
                   <TransferBadgePopoverContent popRow={popRow} popItem={popItem} rows={rows} />
+                ) : isTransferOut && popItem.kind === 'transfer-out' ? (
+                  <TransferOutBadgePopoverContent popRow={popRow} popItem={popItem} rows={rows} />
                 ) : isInTransit && popItem.kind === 'in-transit' ? (
-                  <>
-                    <p className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
-                      {popRow.name}
-                    </p>
-                    <div className="my-1.5 border-t border-[#E3E8F0]" />
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex min-w-0 items-center gap-1.5">
-                        <Package className="size-3.5 shrink-0 text-[#101828]" strokeWidth={2} aria-hidden />
-                        <span className="font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#101828]">
-                          {detailLabel}
-                        </span>
-                      </div>
-                      <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-semibold tabular-nums text-[#101828]">
-                        {popItem.count}
-                      </span>
-                    </div>
-                    {popItem.note ? (
-                      <p className="mt-1.5 font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#6A7282]">
-                        {popItem.note}
-                      </p>
-                    ) : null}
-                    <div className="my-2 border-t border-[#E3E8F0]" />
-                    <p className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
-                      Why wasn’t this SKU/Unit moved?
-                    </p>
-                    <p className="mt-1 font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                      Sol may leave a unit behind if:
-                    </p>
-                    <ul className="mt-1.5 flex flex-col gap-1 font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#101828]">
-                      <li className="flex gap-1.5">
-                        <span aria-hidden className="mt-[5px] size-1 shrink-0 rounded-full bg-[#A832D7]" />
-                        <span>Moving it would leave the sending store too low on stock</span>
-                      </li>
-                      <li className="flex gap-1.5">
-                        <span aria-hidden className="mt-[5px] size-1 shrink-0 rounded-full bg-[#A832D7]" />
-                        <span>The receiving store doesn’t need it enough</span>
-                      </li>
-                      <li className="flex gap-1.5">
-                        <span aria-hidden className="mt-[5px] size-1 shrink-0 rounded-full bg-[#A832D7]" />
-                        <span>The receiving store has no space</span>
-                      </li>
-                      <li className="flex gap-1.5">
-                        <span aria-hidden className="mt-[5px] size-1 shrink-0 rounded-full bg-[#A832D7]" />
-                        <span>The trip is already full</span>
-                      </li>
-                    </ul>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const r = tuPopoverPanelRef.current?.getBoundingClientRect();
-                        setMorphRect(
-                          r
-                            ? { left: r.left, top: r.top, width: r.width, height: r.height }
-                            : null
-                        );
-                        cancelTuClose();
-                        setTuBadgePopover(null);
-                        setDetailPhase('open');
-                      }}
-                      className="mt-2 inline-block cursor-pointer font-['Inter',sans-serif] text-[11px] font-medium leading-snug text-[#0267FF] underline-offset-2 outline-none hover:underline focus-visible:underline"
-                    >
-                      More detail...
-                    </button>
-                  </>
+                  <InTransitBadgePopoverContent
+                    popRow={popRow}
+                    popItem={popItem}
+                    rows={rows}
+                    onMoreDetail={() => {
+                      cancelTuClose();
+                      if (popItem.kind === 'in-transit') {
+                        setInTransitDetail({
+                          rowName: popRow.name,
+                          count: popItem.count,
+                          weeksCoverage: weeksCoverageText,
+                          note: popItem.note,
+                        });
+                      }
+                      setTuBadgePopover(null);
+                    }}
+                  />
                 ) : (
                   <>
                     <p className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
@@ -962,6 +1320,38 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
                         </span>
                       </div>
                     </div>
+                    {popItem.kind === 'warehouse' && popItem.reasons && popItem.reasons.length > 0 ? (
+                      <>
+                        <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation reasons</p>
+                        <div className="flex flex-col gap-1.5">
+                          {popItem.reasons.map((reason, idx) => (
+                            <TransferPopReason key={`${popRow.id}-wh-reason-${idx}`} label={reason} />
+                          ))}
+                        </div>
+                      </>
+                    ) : null}
+                    {popItem.kind === 'warehouse' ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          cancelTuClose();
+                          setWarehouseDetail({
+                            rowName: popRow.name,
+                            count: popItem.count,
+                            weeksCoverage: weeksCoverageText,
+                            stockOnHand: popRow.stock.from,
+                            reasons:
+                              popItem.kind === 'warehouse' && popItem.reasons
+                                ? popItem.reasons
+                                : [],
+                          });
+                          setTuBadgePopover(null);
+                        }}
+                        className="mt-2 inline-block cursor-pointer font-['Inter',sans-serif] text-[11px] font-medium leading-snug text-[#0267FF] underline-offset-2 outline-none hover:underline focus-visible:underline"
+                      >
+                        More detail...
+                      </button>
+                    ) : null}
                   </>
                 )}
               </div>,
@@ -970,97 +1360,165 @@ export function ProductTransfersTable({ parentRow, onBack }: ProductTransfersTab
           })()
         : null}
 
-      {detailPhase !== 'closed'
+      {inTransitDetail
         ? createPortal(
             <div
+              className="fixed inset-0 z-[210] flex justify-end"
               role="dialog"
               aria-modal="true"
-              aria-label="Why wasn’t this SKU moved?"
-              className="fixed inset-0 z-[200] flex items-center justify-center px-4 py-8"
+              aria-labelledby="in-transit-detail-title"
             >
-              <div
-                ref={detailBackdropRef}
+              <button
+                type="button"
+                aria-label="Close panel"
+                onClick={() => setInTransitDetail(null)}
                 className="absolute inset-0 bg-[#0F172A]/40"
-                style={{ opacity: 0, willChange: 'opacity' }}
-                onClick={requestCloseDetail}
-                aria-hidden
               />
               <div
-                ref={detailCardRef}
-                className="relative flex max-h-[85vh] w-[min(36rem,calc(100vw-32px))] flex-col overflow-hidden rounded-[6px] bg-white shadow-[0_24px_48px_-12px_rgba(15,23,42,0.25)]"
-                style={{ opacity: 0, willChange: 'transform, opacity' }}
+                className="relative flex h-full w-full max-w-[min(100vw-1rem,28rem)] flex-col border-l border-[#E3E8F0] bg-white shadow-[-12px_0_36px_-12px_rgba(15,23,42,0.18)]"
+                style={{ animation: 'tu-warehouse-drawer-in 220ms cubic-bezier(0.22, 1, 0.36, 1)' }}
+                onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex items-start justify-between gap-3 px-5 pt-5">
-                  <h2 className="font-['Inter',sans-serif] text-[18px] font-semibold leading-snug text-[#101828]">
-                    Why wasn’t this SKU moved?
-                  </h2>
+                <style>{`@keyframes tu-warehouse-drawer-in { from { transform: translateX(16px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`}</style>
+                <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[#E3E8F0] px-5 py-4">
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <p className="font-['Inter',sans-serif] text-[11px] font-medium uppercase tracking-wide text-[#6864E6]">
+                      Stock in-transit
+                    </p>
+                    <h2
+                      id="in-transit-detail-title"
+                      className="font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
+                    >
+                      {inTransitDetail.rowName}
+                    </h2>
+                  </div>
                   <button
                     type="button"
-                    onClick={requestCloseDetail}
+                    onClick={() => setInTransitDetail(null)}
                     className="-m-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-[#6A7282] outline-none transition-colors hover:bg-[#F2F4F7] hover:text-[#101828] focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-1"
                     aria-label="Close"
                   >
                     <X className="size-5" strokeWidth={2} aria-hidden />
                   </button>
                 </div>
-                <div className="overflow-y-auto px-5 pt-3 pb-5">
-                  <p className="font-['Inter',sans-serif] text-[13px] font-normal leading-relaxed text-[#475467]">
-                    Sol may leave a unit behind for one or more of these reasons:
-                  </p>
-                  <ol className="mt-4 flex flex-col gap-3.5">
-                    {[
-                      {
-                        title: 'Warehouse can still supply',
-                        body:
-                          'If the warehouse has enough stock (based on your set weeks of cover), Sol will not move items between stores. This keeps fulfilment faster and lower cost than store-to-store transfers.',
-                      },
-                      {
-                        title: 'Stock target limits',
-                        body:
-                          'Each store has a target stock level. Sol will not move this SKU if it would take the receiving store over its target, or over the allowed buffer.',
-                      },
-                      {
-                        title: 'Low value move',
-                        body:
-                          'Sol only suggests moves that add enough value. If the expected uplift is below the set threshold, the move is not made.',
-                      },
-                      {
-                        title: 'Better option chosen',
-                        body:
-                          'This SKU may have had other possible destinations. Sol selected a higher value move instead.',
-                      },
-                      {
-                        title: 'Trip capacity reached',
-                        body:
-                          'Each transfer trip has a limit. Higher value moves may have filled the trip before this SKU was included.',
-                      },
-                      {
-                        title: 'Storage capacity reached',
-                        body:
-                          'The receiving store may have reached its space limit for this category due to higher value items.',
-                      },
-                    ].map((reason, idx) => (
-                      <li key={reason.title} className="flex gap-3">
+
+                <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+                  <p className={`${transferPopSection} mb-2`}>Snapshot</p>
+                  <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                    <TransferPopRow
+                      icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
+                      label="Stock in-transit"
+                      value={inTransitDetail.count.toLocaleString()}
+                    />
+                    <TransferPopRow
+                      icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
+                      label="Weeks coverage"
+                      value={inTransitDetail.weeksCoverage}
+                    />
+                  </div>
+                  {inTransitDetail.note ? (
+                    <p className="mt-3 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#6A7282]">
+                      {inTransitDetail.note}
+                    </p>
+                  ) : null}
+
+                  <div className="mt-4">
+                    <WhyNotMovedSection />
+                  </div>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
+
+      {warehouseDetail
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[210] flex justify-end"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="warehouse-detail-title"
+            >
+              <button
+                type="button"
+                aria-label="Close panel"
+                onClick={() => setWarehouseDetail(null)}
+                className="absolute inset-0 bg-[#0F172A]/40"
+              />
+              <div
+                className="relative flex h-full w-full max-w-[min(100vw-1rem,28rem)] animate-[slideInRight_220ms_cubic-bezier(0.22,1,0.36,1)] flex-col border-l border-[#E3E8F0] bg-white shadow-[-12px_0_36px_-12px_rgba(15,23,42,0.18)]"
+                style={{
+                  animationName: 'tu-warehouse-drawer-in',
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <style>{`@keyframes tu-warehouse-drawer-in { from { transform: translateX(16px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`}</style>
+                <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[#E3E8F0] px-5 py-4">
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <p className="font-['Inter',sans-serif] text-[11px] font-medium uppercase tracking-wide text-[#6864E6]">
+                      Stock on-hand
+                    </p>
+                    <h2
+                      id="warehouse-detail-title"
+                      className="font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
+                    >
+                      {warehouseDetail.rowName}
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setWarehouseDetail(null)}
+                    className="-m-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-[#6A7282] outline-none transition-colors hover:bg-[#F2F4F7] hover:text-[#101828] focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-1"
+                    aria-label="Close"
+                  >
+                    <X className="size-5" strokeWidth={2} aria-hidden />
+                  </button>
+                </div>
+
+                <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+                  <p className={`${transferPopSection} mb-2`}>Snapshot</p>
+                  <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                    <TransferPopRow
+                      icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
+                      label="Stock on-hand"
+                      value={warehouseDetail.stockOnHand.toLocaleString()}
+                    />
+                    <TransferPopRow
+                      icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
+                      label="Units in this slice"
+                      value={warehouseDetail.count.toLocaleString()}
+                    />
+                    <TransferPopRow
+                      icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
+                      label="Weeks coverage"
+                      value={warehouseDetail.weeksCoverage}
+                    />
+                  </div>
+
+                  <p className={`${transferPopSection} mt-4 mb-2`}>Recommendation reasons</p>
+                  <ul className="flex flex-col gap-2">
+                    {(warehouseDetail.reasons.length > 0
+                      ? warehouseDetail.reasons
+                      : ['Increase visibility']
+                    ).map((reason, idx) => (
+                      <li key={`wh-drawer-reason-${idx}`} className="flex items-start gap-2">
                         <span
                           aria-hidden
-                          className="mt-[2px] inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-[#2eb8c2]/15 font-['Inter',sans-serif] text-[12px] font-semibold leading-none text-[#2eb8c2]"
+                          className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#6864E6]/10 text-[#6864E6]"
                         >
-                          {idx + 1}
+                          <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
                         </span>
-                        <div className="flex min-w-0 flex-col gap-1">
-                          <p className="font-['Inter',sans-serif] text-[14px] font-semibold leading-snug text-[#101828]">
-                            {reason.title}
-                          </p>
-                          <p className="font-['Inter',sans-serif] text-[13px] font-normal leading-relaxed text-[#475467]">
-                            {reason.body}
-                          </p>
-                        </div>
+                        <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                          {reason}
+                        </p>
                       </li>
                     ))}
-                  </ol>
-                  <p className="mt-5 border-t border-[#E3E8F0] pt-4 font-['Inter',sans-serif] text-[12px] font-normal italic leading-relaxed text-[#6A7282]">
-                    Sol runs multiple passes. Only the final reason from the last run is shown.
-                  </p>
+                  </ul>
+
+                  <div className="mt-4 border-t border-[#E3E8F0] pt-4">
+                    <WhyNotMovedSection />
+                  </div>
                 </div>
               </div>
             </div>,

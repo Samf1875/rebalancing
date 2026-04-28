@@ -1,6 +1,11 @@
 /** Purple “warehouse / box” vs blue “transfer / truck” chips in the TU column (design mock). */
 export type TuBreakdownItem =
-  | { kind: 'warehouse'; count: number }
+  | {
+      kind: 'warehouse';
+      count: number;
+      /** Free-form bullet reasons displayed in the recommendation popover */
+      reasons?: string[];
+    }
   | {
       kind: 'transfer';
       count: number;
@@ -17,12 +22,39 @@ export type TuBreakdownItem =
       /** Free-form bullet reasons displayed in the recommendation popover */
       reasons: string[];
     }
+  /**
+   * Outlined blue chip representing units leaving the parent row (outgoing transfer).
+   * Inverse of `transfer` (which is incoming). Rendered as white bg + blue keyline,
+   * with a right-facing truck.
+   */
+  | {
+      kind: 'transfer-out';
+      count: number;
+      /** Optional destination location id (the parent row is the source). */
+      toLocationId?: string;
+      /** Trip classification (e.g. "Rebalancing", "Replenishment") */
+      tripType?: string;
+      /** Revenue uplift driven by this recommendation, in EUR */
+      revenueIncrease?: number;
+      /** Free-form bullet reasons displayed in the recommendation popover */
+      reasons?: string[];
+    }
   /** Outlined purple chip representing units already in-transit toward the destination. */
   | {
       kind: 'in-transit';
       count: number;
       /** Optional explanatory note shown beneath the count in the hover popover */
       note?: string;
+      /**
+       * Origin location of the stock currently in-transit (mirrors `transfer.fromLocationId`).
+       * Used by the hover popover to render a source → destination header and pull the live
+       * source-side stock / coverage values from the rows array.
+       */
+      fromLocationId?: string;
+      /** Trip classification (e.g. "Replenishment") shown in the popover */
+      tripType?: string;
+      /** ETA copy (e.g. "Arrives in ~2 days") shown in the popover */
+      eta?: string;
     };
 
 /** Back-of-house storage state for the product transfers table. */
@@ -72,7 +104,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     code: '610',
     stock: { from: 9, to: 9 },
     tu: { from: 9, to: 9 },
-    tuBreakdown: [{ kind: 'warehouse', count: 9 }],
+    tuBreakdown: [{ kind: 'warehouse', count: 9, reasons: ['Increase visibility'] }],
     sales: { l7d: 1, l30d: 3 },
     forecastPerWeek: 0.77,
     stockouts: { from: 0, to: 0 },
@@ -154,13 +186,16 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
       {
         kind: 'in-transit',
         count: 1,
+        fromLocationId: 'loc-610',
+        tripType: 'Replenishment',
+        eta: 'Arrives in ~2 days',
         note: 'No transfers out recommended because stock is in transit',
       },
       {
         kind: 'transfer',
         count: 1,
         fromLocationId: 'loc-610',
-        tripType: 'Replenishment',
+        tripType: 'Rebalancing',
         revenueIncrease: 140,
         reasons: ['Cover stockout risk at PR AC Toulon', 'Increase revenue'],
       },
@@ -183,7 +218,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
         kind: 'transfer',
         count: 1,
         fromLocationId: 'loc-610',
-        tripType: 'Replenishment',
+        tripType: 'Rebalancing',
         revenueIncrease: 95,
         reasons: ['Cover stockout risk at SU PP Vieille du templ...', 'Increase revenue'],
       },
@@ -193,5 +228,31 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     stockouts: { from: 4, to: 6 },
     coverage: { fromPct: 0, toPct: 0, targetWeeks: 1 },
     storageCapacity: 'spaceRemaining',
+  },
+  {
+    id: 'loc-693',
+    name: 'PR AC Lille',
+    code: '693',
+    transferHub: true,
+    stock: { from: 4, to: 0 },
+    tu: { from: 4, to: 0 },
+    tuBreakdown: [
+      {
+        kind: 'transfer-out',
+        count: 4,
+        toLocationId: 'loc-610',
+        tripType: 'Rebalancing',
+        revenueIncrease: 380,
+        reasons: [
+          'Free saturated storage at PR AC Lille',
+          'Redistribute stock to higher-velocity locations',
+        ],
+      },
+    ],
+    sales: { l7d: 0, l30d: 0 },
+    forecastPerWeek: 0,
+    stockouts: { from: 0, to: 1 },
+    coverage: { fromPct: 0, toPct: 0, targetWeeks: 2 },
+    storageCapacity: 'saturated',
   },
 ];

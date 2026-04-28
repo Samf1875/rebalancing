@@ -639,11 +639,11 @@ export function RebalancingPrototypeV1({
                   aria-haspopup="listbox"
                   aria-controls={sortMenuId}
                   onClick={() => setSortMenuOpen((o) => !o)}
-                  className="flex h-12 min-h-12 min-w-[10rem] max-w-[min(100%,18rem)] flex-1 items-center justify-between gap-2 rounded-l border border-[#e9eaeb] border-r-0 bg-white pl-3 pr-2 text-left font-['Inter',sans-serif] text-sm text-[#101828] outline-none transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0"
+                  className="flex h-8 min-h-8 min-w-[10rem] max-w-[min(100%,18rem)] flex-1 items-center justify-between gap-2 rounded-l border border-[#e9eaeb] border-r-0 bg-white pl-3 pr-2 text-left font-['Inter',sans-serif] text-sm text-[#101828] outline-none transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0"
                 >
                   <span className="min-w-0 truncate">{sortMetricLabel}</span>
                   <ChevronDown
-                    size={18}
+                    size={16}
                     strokeWidth={2}
                     className={`shrink-0 text-[#101828] transition-transform ${sortMenuOpen ? 'rotate-180' : ''}`}
                     aria-hidden
@@ -653,11 +653,11 @@ export function RebalancingPrototypeV1({
                 <button
                   type="button"
                   onClick={() => setSortDescending((d) => !d)}
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-r border border-[#e9eaeb] border-l-0 bg-white text-[#101828] transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-r border border-[#e9eaeb] border-l-0 bg-white text-[#101828] transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0"
                   aria-label={sortDescending ? 'Sort ascending' : 'Sort descending'}
                 >
                   <ArrowDownWideNarrow
-                    size={18}
+                    size={16}
                     strokeWidth={2}
                     className={sortDescending ? 'rotate-180' : ''}
                     aria-hidden
@@ -669,7 +669,7 @@ export function RebalancingPrototypeV1({
                   id={sortMenuId}
                   role="listbox"
                   aria-labelledby={`${sortMenuId}-trigger`}
-                  className="absolute left-0 top-[52px] z-50 flex max-h-[min(70vh,420px)] w-[min(100vw-2rem,320px)] min-w-[min(100%,280px)] flex-col gap-1 overflow-y-auto rounded-lg border border-[#e9eaeb] bg-white p-2 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.12),0_4px_8px_-4px_rgba(15,23,42,0.08)]"
+                  className="absolute left-0 top-[36px] z-50 flex max-h-[min(70vh,420px)] w-[min(100vw-2rem,320px)] min-w-[min(100%,280px)] flex-col gap-1 overflow-y-auto rounded-lg border border-[#e9eaeb] bg-white p-2 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.12),0_4px_8px_-4px_rgba(15,23,42,0.08)]"
                 >
                   {SORT_BY_OPTIONS.map((opt) => {
                     const selected = sortMetric === opt.id;
@@ -700,17 +700,17 @@ export function RebalancingPrototypeV1({
             <button
               type="button"
               onClick={() => setColumnCustomiseOpen(true)}
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded border border-[#e9eaeb] bg-white text-[#101828] transition-colors hover:bg-slate-50"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-[#e9eaeb] bg-white text-[#101828] transition-colors hover:bg-slate-50"
               aria-label="Settings"
             >
-              <Settings size={20} strokeWidth={2} aria-hidden />
+              <Settings size={16} strokeWidth={2} aria-hidden />
             </button>
             <button
               type="button"
-              className="flex h-[48px] w-[48px] min-h-[48px] min-w-[48px] shrink-0 items-center justify-center rounded border border-[#e9eaeb] bg-white text-[#101828] transition-colors hover:bg-slate-50"
+              className="flex h-8 w-8 min-h-8 min-w-8 shrink-0 items-center justify-center rounded border border-[#e9eaeb] bg-white text-[#101828] transition-colors hover:bg-slate-50"
               aria-label="Search"
             >
-              <Search size={18} strokeWidth={2} aria-hidden />
+              <Search size={16} strokeWidth={2} aria-hidden />
             </button>
             <div className="relative shrink-0" ref={filtersMenuRef}>
               <button
@@ -726,9 +726,9 @@ export function RebalancingPrototypeV1({
                     return next;
                   });
                 }}
-                className="flex h-12 shrink-0 items-center gap-2 rounded-lg border border-[#e9eaeb] bg-white px-4 text-[#101828] transition-colors hover:bg-slate-50"
+                className="flex h-8 shrink-0 items-center gap-2 rounded border border-[#e9eaeb] bg-white px-3 text-[#101828] transition-colors hover:bg-slate-50"
               >
-                <Filter size={18} strokeWidth={2} className="shrink-0" aria-hidden />
+                <Filter size={16} strokeWidth={2} className="shrink-0" aria-hidden />
                 <span className="font-['Inter',sans-serif] text-sm font-normal leading-none">
                   Filters
                 </span>
@@ -738,7 +738,7 @@ export function RebalancingPrototypeV1({
                   id={filtersMenuId}
                   role="dialog"
                   aria-labelledby={`${filtersMenuId}-trigger`}
-                  className="absolute left-0 top-[52px] z-50 flex max-h-[min(70vh,420px)] w-[min(100vw-2rem,280px)] min-w-[260px] flex-col rounded-lg border border-[#e9eaeb] bg-white p-2 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.12),0_4px_8px_-4px_rgba(15,23,42,0.08)]"
+                  className="absolute left-0 top-[36px] z-50 flex max-h-[min(70vh,420px)] w-[min(100vw-2rem,280px)] min-w-[260px] flex-col rounded-lg border border-[#e9eaeb] bg-white p-2 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.12),0_4px_8px_-4px_rgba(15,23,42,0.08)]"
                 >
                   <div className="relative shrink-0">
                     <Search
