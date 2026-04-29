@@ -1288,6 +1288,14 @@ export function ProductTransfersTable({
                             0.00 per week
                           </span>
                         </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Available warehouse units
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            {formatStockArrow(0, 0)}
+                          </span>
+                        </li>
                       </ul>
                     </div>
                     <div className="flex flex-col gap-1.5 border-t border-[#E3E8F0] pt-3">
@@ -1332,7 +1340,7 @@ export function ProductTransfersTable({
                         </li>
                         <li className="flex items-center justify-between gap-2">
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                            Warehouse units
+                            Available warehouse units
                           </span>
                           <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
                             {formatStockArrow(0, 0)}
@@ -1405,6 +1413,62 @@ export function ProductTransfersTable({
                       label="Weeks coverage"
                       value={warehouseDetail.weeksCoverage.replace(/\s*\+\s*trip time/gi, '')}
                     />
+                  </div>
+
+                  <div className="mt-4 border-t border-[#E3E8F0] pt-4">
+                    <p className={`${transferPopSection} mb-2`}>Stock check</p>
+                    <div className="flex flex-col gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                      <div className="flex flex-col gap-1.5">
+                        <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                          <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#6864E6]">
+                            <Package className="size-[1em]" strokeWidth={2} aria-hidden />
+                          </span>
+                          Lulli Eshop
+                        </p>
+                        <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
+                          <li className="flex items-center justify-between gap-2">
+                            <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                              Total stock
+                            </span>
+                            <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                              {formatStockArrow(9, 9)}
+                            </span>
+                          </li>
+                          <li className="flex items-center justify-between gap-2">
+                            <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                              Department storage capacity
+                            </span>
+                            <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                              170 → 172 (max 190)
+                            </span>
+                          </li>
+                          <li className="flex items-center justify-between gap-2">
+                            <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                              Total weeks coverage
+                            </span>
+                            <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                              11.7 → 11.7 (1 target)
+                            </span>
+                          </li>
+                          <li className="flex items-center justify-between gap-2">
+                            <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                              Forecast
+                            </span>
+                            <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                              0.77 per week
+                            </span>
+                          </li>
+                          <li className="flex items-center justify-between gap-2">
+                            <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                              Available warehouse units
+                            </span>
+                            <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                              {formatStockArrow(0, 0)}
+                            </span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="mt-4 border-t border-[#E3E8F0] pt-4">
