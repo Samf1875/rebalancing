@@ -1178,11 +1178,11 @@ export function ProductTransfersTable({
                         className="pointer-events-none absolute inset-0 size-full max-w-none object-contain"
                       />
                     </div>
-                    <div className="flex min-w-0 flex-1 flex-col gap-2">
+                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                       <div className="font-['Inter',sans-serif] text-[14px] font-semibold leading-snug text-[#101828]">
                         Botin fringes arena
                       </div>
-                      <div className="grid grid-cols-2 gap-x-3 gap-y-1 font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#101828]">
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-0 font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#101828]">
                         <div>
                           <span className="text-[#6A7282]">Colour: </span>Arena
                         </div>
@@ -1190,14 +1190,14 @@ export function ProductTransfersTable({
                           <span className="text-[#6A7282]">Size: </span>TU
                         </div>
                       </div>
-                      <div className="flex min-w-0 items-center gap-1">
+                      <div className="inline-flex max-w-full min-w-0 items-center gap-2 self-start">
                         <span className="min-w-0 truncate font-['Inter',sans-serif] text-[12px] font-normal tabular-nums leading-snug text-[#101828]">
                           S26-0696-002-704
                         </span>
                         <button
                           type="button"
                           onClick={() => void navigator.clipboard.writeText('S26-0696-002-704')}
-                          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded text-[#6A7282] outline-none transition-colors hover:bg-[#E3E8F0] hover:text-[#101828] focus-visible:ring-2 focus-visible:ring-[#2EB8C2] focus-visible:ring-offset-1"
+                          className="m-0 inline-flex size-5 shrink-0 items-center justify-center rounded p-0 text-[#6A7282] outline-none transition-colors hover:bg-[#E3E8F0] hover:text-[#101828] focus-visible:ring-2 focus-visible:ring-[#2EB8C2] focus-visible:ring-offset-0"
                           aria-label="Copy SKU"
                         >
                           <Copy className="size-3.5" strokeWidth={2} aria-hidden />
