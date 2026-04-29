@@ -1170,7 +1170,7 @@ export function ProductTransfersTable({
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
                   <p className={`${transferPopSection} mb-2`}>Product</p>
-                  <div className="flex items-start gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                  <div className="flex items-center gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
                     <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-[#f5f5f5]">
                       <img
                         src="/images/product-botin-fringes-arena.png"
@@ -1178,7 +1178,7 @@ export function ProductTransfersTable({
                         className="pointer-events-none absolute inset-0 size-full max-w-none object-contain"
                       />
                     </div>
-                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <div className="flex min-w-0 flex-1 flex-col gap-2">
                       <div className="font-['Inter',sans-serif] text-[14px] font-semibold leading-snug text-[#101828]">
                         Botin fringes arena
                       </div>
