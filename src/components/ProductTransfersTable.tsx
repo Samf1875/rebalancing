@@ -4,6 +4,7 @@ import {
   ArrowLeftRight,
   CalendarDays,
   ChevronDown,
+  Copy,
   Filter,
   Lightbulb,
   Package,
@@ -1133,7 +1134,7 @@ export function ProductTransfersTable({
               className="pointer-events-none fixed inset-0 z-[210] flex justify-end"
               role="dialog"
               aria-modal="true"
-              aria-labelledby="green-truck-transfer-placeholder-title"
+              aria-labelledby="green-truck-transfer-drawer-title"
             >
               <div
                 className="pointer-events-auto relative flex h-full w-[420px] max-w-[min(420px,calc(100vw-1rem))] shrink-0 flex-col border-l border-[#E3E8F0] bg-white shadow-[-12px_0_36px_-12px_rgba(15,23,42,0.18)]"
@@ -1142,14 +1143,21 @@ export function ProductTransfersTable({
                 <style>{`@keyframes tu-warehouse-drawer-in { from { transform: translateX(16px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`}</style>
                 <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[#E3E8F0] px-5 py-4">
                   <div className="flex min-w-0 flex-col gap-1">
+                    <p className="font-['Inter',sans-serif] text-[11px] font-medium uppercase tracking-wide text-[#2EB8C2]">
+                      Transfer out
+                    </p>
                     <h2
-                      id="green-truck-transfer-placeholder-title"
-                      className="font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
+                      id="green-truck-transfer-drawer-title"
+                      className="flex flex-wrap items-center gap-1 font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
                     >
-                      Transfer Out
+                      <span>PR AC Lille</span>
+                      <span aria-hidden className="font-normal text-[#9CA3AF]">
+                        →
+                      </span>
+                      <span>Lulli Eshop</span>
                     </h2>
-                    <p className="font-['Inter',sans-serif] text-[13px] font-normal leading-snug text-[#6A7282]">
-                      PR AC Lille → Lulli Eshop
+                    <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#6A7282]">
+                      Trip capacity (max 10,000)
                     </p>
                   </div>
                   <button
@@ -1162,9 +1170,169 @@ export function ProductTransfersTable({
                   </button>
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
-                  <p className="font-['Inter',sans-serif] text-[14px] font-normal leading-relaxed text-[#101828]">
-                    Content coming in next step.
-                  </p>
+                  <div className="flex items-start gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-[#f5f5f5]">
+                      <img
+                        src="/images/product-botin-fringes-arena.png"
+                        alt="Botin fringes arena"
+                        className="pointer-events-none absolute inset-0 size-full max-w-none object-contain"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-['Inter',sans-serif] text-[14px] font-semibold leading-snug text-[#101828]">
+                        Botin fringes arena
+                      </div>
+                      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#101828]">
+                        <div>
+                          <span className="text-[#6A7282]">Colour: </span>Arena
+                        </div>
+                        <div>
+                          <span className="text-[#6A7282]">Size: </span>TU
+                        </div>
+                      </div>
+                      <div className="mt-2 flex min-w-0 items-center gap-1">
+                        <span className="min-w-0 truncate font-['Inter',sans-serif] text-[12px] font-normal tabular-nums leading-snug text-[#101828]">
+                          S26-0696-002-704
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => void navigator.clipboard.writeText('S26-0696-002-704')}
+                          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded text-[#6A7282] outline-none transition-colors hover:bg-[#E3E8F0] hover:text-[#101828] focus-visible:ring-2 focus-visible:ring-[#2EB8C2] focus-visible:ring-offset-1"
+                          aria-label="Copy SKU"
+                        >
+                          <Copy className="size-3.5" strokeWidth={2} aria-hidden />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className={`${transferPopSection} mb-2 mt-4`}>Transfer info</p>
+                  <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                    <TransferPopRow
+                      icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+                      label="Transfer units"
+                      value="4"
+                    />
+                    <TransferPopRow
+                      icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
+                      label="Available to send"
+                      value="4"
+                    />
+                    <TransferPopRow
+                      icon={<ArrowLeftRight className="size-3.5" strokeWidth={2} aria-hidden />}
+                      label="Trip type"
+                      value="Rebalancing"
+                    />
+                    <TransferPopRow
+                      icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+                      label="Transfer units"
+                      value="4"
+                    />
+                    <div className="flex items-start gap-2">
+                      <span
+                        aria-hidden
+                        className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
+                      >
+                        <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
+                      </span>
+                      <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                        Increase revenue by €380
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span
+                        aria-hidden
+                        className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
+                      >
+                        <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
+                      </span>
+                      <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                        SKU unassorted in PR AC Lille
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className={`${transferPopSection} mb-2 mt-4`}>Stock check</p>
+                  <div className="flex flex-col gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                    <div className="flex flex-col gap-1.5">
+                      <p className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                        Sending store: PR AC Lille
+                      </p>
+                      <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Total stock before → after
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            {formatStockArrow(4, 0)}
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Status
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium text-[#101828]">
+                            Unassorted
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Coverage + target (if unassorted)
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium text-[#101828]">
+                            N/A (0 forecast)
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Forecast
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            0.00 per week
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
+                    <div className="flex flex-col gap-1.5 border-t border-[#E3E8F0] pt-3">
+                      <p className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                        Receiving store: Lulli Eshop
+                      </p>
+                      <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Total stock before → after
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            {formatStockArrow(9, 9)}
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Coverage + target
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            11.7 → 11.7 (1 target)
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Forecast
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            0.77 per week
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Warehouse units before → after
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            {formatStockArrow(0, 0)}
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>,
