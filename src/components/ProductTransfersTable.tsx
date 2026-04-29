@@ -998,7 +998,7 @@ export function ProductTransfersTable({
             const forecast = popRow.forecastPerWeek;
             const weeksCoverageText =
               forecast > 0
-                ? `${(popItem.count / forecast).toFixed(1)} (${popRow.coverage.targetWeeks} target + trip time)`
+                ? `${(popItem.count / forecast).toFixed(1)} (${popRow.coverage.targetWeeks} target)`
                 : 'N/A (0 forecast)';
             const ariaLabel = isExtensiveTransfer
               ? `Transfer details for ${popRow.name}`
@@ -1078,7 +1078,7 @@ export function ProductTransfersTable({
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex min-w-0 items-center gap-1.5">
                           <CalendarDays className="size-3.5 shrink-0 text-[#101828]" strokeWidth={2} aria-hidden />
-                          <span className="font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#101828]">
+                          <span className="whitespace-nowrap font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#101828]">
                             Weeks coverage
                           </span>
                         </div>
@@ -1087,16 +1087,6 @@ export function ProductTransfersTable({
                         </span>
                       </div>
                     </div>
-                    {popItem.kind === 'warehouse' && popItem.reasons && popItem.reasons.length > 0 ? (
-                      <>
-                        <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation reasons</p>
-                        <div className="flex flex-col gap-1.5">
-                          {popItem.reasons.map((reason, idx) => (
-                            <TransferPopReason key={`${popRow.id}-wh-reason-${idx}`} label={reason} />
-                          ))}
-                        </div>
-                      </>
-                    ) : null}
                     {popItem.kind === 'warehouse' ? (
                       <button
                         type="button"
