@@ -1178,11 +1178,11 @@ export function ProductTransfersTable({
                         className="pointer-events-none absolute inset-0 size-full max-w-none object-contain"
                       />
                     </div>
-                    <div className="min-w-0 flex-1">
+                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                       <div className="font-['Inter',sans-serif] text-[14px] font-semibold leading-snug text-[#101828]">
                         Botin fringes arena
                       </div>
-                      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#101828]">
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-1 font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#101828]">
                         <div>
                           <span className="text-[#6A7282]">Colour: </span>Arena
                         </div>
@@ -1190,7 +1190,7 @@ export function ProductTransfersTable({
                           <span className="text-[#6A7282]">Size: </span>TU
                         </div>
                       </div>
-                      <div className="mt-2 flex min-w-0 items-center gap-1">
+                      <div className="flex min-w-0 items-center gap-1">
                         <span className="min-w-0 truncate font-['Inter',sans-serif] text-[12px] font-normal tabular-nums leading-snug text-[#101828]">
                           S26-0696-002-704
                         </span>
