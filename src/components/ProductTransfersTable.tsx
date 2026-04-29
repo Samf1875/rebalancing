@@ -577,6 +577,8 @@ export function ProductTransfersTable({
     source?: ProductTransferLocationRow;
     destination?: ProductTransferLocationRow;
   } | null>(null);
+  /** Placeholder drawer from green truck (transfer-in) pop-up "More detail…" only */
+  const [greenTruckTransferDetailDrawerOpen, setGreenTruckTransferDetailDrawerOpen] = useState(false);
   const tuPopoverPanelRef = useRef<HTMLDivElement>(null);
   const tuCloseTimerRef = useRef<number | null>(null);
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -693,6 +695,15 @@ export function ProductTransfersTable({
       document.removeEventListener('keydown', onKey);
     };
   }, [transferDetail]);
+
+  useEffect(() => {
+    if (!greenTruckTransferDetailDrawerOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setGreenTruckTransferDetailDrawerOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [greenTruckTransferDetailDrawerOpen]);
 
   const toggleRow = (id: string, checked: boolean) => {
     setSelected((prev) => ({ ...prev, [id]: checked }));
@@ -1014,21 +1025,8 @@ export function ProductTransfersTable({
                     rows={rows}
                     onMoreDetail={() => {
                       cancelTuClose();
-                      if (popItem.kind !== 'transfer') return;
-                      const sourceRow = rows.find((r) => r.id === popItem.fromLocationId);
-                      setTransferDetail({
-                        direction: 'in',
-                        source: sourceRow,
-                        destination: popRow,
-                        sourceName: sourceRow?.name ?? 'Unknown source',
-                        destinationName: popRow.name,
-                        transferUnits: popItem.count,
-                        availableToSend: sourceRow ? sourceRow.stock.from : 0,
-                        tripType: popItem.tripType,
-                        revenueIncrease: popItem.revenueIncrease,
-                        reasons: popItem.reasons,
-                      });
                       setTuBadgePopover(null);
+                      setGreenTruckTransferDetailDrawerOpen(true);
                     }}
                   />
                 ) : isTransferOut && popItem.kind === 'transfer-out' ? (
@@ -1127,6 +1125,51 @@ export function ProductTransfersTable({
               document.body
             );
           })()
+        : null}
+
+      {greenTruckTransferDetailDrawerOpen
+        ? createPortal(
+            <div
+              className="pointer-events-none fixed inset-0 z-[210] flex justify-end"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="green-truck-transfer-placeholder-title"
+            >
+              <div
+                className="pointer-events-auto relative flex h-full w-[420px] max-w-[min(420px,calc(100vw-1rem))] shrink-0 flex-col border-l border-[#E3E8F0] bg-white shadow-[-12px_0_36px_-12px_rgba(15,23,42,0.18)]"
+                style={{ animation: 'tu-warehouse-drawer-in 220ms cubic-bezier(0.22, 1, 0.36, 1)' }}
+              >
+                <style>{`@keyframes tu-warehouse-drawer-in { from { transform: translateX(16px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`}</style>
+                <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[#E3E8F0] px-5 py-4">
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <h2
+                      id="green-truck-transfer-placeholder-title"
+                      className="font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
+                    >
+                      Transfer Out
+                    </h2>
+                    <p className="font-['Inter',sans-serif] text-[13px] font-normal leading-snug text-[#6A7282]">
+                      PR AC Lille → Lulli Eshop
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setGreenTruckTransferDetailDrawerOpen(false)}
+                    className="-m-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-[#6A7282] outline-none transition-colors hover:bg-[#F2F4F7] hover:text-[#101828] focus-visible:ring-2 focus-visible:ring-[#2EB8C2] focus-visible:ring-offset-1"
+                    aria-label="Close"
+                  >
+                    <X className="size-5" strokeWidth={2} aria-hidden />
+                  </button>
+                </div>
+                <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+                  <p className="font-['Inter',sans-serif] text-[14px] font-normal leading-relaxed text-[#101828]">
+                    Content coming in next step.
+                  </p>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
         : null}
 
       {warehouseDetail
