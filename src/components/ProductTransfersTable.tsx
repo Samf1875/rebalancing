@@ -1259,7 +1259,10 @@ export function ProductTransfersTable({
                   <p className={`${transferPopSection} mb-2 mt-4`}>Stock check</p>
                   <div className="flex flex-col gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
                     <div className="flex flex-col gap-1.5">
-                      <p className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                      <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                        <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                          <AutoneReceivingLocationIcon direction="out" />
+                        </span>
                         Sending store: PR AC Lille
                       </p>
                       <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
@@ -1298,7 +1301,10 @@ export function ProductTransfersTable({
                       </ul>
                     </div>
                     <div className="flex flex-col gap-1.5 border-t border-[#E3E8F0] pt-3">
-                      <p className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                      <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                        <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                          <AutoneReceivingLocationIcon direction="in" />
+                        </span>
                         Receiving store: Lulli Eshop
                       </p>
                       <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
