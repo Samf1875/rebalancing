@@ -1143,7 +1143,7 @@ export function ProductTransfersTable({
                 <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[#E3E8F0] px-5 py-4">
                   <div className="flex min-w-0 flex-col gap-1">
                     <p className="font-['Inter',sans-serif] text-[11px] font-medium uppercase tracking-wide text-[#2EB8C2]">
-                      Transfer out
+                      Recommended transfer
                     </p>
                     <h2
                       id="green-truck-transfer-drawer-title"
@@ -1169,6 +1169,7 @@ export function ProductTransfersTable({
                   </button>
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+                  <p className={`${transferPopSection} mb-2`}>Product</p>
                   <div className="flex items-start gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
                     <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-[#f5f5f5]">
                       <img
