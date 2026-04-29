@@ -291,6 +291,7 @@ function TransferBadgePopoverContent({
         <span className="mx-0.5 font-normal text-[#9CA3AF]">→</span>
         <span>{popRow.name}</span>
       </p>
+      <p className={`${transferPopSection} mt-1`}>Maximum units per trip: 100</p>
       <div className="my-1.5 border-t border-[#E3E8F0]" />
 
       <p className={`${transferPopSection} mb-1.5`}>Transfer info</p>
@@ -339,25 +340,7 @@ function TransferBadgePopoverContent({
 
       <div className="my-2 border-t border-[#E3E8F0]" />
 
-      <p className={`${transferPopSection} mb-1.5`}>Total stock</p>
-      <div className="flex flex-col gap-1.5">
-        <TransferPopRow
-          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={sourceName}
-          value={
-            sourceRow
-              ? formatStockArrow(sourceRow.stock.from, sourceRow.stock.to)
-              : '—'
-          }
-        />
-        <TransferPopRow
-          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={popRow.name}
-          value={formatStockArrow(popRow.stock.from, popRow.stock.to)}
-        />
-      </div>
-
-      <p className={`${transferPopSection} mt-2 mb-1.5`}>Total weeks coverage</p>
+      <p className={`${transferPopSection} mb-1.5`}>Total weeks coverage</p>
       <div className="flex flex-col gap-1.5">
         <TransferPopRow
           icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
