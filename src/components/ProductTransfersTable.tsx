@@ -1268,7 +1268,7 @@ export function ProductTransfersTable({
                       <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
                         <li className="flex items-center justify-between gap-2">
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                            Total stock before → after
+                            Total stock
                           </span>
                           <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
                             {formatStockArrow(4, 0)}
@@ -1284,7 +1284,7 @@ export function ProductTransfersTable({
                         </li>
                         <li className="flex items-center justify-between gap-2">
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                            Coverage + target (if unassorted)
+                            Total weeks coverage (if unassorted)
                           </span>
                           <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium text-[#101828]">
                             N/A (0 forecast)
@@ -1310,7 +1310,7 @@ export function ProductTransfersTable({
                       <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
                         <li className="flex items-center justify-between gap-2">
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                            Total stock before → after
+                            Total stock
                           </span>
                           <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
                             {formatStockArrow(9, 9)}
@@ -1318,7 +1318,7 @@ export function ProductTransfersTable({
                         </li>
                         <li className="flex items-center justify-between gap-2">
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                            Coverage + target
+                            Total weeks coverage
                           </span>
                           <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
                             11.7 → 11.7 (1 target)
@@ -1334,7 +1334,7 @@ export function ProductTransfersTable({
                         </li>
                         <li className="flex items-center justify-between gap-2">
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                            Warehouse units before → after
+                            Warehouse units
                           </span>
                           <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
                             {formatStockArrow(0, 0)}
