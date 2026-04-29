@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, GripVertical } from 'lucide-react';
 import type { LocationTableRow } from '../data/mockLocations';
 import { MOCK_LOCATION_PRODUCT_ROWS, type LocationProductRow } from '../data/mockLocationProducts';
@@ -8,6 +8,8 @@ import { AutoneHeaderInfoTooltip } from './AutoneHeaderInfoTooltip';
 
 const tableCellPrimary =
   "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
+const tableCellNumeric =
+  "font-['Inter',sans-serif] text-[14px] font-medium leading-normal text-[#101828]";
 const tableCellSecondary =
   "font-['Inter',sans-serif] text-[12px] font-normal leading-normal text-[#6A7282]";
 const tableRowHoverTd = '';
@@ -17,12 +19,6 @@ const tableHeaderGripFont =
   "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
 const recommendedBadgeBtn =
   "rounded border border-[#E3E8F0] bg-white px-2 py-1 font-['Inter',sans-serif] text-[11px] font-semibold leading-none text-[#0267FF] transition-colors hover:bg-slate-50";
-
-function formatEurK(eur: number): string {
-  const k = eur / 1000;
-  const frac = k >= 100 ? 1 : 2;
-  return `€${k.toFixed(frac)}K`;
-}
 
 function formatEurPlain(eur: number): string {
   return `€${eur.toLocaleString('en-US')}`;
@@ -37,34 +33,6 @@ export function LocationProductsDrillView({ location, onBack }: LocationProducts
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const selectAllRef = useRef<HTMLInputElement>(null);
   const rows = MOCK_LOCATION_PRODUCT_ROWS;
-
-  const summary = useMemo(() => {
-    let transfersIn = 0;
-    let transfersOut = 0;
-    let revenueEur = 0;
-    let recommendedUnits = 0;
-    let recommendedTrips = 0;
-    let salesL7d = 0;
-    let salesL30d = 0;
-    for (const r of rows) {
-      transfersIn += r.transfersIn;
-      transfersOut += r.transfersOut;
-      revenueEur += r.revenueEur;
-      recommendedUnits += r.recommendedUnits;
-      recommendedTrips += r.recommendedTrips;
-      salesL7d += r.salesL7d;
-      salesL30d += r.salesL30d;
-    }
-    return {
-      transfersIn,
-      transfersOut,
-      revenueEur,
-      recommendedUnits,
-      recommendedTrips,
-      salesL7d,
-      salesL30d,
-    };
-  }, [rows]);
 
   const allSelected = rows.length > 0 && rows.every((r) => selected[r.id]);
   const someSelected = rows.some((r) => selected[r.id]);
@@ -114,18 +82,18 @@ export function LocationProductsDrillView({ location, onBack }: LocationProducts
         </div>
       </td>
       <td className={`h-[86px] min-h-[86px] min-w-[100px] px-4 py-3 text-right align-middle ${tableRowHoverTd}`}>
-        <span className={`tabular-nums ${tableCellPrimary}`}>{row.transfersIn}</span>
+        <span className={`tabular-nums ${tableCellNumeric}`}>{row.transfersIn}</span>
       </td>
       <td className={`h-[86px] min-h-[86px] min-w-[100px] px-4 py-3 text-right align-middle ${tableRowHoverTd}`}>
-        <span className={`tabular-nums ${tableCellPrimary}`}>{row.transfersOut}</span>
+        <span className={`tabular-nums ${tableCellNumeric}`}>{row.transfersOut}</span>
       </td>
       <td className={`h-[86px] min-h-[86px] min-w-[120px] px-4 py-3 text-right align-middle ${tableRowHoverTd}`}>
-        <span className={`tabular-nums ${tableCellPrimary}`}>{formatEurPlain(row.revenueEur)}</span>
+        <span className={`tabular-nums ${tableCellNumeric}`}>{formatEurPlain(row.revenueEur)}</span>
       </td>
       <td className={`h-[86px] min-h-[86px] min-w-[220px] px-4 py-3 text-right align-middle ${tableRowHoverTd}`}>
         <div className="flex min-w-0 flex-col items-end gap-2">
           <div className="flex min-w-0 flex-col items-end tabular-nums">
-            <span className={tableCellPrimary}>{row.recommendedUnits}</span>
+            <span className={tableCellNumeric}>{row.recommendedUnits}</span>
             {row.recommendedTrips > 0 ? (
               <span className={tableCellSecondary}>{row.recommendedTrips} trips</span>
             ) : null}
@@ -146,7 +114,7 @@ export function LocationProductsDrillView({ location, onBack }: LocationProducts
       </td>
       <td className={`h-[86px] min-h-[86px] min-w-[100px] px-4 py-3 text-right align-middle ${tableRowHoverTd}`}>
         <div className="inline-flex flex-col items-end gap-0.5 tabular-nums">
-          <span className={tableCellPrimary}>{row.salesL7d}</span>
+          <span className={tableCellNumeric}>{row.salesL7d}</span>
           <span className={tableCellSecondary}>{row.salesL30d}</span>
         </div>
       </td>
@@ -204,8 +172,7 @@ export function LocationProductsDrillView({ location, onBack }: LocationProducts
                   <div className="flex h-full min-h-0 flex-col justify-center gap-2">
                     <AutoneHeaderInfoTooltip
                       label="Product details"
-                      rich={ASSORTMENT_HEADER_RICH.productDetails}
-                      richBubbleMaxWidthClass="max-w-[min(18rem,calc(100vw-24px))]"
+                      content={ASSORTMENT_HEADER_RICH.productDetails.body}
                       hoverWith={<span>Product details</span>}
                       side="top"
                     />
@@ -218,16 +185,7 @@ export function LocationProductsDrillView({ location, onBack }: LocationProducts
                       <span className={tableHeaderGripFont}>Transfers In</span>
                       <AutoneHeaderInfoTooltip
                         label="Transfers In"
-                        rich={{
-                          title: 'Transfers In',
-                          icon: 'info',
-                          body: 'Units to receive at this location from the recommended plan, summed across the products in this table.',
-                          footer: {
-                            kind: 'footerCaption' as const,
-                            text: `${summary.transfersIn.toLocaleString('en-US')} units`,
-                          },
-                        }}
-                        richBubbleMaxWidthClass="max-w-[min(20rem,calc(100vw-24px))]"
+                        content="Units to receive at this location from the recommended plan, summed across the products in this table."
                         side="top"
                       />
                     </span>
@@ -240,16 +198,7 @@ export function LocationProductsDrillView({ location, onBack }: LocationProducts
                       <span className={tableHeaderGripFont}>Transfers Out</span>
                       <AutoneHeaderInfoTooltip
                         label="Transfers Out"
-                        rich={{
-                          title: 'Transfers Out',
-                          icon: 'info',
-                          body: 'Units to send from this location in the recommended plan, summed across the products in this table.',
-                          footer: {
-                            kind: 'footerCaption' as const,
-                            text: `${summary.transfersOut.toLocaleString('en-US')} units`,
-                          },
-                        }}
-                        richBubbleMaxWidthClass="max-w-[min(20rem,calc(100vw-24px))]"
+                        content="Units to send from this location in the recommended plan, summed across the products in this table."
                         side="top"
                       />
                     </span>
@@ -266,16 +215,7 @@ export function LocationProductsDrillView({ location, onBack }: LocationProducts
                       <span className={tableHeaderGripFont}>Revenue increase</span>
                       <AutoneHeaderInfoTooltip
                         label="Revenue increase"
-                        rich={{
-                          title: 'Revenue increase',
-                          icon: 'info',
-                          body: HEADER_INFO_TOOLTIPS.revenueIncrease,
-                          footer: {
-                            kind: 'footerCaption' as const,
-                            text: formatEurK(summary.revenueEur),
-                          },
-                        }}
-                        richBubbleMaxWidthClass="max-w-[min(20rem,calc(100vw-24px))]"
+                        content={HEADER_INFO_TOOLTIPS.revenueIncrease}
                         side="top"
                       />
                       <ChevronDown size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
@@ -293,16 +233,7 @@ export function LocationProductsDrillView({ location, onBack }: LocationProducts
                       <span className={tableHeaderGripFont}>Recommended transfers</span>
                       <AutoneHeaderInfoTooltip
                         label="Recommended transfers"
-                        rich={{
-                          title: 'Recommended transfers',
-                          icon: 'lightbulb',
-                          body: HEADER_INFO_TOOLTIPS.tripsRecommendedTransfers,
-                          footer: {
-                            kind: 'footerCaption' as const,
-                            text: `${summary.recommendedUnits.toLocaleString('en-US')} units · ${summary.recommendedTrips.toLocaleString('en-US')} trips`,
-                          },
-                        }}
-                        richBubbleMaxWidthClass="max-w-[min(20rem,calc(100vw-24px))]"
+                        content={HEADER_INFO_TOOLTIPS.tripsRecommendedTransfers}
                         side="top"
                       />
                     </span>
@@ -320,17 +251,7 @@ export function LocationProductsDrillView({ location, onBack }: LocationProducts
                       <AutoneHeaderInfoTooltip
                         label="Sales"
                         side="left"
-                        rich={{
-                          title: 'Sales',
-                          icon: 'info',
-                          body: ASSORTMENT_HEADER_RICH.salesL7dL30d.body,
-                          footer: {
-                            kind: 'footerStackedCaption' as const,
-                            title: 'Sales summary',
-                            valueLine: `${summary.salesL7d.toLocaleString('en-US')} L7D · ${summary.salesL30d.toLocaleString('en-US')} L30D`,
-                          },
-                        }}
-                        richBubbleMaxWidthClass="max-w-[min(32rem,calc(100vw-24px))]"
+                        content={ASSORTMENT_HEADER_RICH.salesL7dL30d.body}
                       />
                     </span>
                   </div>

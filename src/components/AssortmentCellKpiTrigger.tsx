@@ -227,7 +227,7 @@ export function AssortmentCellKpiTrigger({
             <span className="font-['Inter',sans-serif] text-sm font-semibold text-[#101828]">{title}</span>
             <span className="font-['Inter',sans-serif] text-sm tabular-nums text-[#475467]">{rangeText}</span>
             {deltaText != null && deltaText !== '' ? (
-              <span className={`font-['Inter',sans-serif] text-sm font-semibold tabular-nums ${deltaClass}`}>
+              <span className={`font-['Inter',sans-serif] text-sm font-medium tabular-nums ${deltaClass}`}>
                 {deltaText}
               </span>
             ) : null}

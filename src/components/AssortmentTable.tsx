@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, type DragEvent, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, type DragEvent, type ReactNode } from 'react';
 import {
   ChevronDown,
   ChevronLeft,
@@ -12,10 +12,15 @@ import { ASSORTMENT_HEADER_RICH } from '../data/assortmentHeaderTooltips';
 import { HEADER_INFO_TOOLTIPS } from '../data/headerInfoTooltips';
 import { AutoneHeaderInfoTooltip } from './AutoneHeaderInfoTooltip';
 import { AssortmentCellKpiTrigger, type AssortmentCellKpiContent } from './AssortmentCellKpiTrigger';
+import { ProductDetailsPopover } from './ProductDetailsPopover';
 
-/** Body cell primary label — Inter 14px semibold #101828 */
+/** Body cell primary label (titles, names) — Inter 14px semibold #101828 */
 const tableCellPrimary =
   "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
+
+/** Body numeric cells — Inter 14px medium #101828 */
+const tableCellNumeric =
+  "font-['Inter',sans-serif] text-[14px] font-medium leading-normal text-[#101828]";
 
 /** Body cell secondary / supporting text — Inter 12px regular #6A7282 */
 const tableCellSecondary =
@@ -316,72 +321,8 @@ export function AssortmentTable({
     return mergedColumnVisibility[key];
   });
 
-  const columnHeaderAggregates = useMemo(() => {
-    if (rows.length === 0) return null;
-    let transfersL7d = 0;
-    let transfersL30d = 0;
-    let revenue = 0;
-    let recP = 0;
-    let salesL7d = 0;
-    let salesL30d = 0;
-    let forecastSum = 0;
-    let soFrom = 0;
-    let soTo = 0;
-    let locFrom = 0;
-    let locTo = 0;
-    let osFrom = 0;
-    let osTo = 0;
-    let usFrom = 0;
-    let usTo = 0;
-    let depthFrom = 0;
-    let depthTo = 0;
-    let whFrom = 0;
-    let whTo = 0;
-    for (const r of rows) {
-      transfersL7d += r.transfers.l7d;
-      transfersL30d += r.transfers.l30d;
-      revenue += r.revenueIncreaseEur;
-      recP += r.recommendedTransfers.primary;
-      salesL7d += r.sales.l7d;
-      salesL30d += r.sales.l30d;
-      forecastSum += r.forecastPerWeek;
-      soFrom += r.stockouts.from;
-      soTo += r.stockouts.to;
-      locFrom += r.locationsTransition.from;
-      locTo += r.locationsTransition.to;
-      osFrom += r.overstocksTransition.from;
-      osTo += r.overstocksTransition.to;
-      usFrom += r.understocksTransition.from;
-      usTo += r.understocksTransition.to;
-      depthFrom += r.depthTransition.from;
-      depthTo += r.depthTransition.to;
-      whFrom += r.warehouseUnitsTransition.from;
-      whTo += r.warehouseUnitsTransition.to;
-    }
-    const n = rows.length;
-    const trips = Math.max(1, Math.round(recP / 14));
-    return {
-      transfersL7d,
-      transfersL30d,
-      transfersTrips: trips,
-      revenue,
-      recP,
-      recTrips: trips,
-      salesL7d,
-      salesL30d,
-      forecastAvg: forecastSum / n,
-      stockouts: { from: soFrom, to: soTo },
-      locations: { from: locFrom, to: locTo },
-      overstocks: { from: osFrom, to: osTo },
-      understocks: { from: usFrom, to: usTo },
-      depth: { from: depthFrom / n, to: depthTo / n },
-      warehouse: { from: whFrom, to: whTo },
-    };
-  }, [rows]);
-
   const renderGripColumnHeader = (columnId: GripColumnId): ReactNode => {
     const d = gripThDropProps(columnId);
-    const agg = columnHeaderAggregates;
     switch (columnId) {
       case 'sales':
         return (
@@ -391,7 +332,7 @@ export function AssortmentTable({
                 {gripDragHandle(columnId, 'Revenue increase')}
                 <AutoneHeaderInfoTooltip
                   label="Revenue increase"
-                  rich={ASSORTMENT_HEADER_RICH.revenueIncrease}
+                  content={ASSORTMENT_HEADER_RICH.revenueIncrease.body}
                   hoverWith={<span>Revenue increase</span>}
                 />
                 <ChevronDown size={14} className="shrink-0 text-[#6A7282]" aria-hidden />
@@ -407,18 +348,7 @@ export function AssortmentTable({
                 {gripDragHandle(columnId, 'Transfers')}
                 <AutoneHeaderInfoTooltip
                   label="Transfers"
-                  rich={{
-                    ...ASSORTMENT_HEADER_RICH.transfers,
-                    ...(agg
-                      ? {
-                          footer: {
-                            kind: 'transferTotals' as const,
-                            unitsLine: `Total transfer units - ${agg.transfersL7d.toLocaleString()}`,
-                            tripsLine: `Total trips - ${agg.transfersTrips}`,
-                          },
-                        }
-                      : {}),
-                  }}
+                  content={ASSORTMENT_HEADER_RICH.transfers.body}
                   hoverWith={<span>Transfers</span>}
                 />
               </span>
@@ -433,18 +363,7 @@ export function AssortmentTable({
                 {gripDragHandle(columnId, 'Recommended transfers')}
                 <AutoneHeaderInfoTooltip
                   label="Recommended transfers"
-                  rich={{
-                    ...ASSORTMENT_HEADER_RICH.recommendedTransfers,
-                    ...(agg
-                      ? {
-                          footer: {
-                            kind: 'transferTotals' as const,
-                            unitsLine: `Total transfer units - ${agg.recP.toLocaleString()}`,
-                            tripsLine: `Total trips - ${agg.recTrips}`,
-                          },
-                        }
-                      : {}),
-                  }}
+                  content={ASSORTMENT_HEADER_RICH.recommendedTransfers.body}
                   hoverWith={<span>Recommended transfers</span>}
                 />
               </span>
@@ -459,18 +378,7 @@ export function AssortmentTable({
                 {gripDragHandle(columnId, 'Sales')}
                 <AutoneHeaderInfoTooltip
                   label="Sales (L7D / L30D)"
-                  rich={{
-                    ...ASSORTMENT_HEADER_RICH.salesL7dL30d,
-                    ...(agg
-                      ? {
-                          footer: {
-                            kind: 'salesMetrics' as const,
-                            l7d: `Sales ${agg.salesL7d.toLocaleString()}`,
-                            l30d: `Sales ${agg.salesL30d.toLocaleString()}`,
-                          },
-                        }
-                      : {}),
-                  }}
+                  content={ASSORTMENT_HEADER_RICH.salesL7dL30d.body}
                   hoverWith={<span>Sales</span>}
                 />
               </span>
@@ -485,22 +393,7 @@ export function AssortmentTable({
                 {gripDragHandle(columnId, 'Forecast per wk.')}
                 <AutoneHeaderInfoTooltip
                   label="Forecast per week"
-                  rich={{
-                    title: 'Forecast per wk.',
-                    icon: 'info',
-                    body: HEADER_INFO_TOOLTIPS.forecastPerWk,
-                    ...(agg
-                      ? {
-                          footer: {
-                            kind: 'footerCaption' as const,
-                            text: `${agg.forecastAvg.toLocaleString('en-US', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })} per wk`,
-                          },
-                        }
-                      : {}),
-                  }}
+                  content={HEADER_INFO_TOOLTIPS.forecastPerWk}
                   hoverWith={<span>Forecast per wk.</span>}
                 />
               </span>
@@ -515,19 +408,7 @@ export function AssortmentTable({
                 {gripDragHandle(columnId, 'Stockouts')}
                 <AutoneHeaderInfoTooltip
                   label="Stockouts"
-                  rich={{
-                    title: 'Stockouts',
-                    icon: 'info',
-                    body: HEADER_INFO_TOOLTIPS.stockouts,
-                    ...(agg
-                      ? {
-                          footer: {
-                            kind: 'footerCaption' as const,
-                            text: `Stockouts ${agg.stockouts.from.toLocaleString()} → ${agg.stockouts.to.toLocaleString()}`,
-                          },
-                        }
-                      : {}),
-                  }}
+                  content={HEADER_INFO_TOOLTIPS.stockouts}
                   hoverWith={<span>Stockouts</span>}
                 />
               </span>
@@ -542,19 +423,7 @@ export function AssortmentTable({
                 {gripDragHandle(columnId, 'Locations')}
                 <AutoneHeaderInfoTooltip
                   label="Locations"
-                  rich={{
-                    title: 'Locations',
-                    icon: 'info',
-                    body: HEADER_INFO_TOOLTIPS.locations,
-                    ...(agg
-                      ? {
-                          footer: {
-                            kind: 'footerCaption' as const,
-                            text: `Locations ${agg.locations.from.toLocaleString()} → ${agg.locations.to.toLocaleString()}`,
-                          },
-                        }
-                      : {}),
-                  }}
+                  content={HEADER_INFO_TOOLTIPS.locations}
                   hoverWith={<span>Locations</span>}
                 />
               </span>
@@ -569,19 +438,7 @@ export function AssortmentTable({
                 {gripDragHandle(columnId, 'Overstocks')}
                 <AutoneHeaderInfoTooltip
                   label="Overstocks"
-                  rich={{
-                    title: 'Overstocks',
-                    icon: 'info',
-                    body: HEADER_INFO_TOOLTIPS.overstocks,
-                    ...(agg
-                      ? {
-                          footer: {
-                            kind: 'footerCaption' as const,
-                            text: `Overstocks ${agg.overstocks.from.toLocaleString()} → ${agg.overstocks.to.toLocaleString()}`,
-                          },
-                        }
-                      : {}),
-                  }}
+                  content={HEADER_INFO_TOOLTIPS.overstocks}
                   hoverWith={<span>Overstocks</span>}
                 />
               </span>
@@ -596,19 +453,7 @@ export function AssortmentTable({
                 {gripDragHandle(columnId, 'Understocks')}
                 <AutoneHeaderInfoTooltip
                   label="Understocks"
-                  rich={{
-                    title: 'Understocks',
-                    icon: 'info',
-                    body: HEADER_INFO_TOOLTIPS.understocks,
-                    ...(agg
-                      ? {
-                          footer: {
-                            kind: 'footerCaption' as const,
-                            text: `Understocks ${agg.understocks.from.toLocaleString()} → ${agg.understocks.to.toLocaleString()}`,
-                          },
-                        }
-                      : {}),
-                  }}
+                  content={HEADER_INFO_TOOLTIPS.understocks}
                   hoverWith={<span>Understocks</span>}
                 />
               </span>
@@ -623,20 +468,7 @@ export function AssortmentTable({
                 {gripDragHandle(columnId, 'Depth')}
                 <AutoneHeaderInfoTooltip
                   label="Depth"
-                  rich={{
-                    title: 'Depth',
-                    icon: 'info',
-                    body: HEADER_INFO_TOOLTIPS.depth,
-                    ...(agg
-                      ? {
-                          footer: {
-                            kind: 'footerStackedCaption' as const,
-                            title: 'Depth',
-                            valueLine: `${agg.depth.from.toFixed(1)} → ${agg.depth.to.toFixed(1)}`,
-                          },
-                        }
-                      : {}),
-                  }}
+                  content={HEADER_INFO_TOOLTIPS.depth}
                   hoverWith={<span>Depth</span>}
                 />
               </span>
@@ -652,20 +484,7 @@ export function AssortmentTable({
                 <AutoneHeaderInfoTooltip
                   label="Warehouse units in scope"
                   side="left"
-                  rich={{
-                    title: 'Warehouse units in scope',
-                    icon: 'info',
-                    body: HEADER_INFO_TOOLTIPS.warehouseUnits,
-                    ...(agg
-                      ? {
-                          footer: {
-                            kind: 'footerStackedCaption' as const,
-                            title: 'Warehouse units in scope',
-                            valueLine: `${agg.warehouse.from.toLocaleString()} → ${agg.warehouse.to.toLocaleString()}`,
-                          },
-                        }
-                      : {}),
-                  }}
+                  content={HEADER_INFO_TOOLTIPS.warehouseUnits}
                   hoverWith={<span>Warehouse units in scope</span>}
                 />
               </span>
@@ -751,14 +570,14 @@ export function AssortmentTable({
       case 'sales':
         return (
           <td key={columnId} className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}>
-            <div className={`${tableCellPrimary} tabular-nums`}>{formatRevenueIncreaseEurK(row.revenueIncreaseEur)}</div>
+            <div className={`${tableCellNumeric} tabular-nums`}>{formatRevenueIncreaseEurK(row.revenueIncreaseEur)}</div>
           </td>
         );
       case 'transfers':
         return (
           <td key={columnId} className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}>
             <div className="flex min-w-0 flex-col items-end gap-1">
-              <div className={`${tableCellPrimary} tabular-nums`}>
+              <div className={`${tableCellNumeric} tabular-nums`}>
                 {row.transfers.l7d.toLocaleString()} L7D
               </div>
               <div className={`${tableCellSecondary} tabular-nums`}>
@@ -774,7 +593,7 @@ export function AssortmentTable({
             className={`min-h-[86px] min-w-[240px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
           >
             <div className="flex min-w-0 flex-col items-end gap-2 text-right">
-              <div className={`${tableCellPrimary} tabular-nums`}>
+              <div className={`${tableCellNumeric} tabular-nums`}>
                 {row.recommendedTransfers.primary.toLocaleString()}
               </div>
               <div className={`${tableCellSecondary} tabular-nums`}>
@@ -809,7 +628,7 @@ export function AssortmentTable({
             className={`min-h-[86px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
           >
             <div className="flex min-w-0 flex-col items-end gap-1">
-              <div className={`${tableCellPrimary} tabular-nums`}>
+              <div className={`${tableCellNumeric} tabular-nums`}>
                 {l7d.toLocaleString()}
                 {showPeriodLabels ? ' L7D' : ''}
               </div>
@@ -833,7 +652,7 @@ export function AssortmentTable({
             className={`min-h-[86px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
           >
             <div className="flex min-w-0 flex-col items-end">
-              <span className={`${tableCellPrimary} tabular-nums`}>
+              <span className={`${tableCellNumeric} tabular-nums`}>
                 {row.forecastPerWeek.toLocaleString('en-US', {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
@@ -851,7 +670,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
           >
             {row.stockouts.from.toLocaleString()} → {row.stockouts.to.toLocaleString()}
           </td>
@@ -860,7 +679,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
           >
             {row.locationsTransition.from.toLocaleString()} → {row.locationsTransition.to.toLocaleString()}
           </td>
@@ -869,7 +688,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
           >
             {row.overstocksTransition.from.toLocaleString()} → {row.overstocksTransition.to.toLocaleString()}
           </td>
@@ -878,7 +697,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
           >
             {row.understocksTransition.from.toLocaleString()} → {row.understocksTransition.to.toLocaleString()}
           </td>
@@ -887,7 +706,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
           >
             {row.depthTransition.from.toFixed(1)} → {row.depthTransition.to.toFixed(1)}
           </td>
@@ -896,7 +715,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
           >
             {row.warehouseUnitsTransition.from.toLocaleString()} →{' '}
             {row.warehouseUnitsTransition.to.toLocaleString()}
@@ -904,7 +723,7 @@ export function AssortmentTable({
         );
       case 'drillMinQty':
         return (
-          <td key={columnId} className={`h-[86px] min-h-[86px] px-3 py-3 align-middle ${tableCellPrimary} ${tableRowHoverTd}`}>
+          <td key={columnId} className={`h-[86px] min-h-[86px] px-3 py-3 align-middle ${tableCellNumeric} ${tableRowHoverTd}`}>
             {drillM?.minQty ?? '—'}
           </td>
         );
@@ -912,7 +731,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] px-3 py-3 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] px-3 py-3 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
           >
             {drillM?.inventory ?? '—'}
           </td>
@@ -921,7 +740,7 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] px-3 py-3 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] px-3 py-3 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
           >
             {drillM != null ? formatCoverageWeeks(drillM.targetCoverageWk) : '—'}
           </td>
@@ -930,14 +749,14 @@ export function AssortmentTable({
         return (
           <td
             key={columnId}
-            className={`h-[86px] min-h-[86px] px-3 py-3 text-right align-middle tabular-nums ${tableCellPrimary} ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] px-3 py-3 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
           >
             {drillM != null ? `${drillM.forecastSalesPerWk.toLocaleString()} per week` : '—'}
           </td>
         );
       case 'drillSkuLocs':
         return (
-          <td key={columnId} className={`h-[86px] min-h-[86px] px-3 py-3 align-middle ${tableCellPrimary} ${tableRowHoverTd}`}>
+          <td key={columnId} className={`h-[86px] min-h-[86px] px-3 py-3 align-middle ${tableCellNumeric} ${tableRowHoverTd}`}>
             {drillM?.skuLocations ?? '—'}
           </td>
         );
@@ -1056,14 +875,7 @@ export function AssortmentTable({
                           >
                             <Copy size={14} strokeWidth={2} aria-hidden />
                           </button>
-                          <button
-                            type="button"
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-flex shrink-0 rounded p-0.5 text-[#6A7282] transition-colors hover:bg-slate-100 hover:text-sky-600"
-                            aria-label="Product options"
-                          >
-                            <ChevronDown size={14} strokeWidth={2} aria-hidden />
-                          </button>
+                          <ProductDetailsPopover detail={detail} />
                         </div>
                         <div className={`mt-0.5 ${tableCellSecondary}`}>{detail.colorLabel}</div>
                         {row.showKpiBadge ? (

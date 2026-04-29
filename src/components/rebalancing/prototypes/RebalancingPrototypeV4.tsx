@@ -10,7 +10,7 @@ import {
   Check,
 } from 'lucide-react';
 import { AssortmentTable } from '../../AssortmentTable';
-import { ProductTransfersTable } from '../../ProductTransfersTable';
+import { ProductTransfersBreadcrumb, ProductTransfersTable } from '../../ProductTransfersTable';
 import { LocationsTable } from '../../LocationsTable';
 import { LocationProductsDrillView } from '../../LocationProductsDrillView';
 import { TripsTable } from '../../TripsTable';
@@ -720,11 +720,23 @@ export function RebalancingPrototypeV4({
           />
 
           <div>
-            <p className="mb-2 font-['Inter',sans-serif] text-xs font-semibold uppercase tracking-wide text-[#64748b]">
-              Table tools
-            </p>
-            <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2">
-            <div className="flex min-w-0 flex-1 flex-wrap items-center justify-start gap-2">
+            {productTransfersParentRow ? null : (
+              <p className="mb-2 font-['Inter',sans-serif] text-xs font-semibold uppercase tracking-wide text-[#64748b]">
+                Table tools
+              </p>
+            )}
+            <div
+              className={`flex w-full min-w-0 flex-wrap items-center gap-2 ${productTransfersParentRow ? 'justify-between' : ''}`}
+            >
+              {productTransfersParentRow ? (
+                <ProductTransfersBreadcrumb
+                  parentRow={productTransfersParentRow}
+                  onBack={() => setProductTransfersDrillRowId(null)}
+                />
+              ) : null}
+              <div
+                className={`flex min-w-0 flex-wrap items-center gap-2 ${productTransfersParentRow ? 'shrink-0 justify-end' : 'flex-1 justify-start'}`}
+              >
             <div className="relative min-w-0 max-w-full shrink" ref={sortMenuRef}>
               <div className="flex min-w-0 max-w-full items-stretch">
                 <button
@@ -902,6 +914,7 @@ export function RebalancingPrototypeV4({
               <ProductTransfersTable
                 parentRow={productTransfersParentRow}
                 onBack={() => setProductTransfersDrillRowId(null)}
+                showBreadcrumb={false}
               />
             ) : (
               <AssortmentTable

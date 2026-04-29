@@ -2,42 +2,13 @@ import { useState, useMemo, useRef, useEffect, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight, GripVertical, Info } from 'lucide-react';
 import { HEADER_INFO_TOOLTIPS } from '../data/headerInfoTooltips';
 import { MOCK_LOCATION_ROWS, type LocationTableRow } from '../data/mockLocations';
-import {
-  AutoneHeaderInfoTooltip,
-  type HeaderTooltipRich,
-  type HeaderTooltipRichFooter,
-} from './AutoneHeaderInfoTooltip';
+import { AutoneHeaderInfoTooltip } from './AutoneHeaderInfoTooltip';
 import { AutoneArrowDownIcon } from './AutoneArrowDownIcon';
-
-function locationsTableHeaderRich(
-  title: string,
-  body: string,
-  footer?: HeaderTooltipRichFooter
-): HeaderTooltipRich {
-  return footer != null ? { title, icon: 'info', body, footer } : { title, icon: 'info', body };
-}
-
-function metricArrowFooter(metricLabel: string, from: number, to: number, decimals?: number) {
-  const fmt = (n: number) =>
-    decimals != null ? n.toFixed(decimals) : n.toLocaleString();
-  return {
-    kind: 'footerCaption' as const,
-    text: `${metricLabel} ${fmt(from)} → ${fmt(to)}`,
-  };
-}
-
-function metricStackedFooter(metricLabel: string, from: number, to: number, decimals?: number) {
-  const fmt = (n: number) =>
-    decimals != null ? n.toFixed(decimals) : n.toLocaleString();
-  return {
-    kind: 'footerStackedCaption' as const,
-    title: metricLabel,
-    valueLine: `${fmt(from)} → ${fmt(to)}`,
-  };
-}
 
 const tableCellPrimary =
   "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
+const tableCellNumeric =
+  "font-['Inter',sans-serif] text-[14px] font-medium leading-normal text-[#101828]";
 const tableCellSecondary =
   "font-['Inter',sans-serif] text-[12px] font-normal leading-normal text-[#6A7282]";
 const tableRowHoverTd = '';
@@ -206,7 +177,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
           <div className="flex min-w-0 flex-col items-end gap-1">
-            <div className={`${tableCellPrimary} tabular-nums`}>{row.transfersIn.units}</div>
+            <div className={`${tableCellNumeric} tabular-nums`}>{row.transfersIn.units}</div>
             <div className={`${tableCellSecondary} text-right tabular-nums`}>{transfersSubline(row.transfersIn)}</div>
           </div>
         </CellGripInset>
@@ -214,20 +185,20 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
           <div className="flex min-w-0 flex-col items-end gap-1">
-            <div className={`${tableCellPrimary} tabular-nums`}>{row.transfersOut.units}</div>
+            <div className={`${tableCellNumeric} tabular-nums`}>{row.transfersOut.units}</div>
             <div className={`${tableCellSecondary} text-right tabular-nums`}>{transfersSubline(row.transfersOut)}</div>
           </div>
         </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
-          <span className={`tabular-nums ${tableCellPrimary}`}>{formatEurK(row.revenueEur)}</span>
+          <span className={`tabular-nums ${tableCellNumeric}`}>{formatEurK(row.revenueEur)}</span>
         </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] min-w-[200px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
           <div className="flex min-w-0 flex-col items-end gap-2 text-right">
-            <span className={`tabular-nums ${tableCellPrimary}`}>{row.recommendedIn}</span>
+            <span className={`tabular-nums ${tableCellNumeric}`}>{row.recommendedIn}</span>
             <div className="flex shrink-0 items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
               <button type="button" className={recommendedTransferActionBtn} aria-label="Review">
                 REV
@@ -241,20 +212,20 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
-          <span className={`tabular-nums ${tableCellPrimary}`}>{row.recommendedOut}</span>
+          <span className={`tabular-nums ${tableCellNumeric}`}>{row.recommendedOut}</span>
         </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
           <div className="flex min-w-0 flex-col items-end gap-1">
-            <div className={`${tableCellPrimary} tabular-nums`}>{row.salesL7d}</div>
+            <div className={`${tableCellNumeric} tabular-nums`}>{row.salesL7d}</div>
             <div className={`${tableCellSecondary} tabular-nums`}>{row.salesL30d}</div>
           </div>
         </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
-          <span className={`tabular-nums ${tableCellPrimary}`}>
+          <span className={`tabular-nums ${tableCellNumeric}`}>
             {row.forecastPerWk.toLocaleString('en-US', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
@@ -264,28 +235,28 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
-          <span className={`tabular-nums ${tableCellPrimary}`}>
+          <span className={`tabular-nums ${tableCellNumeric}`}>
             {row.stockouts.from} → {row.stockouts.to}
           </span>
         </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
-          <span className={`tabular-nums ${tableCellPrimary}`}>
+          <span className={`tabular-nums ${tableCellNumeric}`}>
             {row.overstocks.from.toLocaleString()} → {row.overstocks.to.toLocaleString()}
           </span>
         </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
-          <span className={`tabular-nums ${tableCellPrimary}`}>
+          <span className={`tabular-nums ${tableCellNumeric}`}>
             {row.understocks.from} → {row.understocks.to}
           </span>
         </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
-          <span className={`tabular-nums ${tableCellPrimary}`}>
+          <span className={`tabular-nums ${tableCellNumeric}`}>
             {row.depth.from.toFixed(1)} → {row.depth.to.toFixed(1)}
           </span>
         </CellGripInset>
@@ -349,10 +320,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
                   <span className={tableHeaderGripInsetFont}>Revenue increase</span>
                   <AutoneHeaderInfoTooltip
                     label="Revenue increase"
-                    rich={locationsTableHeaderRich(
-                      'Revenue increase',
-                      HEADER_INFO_TOOLTIPS.revenueIncrease,
-                    )}
+                    content={HEADER_INFO_TOOLTIPS.revenueIncrease}
                     side="top"
                   />
                   <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
@@ -367,10 +335,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
                   <span className={tableHeaderGripInsetFont}>Recommended transfers in</span>
                   <AutoneHeaderInfoTooltip
                     label="Recommended transfers in"
-                    rich={locationsTableHeaderRich(
-                      'Recommended transfers in',
-                      HEADER_INFO_TOOLTIPS.recommendedTransfers,
-                    )}
+                    content={HEADER_INFO_TOOLTIPS.recommendedTransfers}
                     side="top"
                   />
                 </span>
@@ -384,10 +349,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
                   <span className={tableHeaderGripInsetFont}>Recommended transfers out</span>
                   <AutoneHeaderInfoTooltip
                     label="Recommended transfers out"
-                    rich={locationsTableHeaderRich(
-                      'Recommended transfers out',
-                      HEADER_INFO_TOOLTIPS.recommendedTransfersOut,
-                    )}
+                    content={HEADER_INFO_TOOLTIPS.recommendedTransfersOut}
                     side="top"
                   />
                 </span>
@@ -407,10 +369,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
                   <span className={tableHeaderGripInsetFont}>Forecast per wk.</span>
                   <AutoneHeaderInfoTooltip
                     label="Forecast per wk."
-                    rich={locationsTableHeaderRich(
-                      'Forecast per wk.',
-                      HEADER_INFO_TOOLTIPS.forecastPerWk,
-                    )}
+                    content={HEADER_INFO_TOOLTIPS.forecastPerWk}
                     side="top"
                   />
                 </span>
@@ -424,15 +383,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
                   <span className={tableHeaderGripInsetFont}>Stockouts</span>
                   <AutoneHeaderInfoTooltip
                     label="Stockouts"
-                    rich={locationsTableHeaderRich(
-                      'Stockouts',
-                      HEADER_INFO_TOOLTIPS.stockouts,
-                      metricArrowFooter(
-                        'Stockouts',
-                        summary.stockouts.from,
-                        summary.stockouts.to
-                      ),
-                    )}
+                    content={HEADER_INFO_TOOLTIPS.stockouts}
                     side="top"
                   />
                 </span>
@@ -446,15 +397,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
                   <span className={tableHeaderGripInsetFont}>Overstocks</span>
                   <AutoneHeaderInfoTooltip
                     label="Overstocks"
-                    rich={locationsTableHeaderRich(
-                      'Overstocks',
-                      HEADER_INFO_TOOLTIPS.overstocks,
-                      metricArrowFooter(
-                        'Overstocks',
-                        summary.overstocks.from,
-                        summary.overstocks.to
-                      ),
-                    )}
+                    content={HEADER_INFO_TOOLTIPS.overstocks}
                     side="top"
                   />
                 </span>
@@ -468,15 +411,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
                   <span className={tableHeaderGripInsetFont}>Understocks</span>
                   <AutoneHeaderInfoTooltip
                     label="Understocks"
-                    rich={locationsTableHeaderRich(
-                      'Understocks',
-                      HEADER_INFO_TOOLTIPS.understocks,
-                      metricArrowFooter(
-                        'Understocks',
-                        summary.understocks.from,
-                        summary.understocks.to
-                      ),
-                    )}
+                    content={HEADER_INFO_TOOLTIPS.understocks}
                     side="top"
                   />
                 </span>
@@ -490,11 +425,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
                   <span className={tableHeaderGripInsetFont}>Depth</span>
                   <AutoneHeaderInfoTooltip
                     label="Depth"
-                    rich={locationsTableHeaderRich(
-                      'Depth',
-                      HEADER_INFO_TOOLTIPS.depth,
-                      metricStackedFooter('Depth', summary.depth.from, summary.depth.to, 1),
-                    )}
+                    content={HEADER_INFO_TOOLTIPS.depth}
                     side="top"
                   />
                 </span>
@@ -510,7 +441,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
               <td className="px-4 py-3 align-middle">
                 <CellGripInset align="right">
                   <div className="flex flex-col items-end gap-1 text-right">
-                    <div className={`${tableCellPrimary} tabular-nums`}>{summary.transfersInUnits} units</div>
+                    <div className={`${tableCellNumeric} tabular-nums`}>{summary.transfersInUnits} units</div>
                     <div className={`${tableCellSecondary} tabular-nums`}>{summary.transfersInTrips} trips</div>
                   </div>
                 </CellGripInset>
@@ -518,69 +449,69 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
               <td className="px-4 py-3 align-middle">
                 <CellGripInset align="right">
                   <div className="flex flex-col items-end gap-1 text-right">
-                    <div className={`${tableCellPrimary} tabular-nums`}>{summary.transfersOutUnits} units</div>
+                    <div className={`${tableCellNumeric} tabular-nums`}>{summary.transfersOutUnits} units</div>
                     <div className={`${tableCellSecondary} tabular-nums`}>{summary.transfersOutTrips} trips</div>
                   </div>
                 </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">
                 <CellGripInset align="right">
-                  <span className={`tabular-nums ${tableCellPrimary}`}>
+                  <span className={`tabular-nums ${tableCellNumeric}`}>
                     {formatEurK(summary.revenueEur)}
                   </span>
                 </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">
                 <CellGripInset align="right">
-                  <span className={`tabular-nums ${tableCellPrimary}`}>{summary.recommendedIn} units</span>
+                  <span className={`tabular-nums ${tableCellNumeric}`}>{summary.recommendedIn} units</span>
                 </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">
                 <CellGripInset align="right">
-                  <span className={tableCellPrimary}>
-                    <span className="tabular-nums">{summary.recommendedOut}</span> units
+                  <span className={`tabular-nums ${tableCellNumeric}`}>
+                    {summary.recommendedOut} units
                   </span>
                 </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">
                 <CellGripInset align="right">
                   <div className="flex min-w-0 flex-col items-end gap-1">
-                    <div className={`${tableCellPrimary} tabular-nums`}>{summary.salesL7d} L7D</div>
+                    <div className={`${tableCellNumeric} tabular-nums`}>{summary.salesL7d} L7D</div>
                     <div className={`${tableCellSecondary} tabular-nums`}>{summary.salesL30d} L30D</div>
                   </div>
                 </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">
                 <CellGripInset align="right">
-                  <span className={`tabular-nums ${tableCellPrimary}`}>
+                  <span className={`tabular-nums ${tableCellNumeric}`}>
                     {summary.forecastPerWk.toFixed(2)} per week
                   </span>
                 </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">
                 <CellGripInset align="right">
-                  <span className={`tabular-nums ${tableCellPrimary}`}>
+                  <span className={`tabular-nums ${tableCellNumeric}`}>
                     {summary.stockouts.from} → {summary.stockouts.to}
                   </span>
                 </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">
                 <CellGripInset align="right">
-                  <span className={`tabular-nums ${tableCellPrimary}`}>
+                  <span className={`tabular-nums ${tableCellNumeric}`}>
                     {summary.overstocks.from.toLocaleString()} → {summary.overstocks.to.toLocaleString()}
                   </span>
                 </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">
                 <CellGripInset align="right">
-                  <span className={`tabular-nums ${tableCellPrimary}`}>
+                  <span className={`tabular-nums ${tableCellNumeric}`}>
                     {summary.understocks.from} → {summary.understocks.to}
                   </span>
                 </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">
                 <CellGripInset align="right">
-                  <span className={`tabular-nums ${tableCellPrimary}`}>
+                  <span className={`tabular-nums ${tableCellNumeric}`}>
                     {summary.depth.from.toFixed(1)} → {summary.depth.to.toFixed(1)}
                   </span>
                 </CellGripInset>

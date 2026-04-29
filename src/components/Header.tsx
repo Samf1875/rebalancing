@@ -53,14 +53,14 @@ export function Header({
               <button
                 type="button"
                 onClick={() => onSwitchBack?.()}
-                className="flex h-12 shrink-0 items-center justify-center rounded bg-[#212b36] px-5 text-sm font-medium text-[#a6aaaf] transition-colors hover:bg-[#2d3844] hover:text-white sm:px-6"
+                className="flex h-10 shrink-0 items-center justify-center rounded bg-[#212b36] px-5 text-sm font-medium text-[#a6aaaf] transition-colors hover:bg-[#2d3844] hover:text-white sm:px-6"
               >
                 Switch back
               </button>
               <button
                 type="button"
                 onClick={() => onCreateNewRebalancing?.()}
-                className="flex h-12 shrink-0 items-center justify-center rounded bg-[#0267FF] px-5 text-sm font-medium text-white transition-colors hover:bg-[#0258e6] sm:px-6"
+                className="flex h-10 shrink-0 items-center justify-center rounded bg-[#0267FF] px-5 text-sm font-medium text-white transition-colors hover:bg-[#0258e6] sm:px-6"
               >
                 Create new rebalancing
               </button>
@@ -70,7 +70,7 @@ export function Header({
               <button
                 type="button"
                 onClick={() => onShare?.()}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-[#212b36] text-white transition-colors hover:bg-[#2d3844]"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-[#212b36] text-white transition-colors hover:bg-[#2d3844]"
                 aria-label="Share"
               >
                 <Share2 size={20} strokeWidth={2} aria-hidden />
@@ -78,7 +78,7 @@ export function Header({
               <button
                 type="button"
                 onClick={() => onDownload?.()}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-[#212b36] text-white transition-colors hover:bg-[#2d3844]"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-[#212b36] text-white transition-colors hover:bg-[#2d3844]"
                 aria-label="Download"
               >
                 <Download size={20} strokeWidth={2} aria-hidden />
@@ -86,7 +86,7 @@ export function Header({
               <button
                 type="button"
                 onClick={() => onSubmitRebalancing?.()}
-                className="flex h-12 shrink-0 items-center justify-center rounded bg-[#0267FF] px-5 text-sm font-medium text-white transition-colors hover:bg-[#0258e6] sm:px-6"
+                className="flex h-10 shrink-0 items-center justify-center rounded bg-[#0267FF] px-5 text-sm font-medium text-white transition-colors hover:bg-[#0258e6] sm:px-6"
               >
                 Submit rebalancing
               </button>
@@ -132,14 +132,14 @@ export function Header({
       <div className="flex shrink-0 flex-1 items-center justify-end gap-1.5">
         <button
           type="button"
-          className="flex h-12 items-center justify-center gap-2 rounded bg-[#212b36] px-4 py-3 text-[#a6aaaf] transition-colors hover:bg-[#2d3844] hover:text-white"
+          className="flex h-10 items-center justify-center gap-2 rounded bg-[#212b36] px-4 text-[#a6aaaf] transition-colors hover:bg-[#2d3844] hover:text-white"
           aria-label="External link"
         >
           <ExternalLink size={20} />
         </button>
         <button
           type="button"
-          className="flex h-12 items-center justify-center gap-2 rounded bg-[#212b36] px-4 py-3 text-[#a6aaaf] transition-colors hover:bg-[#2d3844] hover:text-white"
+          className="flex h-10 items-center justify-center gap-2 rounded bg-[#212b36] px-4 text-[#a6aaaf] transition-colors hover:bg-[#2d3844] hover:text-white"
           aria-label="Upload"
         >
           <Upload size={20} />

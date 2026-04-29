@@ -70,6 +70,8 @@ export type ProductTransferLocationRow = {
   /** Funnel icon next to the name (e.g. filtered / drill-down state) */
   locationFilter?: boolean;
   stock: { from: number; to: number };
+  /** Warehouse allocation units (before → after), shown in transfer drawer detail */
+  warehouseUnits?: { from: number; to: number };
   tu: { from: number; to: number };
   /** Shown when the TU header pencil toggles breakdown on */
   tuBreakdown?: TuBreakdownItem[];
@@ -103,6 +105,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     name: 'Lulli Eshop',
     code: '610',
     stock: { from: 9, to: 9 },
+    warehouseUnits: { from: 120, to: 118 },
     tu: { from: 9, to: 9 },
     tuBreakdown: [{ kind: 'warehouse', count: 9, reasons: ['Increase visibility'] }],
     sales: { l7d: 1, l30d: 3 },
@@ -118,6 +121,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     transferHub: true,
     locationFilter: true,
     stock: { from: 2, to: 5 },
+    warehouseUnits: { from: 48, to: 52 },
     tu: { from: 2, to: 5 },
     tuBreakdown: [
       { kind: 'warehouse', count: 2 },
@@ -150,6 +154,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     code: '644',
     transferHub: true,
     stock: { from: 1, to: 3 },
+    warehouseUnits: { from: 22, to: 26 },
     tu: { from: 1, to: 3 },
     tuBreakdown: [
       {
@@ -181,6 +186,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     code: '660',
     transferHub: true,
     stock: { from: 1, to: 2 },
+    warehouseUnits: { from: 15, to: 18 },
     tu: { from: 1, to: 2 },
     tuBreakdown: [
       {
@@ -211,6 +217,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     name: 'SU PP Vieille du templ...',
     code: '003',
     stock: { from: 0, to: 0 },
+    warehouseUnits: { from: 8, to: 10 },
     tu: { from: 1, to: 2 },
     tuBreakdown: [
       { kind: 'warehouse', count: 1 },
@@ -235,6 +242,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     code: '693',
     transferHub: true,
     stock: { from: 4, to: 0 },
+    warehouseUnits: { from: 64, to: 58 },
     tu: { from: 4, to: 0 },
     tuBreakdown: [
       {

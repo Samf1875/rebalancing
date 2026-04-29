@@ -22,7 +22,7 @@ export const HEADER_INFO_TOOLTIPS = {
   depth:
     'The average number of units per product, before & after transfers.',
   storageCapacity:
-    'Whether back-of-house storage is at capacity or has free space, after the proposed transfers.',
+    'The storage capacity status of the location after the recommended transfers',
   warehouseUnits:
     'The total number of units across your warehouses in this scope, before & after transfers.',
   tripsTransfers:

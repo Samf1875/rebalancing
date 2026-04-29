@@ -43,6 +43,10 @@ export type HeaderTooltipRich = {
 type BaseProps = {
   /** Column topic for the trigger label, e.g. "Revenue increase" */
   label: string;
+  /** When false with `hoverWith`, no trailing Info icon next to the column title (default true). */
+  showTriggerIcon?: boolean;
+  /** Rich mode: hide the circular icon beside the title inside the panel (default true). */
+  showRichTitleIcon?: boolean;
   /** Figma `5478:57391`: leading white info glyph in the bubble (simple mode only) */
   showIconInTooltip?: boolean;
   iconSize?: number;
@@ -224,6 +228,8 @@ function RichFooter({
 export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
   const {
     label,
+    showTriggerIcon = true,
+    showRichTitleIcon = true,
     showIconInTooltip = false,
     iconSize = 14,
     side = 'top',
@@ -265,7 +271,7 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
   }, []);
 
   const layoutKey = isRich
-    ? `${rich?.title}\n${rich?.body}\n${JSON.stringify(rich?.footer)}\n${richBubbleMaxWidthClass ?? ''}\n${richAppearance}\n${topAlign}`
+    ? `${rich?.title}\n${rich?.body}\n${JSON.stringify(rich?.footer)}\n${richBubbleMaxWidthClass ?? ''}\n${richAppearance}\n${topAlign}\n${showRichTitleIcon}`
     : `${content}\n${topAlign}`;
 
   useLayoutEffect(() => {
@@ -327,7 +333,7 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
       style={{ backgroundColor: bubbleBg }}
     >
       <div className={isLightRich ? 'flex gap-2' : 'flex gap-3'}>
-        <TitleIcon kind={rich.icon} appearance={richAppearance} />
+        {showRichTitleIcon ? <TitleIcon kind={rich.icon} appearance={richAppearance} /> : null}
         <div className="min-w-0 flex-1">
           <p
             className={`font-['Inter',sans-serif] text-sm font-semibold leading-snug ${isLightRich ? 'text-[#101828]' : 'text-white'}`}
@@ -351,13 +357,15 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
 
   const simpleBubble = !isRich ? (
     <div
-      className="flex w-max shrink-0 max-w-[min(18rem,calc(100vw-24px))] gap-2 rounded-lg px-4 py-4 text-left shadow-[0_8px_24px_-4px_rgba(15,23,42,0.45)]"
+      className={`flex w-max shrink-0 max-w-[min(14rem,calc(100vw-24px))] rounded-[10px] text-left ${
+        showIconInTooltip ? 'gap-2 px-3 py-3' : 'px-3 py-3'
+      } shadow-[0_4px_14px_-2px_rgba(0,0,0,0.45)]`}
       style={{ backgroundColor: bubbleBg }}
     >
       {showIconInTooltip ? (
         <Info size={18} className="mt-0.5 shrink-0 text-white" strokeWidth={2} aria-hidden />
       ) : null}
-      <p className="min-w-0 break-words whitespace-pre-line font-['Inter',sans-serif] text-[14px] font-normal leading-normal text-white">
+      <p className="min-w-0 break-words whitespace-pre-line font-['Inter',sans-serif] text-[13px] font-normal leading-snug text-white">
         {content}
       </p>
     </div>
@@ -367,7 +375,7 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
 
   const caretDown = (
     <span
-      className="-mt-px border-8 border-transparent"
+      className="-mt-px border-[6px] border-transparent"
       style={{ borderTopColor: bubbleBg }}
       aria-hidden
     />
@@ -375,7 +383,7 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
 
   const caretRight = (
     <span
-      className="h-0 w-0 shrink-0 border-y-[8px] border-l-8 border-y-transparent"
+      className="h-0 w-0 shrink-0 border-y-[6px] border-l-[6px] border-y-transparent"
       style={{ borderLeftColor: bubbleBg }}
       aria-hidden
     />
@@ -411,7 +419,9 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
       }}
     >
       {hoverWith}
-      <Info size={iconSize} className="shrink-0 text-[#6A7282]" aria-hidden />
+      {showTriggerIcon ? (
+        <Info size={iconSize} className="shrink-0 text-[#6A7282]" aria-hidden />
+      ) : null}
     </span>
   ) : (
     <button
@@ -466,7 +476,7 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
                 {isTopStart ? (
                   <span
                     className="self-start"
-                    style={{ marginLeft: Math.max(0, rect.width / 2 - 8) }}
+                    style={{ marginLeft: Math.max(0, rect.width / 2 - 6) }}
                     aria-hidden
                   >
                     {caretDown}

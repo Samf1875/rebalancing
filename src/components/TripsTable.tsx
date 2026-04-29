@@ -6,7 +6,7 @@ import { AutoneArrowDownIcon } from './AutoneArrowDownIcon';
 import { AutoneHeaderInfoTooltip } from './AutoneHeaderInfoTooltip';
 
 const tableCellPrimary =
-  "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
+  "font-['Inter',sans-serif] text-[14px] font-medium leading-normal text-[#101828]";
 /** Location title line — regular weight per trips design. */
 const tableCellLocationName =
   "font-['Inter',sans-serif] text-[14px] font-normal leading-normal text-[#101828]";
@@ -51,13 +51,6 @@ function TripColumnGrip() {
 
 const tripActionBtn =
   "rounded border border-[#E3E8F0] bg-white px-2 py-1 font-['Inter',sans-serif] text-[11px] font-semibold leading-none text-[#0267FF] transition-colors hover:bg-slate-50";
-
-/** Header totals — design reference (product screenshot). */
-const TRIPS_HEADER_SUMMARY = {
-  transfersUnits: 797,
-  revenueEur: 24_100,
-  recommendedUnits: 797,
-} as const;
 
 function formatEurK(eur: number): string {
   const k = eur / 1000;
@@ -200,16 +193,7 @@ export function TripsTable() {
                   <TripColumnGrip />
                   <AutoneHeaderInfoTooltip
                     label="Transfers"
-                    rich={{
-                      title: 'Transfers',
-                      icon: 'info',
-                      body: HEADER_INFO_TOOLTIPS.tripsTransfers,
-                      footer: {
-                        kind: 'footerCaption' as const,
-                        text: `${TRIPS_HEADER_SUMMARY.transfersUnits.toLocaleString('en-US')} units`,
-                      },
-                    }}
-                    richBubbleMaxWidthClass="max-w-[min(20rem,calc(100vw-24px))]"
+                    content={HEADER_INFO_TOOLTIPS.tripsTransfers}
                     hoverWith={<span>Transfers</span>}
                     side="top"
                   />
@@ -220,15 +204,7 @@ export function TripsTable() {
                   <TripColumnGrip />
                   <AutoneHeaderInfoTooltip
                     label="Revenue increase"
-                    rich={{
-                      title: 'Revenue increase',
-                      icon: 'info',
-                      body: HEADER_INFO_TOOLTIPS.revenueIncrease,
-                      footer: {
-                        kind: 'footerCaption' as const,
-                        text: formatEurK(TRIPS_HEADER_SUMMARY.revenueEur),
-                      },
-                    }}
+                    content={HEADER_INFO_TOOLTIPS.revenueIncrease}
                     hoverWith={<span>Revenue increase</span>}
                     side="top"
                   />
@@ -240,15 +216,7 @@ export function TripsTable() {
                   <TripColumnGrip />
                   <AutoneHeaderInfoTooltip
                     label="Recommended transfers"
-                    rich={{
-                      title: 'Recommended transfers',
-                      icon: 'info',
-                      body: HEADER_INFO_TOOLTIPS.tripsRecommendedTransfers,
-                      footer: {
-                        kind: 'footerCaption' as const,
-                        text: `${TRIPS_HEADER_SUMMARY.recommendedUnits.toLocaleString('en-US')} units`,
-                      },
-                    }}
+                    content={HEADER_INFO_TOOLTIPS.tripsRecommendedTransfers}
                     hoverWith={<span>Recommended transfers</span>}
                     side="top"
                   />
