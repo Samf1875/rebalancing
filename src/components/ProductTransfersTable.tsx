@@ -1284,15 +1284,7 @@ export function ProductTransfersTable({
                         </li>
                         <li className="flex items-center justify-between gap-2">
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                            Status
-                          </span>
-                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium text-[#101828]">
-                            Unassorted
-                          </span>
-                        </li>
-                        <li className="flex items-center justify-between gap-2">
-                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                            Total weeks coverage (if unassorted)
+                            Total weeks coverage
                           </span>
                           <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium text-[#101828]">
                             N/A (0 forecast)
