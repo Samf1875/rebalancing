@@ -1472,6 +1472,95 @@ export function ProductTransfersTable({
                   </div>
 
                   <div className="mt-4 border-t border-[#E3E8F0] pt-4">
+                    <p className="mb-1 font-['Inter',sans-serif] text-[14px] font-semibold leading-snug text-[#101828]">
+                      Recommendations considered
+                    </p>
+                    <p className={`${transferPopSection} mb-3`}>
+                      Transfers that were evaluated but not included in the final proposal
+                    </p>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                        <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                          <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                            <AutoneReceivingLocationIcon direction="in" />
+                          </span>
+                          Receiving store: PR PP Nancy
+                        </p>
+                        <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
+                          <TransferPopRow
+                            icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+                            label="Transfer units"
+                            value="1"
+                          />
+                          <div className="flex items-start gap-2">
+                            <span
+                              aria-hidden
+                              className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
+                            >
+                              <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
+                            </span>
+                            <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                              Met target coverage
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                        <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                          <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                            <AutoneReceivingLocationIcon direction="in" />
+                          </span>
+                          Receiving store: GL PP Biarritz
+                        </p>
+                        <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
+                          <TransferPopRow
+                            icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+                            label="Transfer units"
+                            value="2"
+                          />
+                          <div className="flex items-start gap-2">
+                            <span
+                              aria-hidden
+                              className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
+                            >
+                              <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
+                            </span>
+                            <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                              Other stock moves chosen to meet trip capacity minimum
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                        <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                          <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                            <AutoneReceivingLocationIcon direction="in" />
+                          </span>
+                          Receiving store: PR AC Toulon
+                        </p>
+                        <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
+                          <TransferPopRow
+                            icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+                            label="Transfer units"
+                            value="1"
+                          />
+                          <div className="flex items-start gap-2">
+                            <span
+                              aria-hidden
+                              className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
+                            >
+                              <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
+                            </span>
+                            <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                              Unassorted location chosen
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 border-t border-[#E3E8F0] pt-4">
                     <p className={`${transferPopSection} mb-2`}>Reason 1 unit was left behind</p>
                     <ul className="flex flex-col gap-2">
                       <li className="flex items-start gap-2">
