@@ -1394,7 +1394,6 @@ export function ProductTransfersTable({
                 </div>
 
                 <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
-                  <p className={`${transferPopSection} mb-2`}>Snapshot</p>
                   <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
                     <TransferPopRow
                       icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
@@ -1404,7 +1403,7 @@ export function ProductTransfersTable({
                     <TransferPopRow
                       icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
                       label="Weeks coverage"
-                      value={warehouseDetail.weeksCoverage}
+                      value={warehouseDetail.weeksCoverage.replace(/\s*\+\s*trip time/gi, '')}
                     />
                   </div>
 
