@@ -1410,7 +1410,9 @@ export function ProductTransfersTable({
                     />
                     <TransferPopRow
                       icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-                      label="Weeks coverage"
+                      label={
+                        <span className="whitespace-nowrap">Weeks coverage</span>
+                      }
                       value={warehouseDetail.weeksCoverage.replace(/\s*\+\s*trip time/gi, '')}
                     />
                   </div>
@@ -1472,11 +1474,9 @@ export function ProductTransfersTable({
                   </div>
 
                   <div className="mt-4 border-t border-[#E3E8F0] pt-4">
-                    <p className="mb-1 font-['Inter',sans-serif] text-[14px] font-semibold leading-snug text-[#101828]">
-                      Recommendations considered
-                    </p>
+                    <p className={`${transferPopSection} mb-2`}>Recommendations considered</p>
                     <p className={`${transferPopSection} mb-3`}>
-                      Transfers that were evaluated but not included in the final proposal
+                      Transfers that were evaluated but not included in the final recommendation proposal
                     </p>
                     <div className="flex flex-col gap-3">
                       <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
@@ -1500,7 +1500,7 @@ export function ProductTransfersTable({
                               <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
                             </span>
                             <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
-                              Met target coverage
+                              Store met target coverage with higher value moves
                             </p>
                           </div>
                         </div>
