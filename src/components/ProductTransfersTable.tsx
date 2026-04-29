@@ -1206,7 +1206,7 @@ export function ProductTransfersTable({
                     </div>
                   </div>
 
-                  <p className={`${transferPopSection} mb-2 mt-4`}>Transfer info</p>
+                  <p className={`${transferPopSection} mb-2 mt-4`}>Transfer</p>
                   <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
                     <TransferPopRow
                       icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
@@ -1223,6 +1223,10 @@ export function ProductTransfersTable({
                       label="Trip type"
                       value="Rebalancing"
                     />
+                  </div>
+
+                  <p className={`${transferPopSection} mb-2 mt-4`}>Recommendation</p>
+                  <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
                     <TransferPopRow
                       icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
                       label="Transfer units"
