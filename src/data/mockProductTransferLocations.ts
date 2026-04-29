@@ -195,7 +195,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
         fromLocationId: 'loc-610',
         tripType: 'Replenishment',
         eta: 'Arrives in ~2 days',
-        note: 'No transfers out recommended because stock is in transit',
+        note: 'No transfers recommended because stock is in transit',
       },
       {
         kind: 'transfer',

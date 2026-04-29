@@ -531,11 +531,9 @@ function TransferOutBadgePopoverContent({
 function InTransitBadgePopoverContent({
   popRow,
   popItem,
-  onMoreDetail,
 }: {
   popRow: ProductTransferLocationRow;
   popItem: Extract<TuBreakdownItem, { kind: 'in-transit' }>;
-  onMoreDetail: () => void;
 }) {
   return (
     <>
@@ -547,35 +545,12 @@ function InTransitBadgePopoverContent({
       <p className={`${transferPopSection} mb-1.5`}>In-transit info</p>
       <div className="flex flex-col gap-1.5">
         <TransferPopRow
-          icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
           label="Stock in-transit"
           value={popItem.count.toLocaleString()}
         />
-        {popItem.tripType ? (
-          <TransferPopRow
-            icon={<ArrowLeftRight className="size-3.5" strokeWidth={2} aria-hidden />}
-            label="Trip type"
-            value={popItem.tripType}
-          />
-        ) : null}
+        {popItem.note ? <TransferPopReason label={popItem.note} /> : null}
       </div>
-
-      {popItem.note ? (
-        <>
-          <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation reasons</p>
-          <div className="flex flex-col gap-1.5">
-            <TransferPopReason label={popItem.note} />
-          </div>
-        </>
-      ) : null}
-
-      <button
-        type="button"
-        onClick={onMoreDetail}
-        className="mt-2 inline-block cursor-pointer font-['Inter',sans-serif] text-[11px] font-medium leading-snug text-[#0267FF] underline-offset-2 outline-none hover:underline focus-visible:underline"
-      >
-        More detail...
-      </button>
     </>
   );
 }
@@ -607,12 +582,6 @@ export function ProductTransfersTable({
     stockOnHand: number;
     reasons: string[];
   } | null>(null);
-  const [inTransitDetail, setInTransitDetail] = useState<{
-    rowName: string;
-    count: number;
-    weeksCoverage: string;
-    note?: string;
-  } | null>(null);
   const [transferDetail, setTransferDetail] = useState<{
     direction: 'in' | 'out';
     sourceName: string;
@@ -629,6 +598,7 @@ export function ProductTransfersTable({
   const tuCloseTimerRef = useRef<number | null>(null);
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const rows = MOCK_PRODUCT_TRANSFER_LOCATIONS;
+  const detail = parentRow.productCellDetail;
 
   const cancelTuClose = () => {
     if (tuCloseTimerRef.current != null) {
@@ -726,20 +696,6 @@ export function ProductTransfersTable({
       window.removeEventListener('scroll', onScroll, true);
     };
   }, [tuBadgePopover]);
-
-  useEffect(() => {
-    if (!inTransitDetail) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setInTransitDetail(null);
-    };
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [inTransitDetail]);
 
   useEffect(() => {
     if (!transferDetail) return;
@@ -1119,22 +1075,7 @@ export function ProductTransfersTable({
                     }}
                   />
                 ) : isInTransit && popItem.kind === 'in-transit' ? (
-                  <InTransitBadgePopoverContent
-                    popRow={popRow}
-                    popItem={popItem}
-                    onMoreDetail={() => {
-                      cancelTuClose();
-                      if (popItem.kind === 'in-transit') {
-                        setInTransitDetail({
-                          rowName: popRow.name,
-                          count: popItem.count,
-                          weeksCoverage: weeksCoverageText,
-                          note: popItem.note,
-                        });
-                      }
-                      setTuBadgePopover(null);
-                    }}
-                  />
+                  <InTransitBadgePopoverContent popRow={popRow} popItem={popItem} />
                 ) : (
                   <>
                     <p className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
@@ -1203,75 +1144,6 @@ export function ProductTransfersTable({
               document.body
             );
           })()
-        : null}
-
-      {inTransitDetail
-        ? createPortal(
-            <div
-              className="fixed inset-0 z-[210] flex justify-end"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="in-transit-detail-title"
-              onClick={() => setInTransitDetail(null)}
-            >
-              <button
-                type="button"
-                aria-label="Close panel"
-                onClick={() => setInTransitDetail(null)}
-                className="absolute bottom-0 right-0 bg-[#0F172A]/40"
-              />
-              <div
-                className="relative flex h-full w-full max-w-[min(100vw-1rem,28rem)] flex-col border-l border-[#E3E8F0] bg-white shadow-[-12px_0_36px_-12px_rgba(15,23,42,0.18)]"
-                style={{ animation: 'tu-warehouse-drawer-in 220ms cubic-bezier(0.22, 1, 0.36, 1)' }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <style>{`@keyframes tu-warehouse-drawer-in { from { transform: translateX(16px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`}</style>
-                <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[#E3E8F0] px-5 py-4">
-                  <div className="flex min-w-0 flex-col gap-1">
-                    <p className="font-['Inter',sans-serif] text-[11px] font-medium uppercase tracking-wide text-[#6864E6]">
-                      Stock in-transit
-                    </p>
-                    <h2
-                      id="in-transit-detail-title"
-                      className="font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
-                    >
-                      {inTransitDetail.rowName}
-                    </h2>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setInTransitDetail(null)}
-                    className="-m-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-[#6A7282] outline-none transition-colors hover:bg-[#F2F4F7] hover:text-[#101828] focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-1"
-                    aria-label="Close"
-                  >
-                    <X className="size-5" strokeWidth={2} aria-hidden />
-                  </button>
-                </div>
-
-                <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
-                  <p className={`${transferPopSection} mb-2`}>Snapshot</p>
-                  <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
-                    <TransferPopRow
-                      icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
-                      label="Stock in-transit"
-                      value={inTransitDetail.count.toLocaleString()}
-                    />
-                    <TransferPopRow
-                      icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-                      label="Weeks coverage"
-                      value={inTransitDetail.weeksCoverage}
-                    />
-                  </div>
-                  {inTransitDetail.note ? (
-                    <p className="mt-3 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#6A7282]">
-                      {inTransitDetail.note}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            </div>,
-            document.body
-          )
         : null}
 
       {warehouseDetail
