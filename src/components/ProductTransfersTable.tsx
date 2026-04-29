@@ -526,7 +526,6 @@ function InTransitBadgePopoverContent({
       </p>
       <div className="my-1.5 border-t border-[#E3E8F0]" />
 
-      <p className={`${transferPopSection} mb-1.5`}>In-transit info</p>
       <div className="flex flex-col gap-1.5">
         <TransferPopRow
           icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
