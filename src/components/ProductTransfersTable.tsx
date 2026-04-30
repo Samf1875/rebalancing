@@ -4,6 +4,7 @@ import {
   ArrowLeftRight,
   CalendarDays,
   ChevronDown,
+  Copy,
   Filter,
   Lightbulb,
   Package,
@@ -291,6 +292,7 @@ function TransferBadgePopoverContent({
         <span className="mx-0.5 font-normal text-[#9CA3AF]">→</span>
         <span>{popRow.name}</span>
       </p>
+      <p className={`${transferPopSection} mt-1`}>Maximum units per trip: 100</p>
       <div className="my-1.5 border-t border-[#E3E8F0]" />
 
       <p className={`${transferPopSection} mb-1.5`}>Transfer info</p>
@@ -339,25 +341,7 @@ function TransferBadgePopoverContent({
 
       <div className="my-2 border-t border-[#E3E8F0]" />
 
-      <p className={`${transferPopSection} mb-1.5`}>Total stock</p>
-      <div className="flex flex-col gap-1.5">
-        <TransferPopRow
-          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={sourceName}
-          value={
-            sourceRow
-              ? formatStockArrow(sourceRow.stock.from, sourceRow.stock.to)
-              : '—'
-          }
-        />
-        <TransferPopRow
-          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={popRow.name}
-          value={formatStockArrow(popRow.stock.from, popRow.stock.to)}
-        />
-      </div>
-
-      <p className={`${transferPopSection} mt-2 mb-1.5`}>Total weeks coverage</p>
+      <p className={`${transferPopSection} mb-1.5`}>Total weeks coverage</p>
       <div className="flex flex-col gap-1.5">
         <TransferPopRow
           icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
@@ -531,11 +515,9 @@ function TransferOutBadgePopoverContent({
 function InTransitBadgePopoverContent({
   popRow,
   popItem,
-  onMoreDetail,
 }: {
   popRow: ProductTransferLocationRow;
   popItem: Extract<TuBreakdownItem, { kind: 'in-transit' }>;
-  onMoreDetail: () => void;
 }) {
   return (
     <>
@@ -544,38 +526,14 @@ function InTransitBadgePopoverContent({
       </p>
       <div className="my-1.5 border-t border-[#E3E8F0]" />
 
-      <p className={`${transferPopSection} mb-1.5`}>In-transit info</p>
       <div className="flex flex-col gap-1.5">
         <TransferPopRow
-          icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
           label="Stock in-transit"
           value={popItem.count.toLocaleString()}
         />
-        {popItem.tripType ? (
-          <TransferPopRow
-            icon={<ArrowLeftRight className="size-3.5" strokeWidth={2} aria-hidden />}
-            label="Trip type"
-            value={popItem.tripType}
-          />
-        ) : null}
+        {popItem.note ? <TransferPopReason label={popItem.note} /> : null}
       </div>
-
-      {popItem.note ? (
-        <>
-          <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation reasons</p>
-          <div className="flex flex-col gap-1.5">
-            <TransferPopReason label={popItem.note} />
-          </div>
-        </>
-      ) : null}
-
-      <button
-        type="button"
-        onClick={onMoreDetail}
-        className="mt-2 inline-block cursor-pointer font-['Inter',sans-serif] text-[11px] font-medium leading-snug text-[#0267FF] underline-offset-2 outline-none hover:underline focus-visible:underline"
-      >
-        More detail...
-      </button>
     </>
   );
 }
@@ -607,12 +565,6 @@ export function ProductTransfersTable({
     stockOnHand: number;
     reasons: string[];
   } | null>(null);
-  const [inTransitDetail, setInTransitDetail] = useState<{
-    rowName: string;
-    count: number;
-    weeksCoverage: string;
-    note?: string;
-  } | null>(null);
   const [transferDetail, setTransferDetail] = useState<{
     direction: 'in' | 'out';
     sourceName: string;
@@ -625,10 +577,13 @@ export function ProductTransfersTable({
     source?: ProductTransferLocationRow;
     destination?: ProductTransferLocationRow;
   } | null>(null);
+  /** Placeholder drawer from green truck (transfer-in) pop-up "More detail…" only */
+  const [greenTruckTransferDetailDrawerOpen, setGreenTruckTransferDetailDrawerOpen] = useState(false);
   const tuPopoverPanelRef = useRef<HTMLDivElement>(null);
   const tuCloseTimerRef = useRef<number | null>(null);
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const rows = MOCK_PRODUCT_TRANSFER_LOCATIONS;
+  const detail = parentRow.productCellDetail;
 
   const cancelTuClose = () => {
     if (tuCloseTimerRef.current != null) {
@@ -728,20 +683,6 @@ export function ProductTransfersTable({
   }, [tuBadgePopover]);
 
   useEffect(() => {
-    if (!inTransitDetail) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setInTransitDetail(null);
-    };
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [inTransitDetail]);
-
-  useEffect(() => {
     if (!transferDetail) return;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -754,6 +695,15 @@ export function ProductTransfersTable({
       document.removeEventListener('keydown', onKey);
     };
   }, [transferDetail]);
+
+  useEffect(() => {
+    if (!greenTruckTransferDetailDrawerOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setGreenTruckTransferDetailDrawerOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [greenTruckTransferDetailDrawerOpen]);
 
   const toggleRow = (id: string, checked: boolean) => {
     setSelected((prev) => ({ ...prev, [id]: checked }));
@@ -1048,7 +998,7 @@ export function ProductTransfersTable({
             const forecast = popRow.forecastPerWeek;
             const weeksCoverageText =
               forecast > 0
-                ? `${(popItem.count / forecast).toFixed(1)} (${popRow.coverage.targetWeeks} target + trip time)`
+                ? `${(popItem.count / forecast).toFixed(1)} (${popRow.coverage.targetWeeks} target)`
                 : 'N/A (0 forecast)';
             const ariaLabel = isExtensiveTransfer
               ? `Transfer details for ${popRow.name}`
@@ -1075,21 +1025,8 @@ export function ProductTransfersTable({
                     rows={rows}
                     onMoreDetail={() => {
                       cancelTuClose();
-                      if (popItem.kind !== 'transfer') return;
-                      const sourceRow = rows.find((r) => r.id === popItem.fromLocationId);
-                      setTransferDetail({
-                        direction: 'in',
-                        source: sourceRow,
-                        destination: popRow,
-                        sourceName: sourceRow?.name ?? 'Unknown source',
-                        destinationName: popRow.name,
-                        transferUnits: popItem.count,
-                        availableToSend: sourceRow ? sourceRow.stock.from : 0,
-                        tripType: popItem.tripType,
-                        revenueIncrease: popItem.revenueIncrease,
-                        reasons: popItem.reasons,
-                      });
                       setTuBadgePopover(null);
+                      setGreenTruckTransferDetailDrawerOpen(true);
                     }}
                   />
                 ) : isTransferOut && popItem.kind === 'transfer-out' ? (
@@ -1119,22 +1056,7 @@ export function ProductTransfersTable({
                     }}
                   />
                 ) : isInTransit && popItem.kind === 'in-transit' ? (
-                  <InTransitBadgePopoverContent
-                    popRow={popRow}
-                    popItem={popItem}
-                    onMoreDetail={() => {
-                      cancelTuClose();
-                      if (popItem.kind === 'in-transit') {
-                        setInTransitDetail({
-                          rowName: popRow.name,
-                          count: popItem.count,
-                          weeksCoverage: weeksCoverageText,
-                          note: popItem.note,
-                        });
-                      }
-                      setTuBadgePopover(null);
-                    }}
-                  />
+                  <InTransitBadgePopoverContent popRow={popRow} popItem={popItem} />
                 ) : (
                   <>
                     <p className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
@@ -1156,7 +1078,7 @@ export function ProductTransfersTable({
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex min-w-0 items-center gap-1.5">
                           <CalendarDays className="size-3.5 shrink-0 text-[#101828]" strokeWidth={2} aria-hidden />
-                          <span className="font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#101828]">
+                          <span className="whitespace-nowrap font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#101828]">
                             Weeks coverage
                           </span>
                         </div>
@@ -1165,16 +1087,6 @@ export function ProductTransfersTable({
                         </span>
                       </div>
                     </div>
-                    {popItem.kind === 'warehouse' && popItem.reasons && popItem.reasons.length > 0 ? (
-                      <>
-                        <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation reasons</p>
-                        <div className="flex flex-col gap-1.5">
-                          {popItem.reasons.map((reason, idx) => (
-                            <TransferPopReason key={`${popRow.id}-wh-reason-${idx}`} label={reason} />
-                          ))}
-                        </div>
-                      </>
-                    ) : null}
                     {popItem.kind === 'warehouse' ? (
                       <button
                         type="button"
@@ -1205,68 +1117,238 @@ export function ProductTransfersTable({
           })()
         : null}
 
-      {inTransitDetail
+      {greenTruckTransferDetailDrawerOpen
         ? createPortal(
             <div
-              className="fixed inset-0 z-[210] flex justify-end"
+              className="pointer-events-none fixed inset-0 z-[210] flex justify-end"
               role="dialog"
               aria-modal="true"
-              aria-labelledby="in-transit-detail-title"
-              onClick={() => setInTransitDetail(null)}
+              aria-labelledby="green-truck-transfer-drawer-title"
             >
-              <button
-                type="button"
-                aria-label="Close panel"
-                onClick={() => setInTransitDetail(null)}
-                className="absolute bottom-0 right-0 bg-[#0F172A]/40"
-              />
               <div
-                className="relative flex h-full w-full max-w-[min(100vw-1rem,28rem)] flex-col border-l border-[#E3E8F0] bg-white shadow-[-12px_0_36px_-12px_rgba(15,23,42,0.18)]"
+                className="pointer-events-auto relative flex h-full w-[420px] max-w-[min(420px,calc(100vw-1rem))] shrink-0 flex-col border-l border-[#E3E8F0] bg-white shadow-[-12px_0_36px_-12px_rgba(15,23,42,0.18)]"
                 style={{ animation: 'tu-warehouse-drawer-in 220ms cubic-bezier(0.22, 1, 0.36, 1)' }}
-                onClick={(e) => e.stopPropagation()}
               >
                 <style>{`@keyframes tu-warehouse-drawer-in { from { transform: translateX(16px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`}</style>
                 <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[#E3E8F0] px-5 py-4">
                   <div className="flex min-w-0 flex-col gap-1">
-                    <p className="font-['Inter',sans-serif] text-[11px] font-medium uppercase tracking-wide text-[#6864E6]">
-                      Stock in-transit
+                    <p className="font-['Inter',sans-serif] text-[11px] font-medium uppercase tracking-wide text-[#2EB8C2]">
+                      Recommended transfer
                     </p>
                     <h2
-                      id="in-transit-detail-title"
-                      className="font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
+                      id="green-truck-transfer-drawer-title"
+                      className="flex flex-wrap items-center gap-1 font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
                     >
-                      {inTransitDetail.rowName}
+                      <span>PR AC Lille</span>
+                      <span aria-hidden className="font-normal text-[#9CA3AF]">
+                        →
+                      </span>
+                      <span>Lulli Eshop</span>
                     </h2>
+                    <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#6A7282]">
+                      Trip capacity (max 10,000)
+                    </p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => setInTransitDetail(null)}
-                    className="-m-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-[#6A7282] outline-none transition-colors hover:bg-[#F2F4F7] hover:text-[#101828] focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-1"
+                    onClick={() => setGreenTruckTransferDetailDrawerOpen(false)}
+                    className="-m-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded text-[#6A7282] outline-none transition-colors hover:bg-[#F2F4F7] hover:text-[#101828] focus-visible:ring-2 focus-visible:ring-[#2EB8C2] focus-visible:ring-offset-1"
                     aria-label="Close"
                   >
                     <X className="size-5" strokeWidth={2} aria-hidden />
                   </button>
                 </div>
-
                 <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
-                  <p className={`${transferPopSection} mb-2`}>Snapshot</p>
+                  <p className={`${transferPopSection} mb-2`}>Product</p>
+                  <div className="flex items-center gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded bg-[#f5f5f5]">
+                      <img
+                        src="/images/product-botin-fringes-arena.png"
+                        alt="Botin fringes arena"
+                        className="pointer-events-none absolute inset-0 size-full max-w-none object-contain"
+                      />
+                    </div>
+                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                      <div className="font-['Inter',sans-serif] text-[14px] font-semibold leading-snug text-[#101828]">
+                        Botin fringes arena
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-0 font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#101828]">
+                        <div>
+                          <span className="text-[#6A7282]">Colour: </span>Arena
+                        </div>
+                        <div>
+                          <span className="text-[#6A7282]">Size: </span>TU
+                        </div>
+                      </div>
+                      <div className="inline-flex max-w-full min-w-0 items-center gap-2 self-start">
+                        <span className="min-w-0 truncate font-['Inter',sans-serif] text-[12px] font-normal tabular-nums leading-snug text-[#101828]">
+                          S26-0696-002-704
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => void navigator.clipboard.writeText('S26-0696-002-704')}
+                          className="m-0 inline-flex size-5 shrink-0 items-center justify-center rounded p-0 text-[#6A7282] outline-none transition-colors hover:bg-[#E3E8F0] hover:text-[#101828] focus-visible:ring-2 focus-visible:ring-[#2EB8C2] focus-visible:ring-offset-0"
+                          aria-label="Copy SKU"
+                        >
+                          <Copy className="size-3.5" strokeWidth={2} aria-hidden />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className={`${transferPopSection} mb-2 mt-4`}>Transfer</p>
                   <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
                     <TransferPopRow
-                      icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
-                      label="Stock in-transit"
-                      value={inTransitDetail.count.toLocaleString()}
+                      icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+                      label="Transfer units"
+                      value="4"
                     />
                     <TransferPopRow
-                      icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-                      label="Weeks coverage"
-                      value={inTransitDetail.weeksCoverage}
+                      icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
+                      label="Available to send"
+                      value="4"
+                    />
+                    <TransferPopRow
+                      icon={<ArrowLeftRight className="size-3.5" strokeWidth={2} aria-hidden />}
+                      label="Trip type"
+                      value="Rebalancing"
                     />
                   </div>
-                  {inTransitDetail.note ? (
-                    <p className="mt-3 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#6A7282]">
-                      {inTransitDetail.note}
-                    </p>
-                  ) : null}
+
+                  <p className={`${transferPopSection} mb-2 mt-4`}>Recommendation</p>
+                  <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                    <TransferPopRow
+                      icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+                      label="Transfer units"
+                      value="4"
+                    />
+                    <div className="flex items-start gap-2">
+                      <span
+                        aria-hidden
+                        className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
+                      >
+                        <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
+                      </span>
+                      <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                        Increase revenue by €380
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span
+                        aria-hidden
+                        className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
+                      >
+                        <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
+                      </span>
+                      <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                        SKU unassorted in PR AC Lille
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className={`${transferPopSection} mb-2 mt-4`}>Stock check</p>
+                  <div className="flex flex-col gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                    <div className="flex flex-col gap-1.5">
+                      <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                        <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                          <AutoneReceivingLocationIcon direction="out" />
+                        </span>
+                        Sending store: PR AC Lille
+                      </p>
+                      <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Total stock
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            {formatStockArrow(4, 0)}
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Department storage capacity
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            35 → 45 (max 50)
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Total weeks coverage
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium text-[#101828]">
+                            N/A (0 forecast)
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Forecast
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            0.00 per week
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Available warehouse units
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            {formatStockArrow(0, 0)}
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
+                    <div className="flex flex-col gap-1.5 border-t border-[#E3E8F0] pt-3">
+                      <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                        <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                          <AutoneReceivingLocationIcon direction="in" />
+                        </span>
+                        Receiving store: Lulli Eshop
+                      </p>
+                      <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Total stock
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            {formatStockArrow(9, 9)}
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Department storage capacity
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            170 → 172 (max 190)
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Total weeks coverage
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            11.7 → 11.7 (1 target)
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Forecast
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            0.77 per week
+                          </span>
+                        </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Available warehouse units
+                          </span>
+                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            {formatStockArrow(0, 0)}
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>,
@@ -1320,7 +1402,6 @@ export function ProductTransfersTable({
                 </div>
 
                 <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
-                  <p className={`${transferPopSection} mb-2`}>Snapshot</p>
                   <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
                     <TransferPopRow
                       icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
@@ -1329,49 +1410,154 @@ export function ProductTransfersTable({
                     />
                     <TransferPopRow
                       icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-                      label="Weeks coverage"
-                      value={warehouseDetail.weeksCoverage}
+                      label={
+                        <span className="whitespace-nowrap">Weeks coverage</span>
+                      }
+                      value={warehouseDetail.weeksCoverage.replace(/\s*\+\s*trip time/gi, '')}
                     />
                   </div>
 
                   <div className="mt-4 border-t border-[#E3E8F0] pt-4">
-                    <p className={`${transferPopSection} mb-2`}>Reason 1 unit was left behind</p>
-                    <ul className="flex flex-col gap-2">
-                      <li className="flex items-start gap-2">
-                        <span
-                          aria-hidden
-                          className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#6864E6]/10 text-[#6864E6]"
-                        >
-                          <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
-                        </span>
-                        <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
-                          Receiving location - PR PP Nancy - Trip is full (max 100)
-                        </p>
-                      </li>
-                    </ul>
-
-                    <p className={`${transferPopSection} mt-4 mb-2`}>Other potential reasons TBC</p>
-                    <ul className="flex flex-col gap-2">
-                      {[
-                        'Warehouse can still supply',
-                        'Stock target limits',
-                        'Low value move',
-                        'Better option chosen',
-                        'Storage capacity reached',
-                      ].map((reason) => (
-                        <li key={reason} className="flex items-start gap-2">
-                          <span
-                            aria-hidden
-                            className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#6864E6]/10 text-[#6864E6]"
-                          >
-                            <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
+                    <p className={`${transferPopSection} mb-2`}>Stock check</p>
+                    <div className="flex flex-col gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                      <div className="flex flex-col gap-1.5">
+                        <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                          <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#6864E6]">
+                            <Package className="size-[1em]" strokeWidth={2} aria-hidden />
                           </span>
-                          <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
-                            {reason}
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
+                          Lulli Eshop
+                        </p>
+                        <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
+                          <li className="flex items-center justify-between gap-2">
+                            <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                              Total stock
+                            </span>
+                            <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                              {formatStockArrow(9, 9)}
+                            </span>
+                          </li>
+                          <li className="flex items-center justify-between gap-2">
+                            <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                              Department storage capacity
+                            </span>
+                            <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                              170 → 172 (max 190)
+                            </span>
+                          </li>
+                          <li className="flex items-center justify-between gap-2">
+                            <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                              Total weeks coverage
+                            </span>
+                            <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                              11.7 → 11.7 (1 target)
+                            </span>
+                          </li>
+                          <li className="flex items-center justify-between gap-2">
+                            <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                              Forecast
+                            </span>
+                            <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                              0.77 per week
+                            </span>
+                          </li>
+                          <li className="flex items-center justify-between gap-2">
+                            <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                              Available warehouse units
+                            </span>
+                            <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                              {formatStockArrow(0, 0)}
+                            </span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 border-t border-[#E3E8F0] pt-4">
+                    <p className={`${transferPopSection} mb-2`}>Recommendations considered</p>
+                    <p className={`${transferPopSection} mb-3`}>
+                      Transfers that were evaluated but not included in the final recommendation proposal
+                    </p>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                        <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                          <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                            <AutoneReceivingLocationIcon direction="in" />
+                          </span>
+                          Receiving store: PR PP Nancy
+                        </p>
+                        <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
+                          <TransferPopRow
+                            icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+                            label="Transfer units"
+                            value="1"
+                          />
+                          <div className="flex items-start gap-2">
+                            <span
+                              aria-hidden
+                              className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
+                            >
+                              <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
+                            </span>
+                            <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                              Store met target coverage with higher value moves
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                        <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                          <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                            <AutoneReceivingLocationIcon direction="in" />
+                          </span>
+                          Receiving store: GL PP Biarritz
+                        </p>
+                        <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
+                          <TransferPopRow
+                            icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+                            label="Transfer units"
+                            value="2"
+                          />
+                          <div className="flex items-start gap-2">
+                            <span
+                              aria-hidden
+                              className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
+                            >
+                              <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
+                            </span>
+                            <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                              Other stock moves chosen to meet trip capacity minimum
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                        <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                          <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                            <AutoneReceivingLocationIcon direction="in" />
+                          </span>
+                          Receiving store: PR AC Toulon
+                        </p>
+                        <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
+                          <TransferPopRow
+                            icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+                            label="Transfer units"
+                            value="1"
+                          />
+                          <div className="flex items-start gap-2">
+                            <span
+                              aria-hidden
+                              className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
+                            >
+                              <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
+                            </span>
+                            <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                              Unassorted location chosen
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
