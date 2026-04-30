@@ -1277,7 +1277,7 @@ export function ProductTransfersTable({
                             Total weeks coverage
                           </span>
                           <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium text-[#101828]">
-                            N/A (0 forecast)
+                            N/A (unassorted)
                           </span>
                         </li>
                         <li className="flex items-center justify-between gap-2">
@@ -1286,14 +1286,6 @@ export function ProductTransfersTable({
                           </span>
                           <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
                             0.00 per week
-                          </span>
-                        </li>
-                        <li className="flex items-center justify-between gap-2">
-                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                            Available warehouse units
-                          </span>
-                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
-                            {formatStockArrow(0, 0)}
                           </span>
                         </li>
                       </ul>
@@ -1340,10 +1332,10 @@ export function ProductTransfersTable({
                         </li>
                         <li className="flex items-center justify-between gap-2">
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                            Available warehouse units
+                            Warehouse weeks coverage
                           </span>
                           <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
-                            {formatStockArrow(0, 0)}
+                            0.5 → 0.2
                           </span>
                         </li>
                       </ul>
