@@ -49,8 +49,9 @@ function TripColumnGrip() {
   );
 }
 
-const tripActionBtn =
-  "rounded border border-[#E3E8F0] bg-white px-2 py-1 font-['Inter',sans-serif] text-[11px] font-semibold leading-none text-[#0267FF] transition-colors hover:bg-slate-50";
+/** Match V1 AssortmentTable `recTransferActionPurple` — VIS / REV chips. */
+const tripRecommendedActionBtn =
+  "rounded border border-[#6864E6] bg-white px-2 py-1 font-['Inter',sans-serif] text-[11px] font-semibold leading-none text-[#6864E6] transition-colors hover:bg-slate-50";
 
 function formatEurK(eur: number): string {
   const k = eur / 1000;
@@ -85,14 +86,14 @@ export function TripsTable() {
 
   const renderBadges = (badges: TripBadge[]) => (
     <div className="flex shrink-0 items-center gap-1">
-      {badges.includes('rev') ? (
-        <button type="button" className={tripActionBtn} aria-label="Review">
-          REV
+      {badges.includes('vis') ? (
+        <button type="button" className={tripRecommendedActionBtn} aria-label="Visible">
+          VIS
         </button>
       ) : null}
-      {badges.includes('vis') ? (
-        <button type="button" className={tripActionBtn} aria-label="Visible">
-          VIS
+      {badges.includes('rev') ? (
+        <button type="button" className={tripRecommendedActionBtn} aria-label="Review">
+          REV
         </button>
       ) : null}
     </div>
@@ -137,11 +138,11 @@ export function TripsTable() {
       </td>
       <td className="min-w-[260px] px-4 py-3 align-middle text-right">
         <div className="flex w-full items-center justify-end gap-3">
-          <div className="inline-flex flex-col items-end gap-0.5 tabular-nums">
+          {renderBadges(row.badges)}
+          <div className="inline-flex min-w-0 flex-col items-end gap-0.5 tabular-nums">
             <span className={tableCellPrimary}>{row.recommended}</span>
             <span className={tableCellSecondary}>(max {row.recommendedMax.toLocaleString('en-US')})</span>
           </div>
-          {renderBadges(row.badges)}
         </div>
       </td>
       <td className="min-w-[120px] px-4 py-3 align-middle text-right">

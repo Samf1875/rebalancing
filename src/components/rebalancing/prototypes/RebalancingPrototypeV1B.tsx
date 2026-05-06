@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useMemo, useId } from 'react';
-import { createPortal } from 'react-dom';
 import {
   Sparkles,
   X,
@@ -37,42 +36,13 @@ import { KpisPanel } from '../KpisPanel';
 import { RebalancingWorkspaceSummaryBanner } from '../RebalancingWorkspaceSummaryBanner';
 import type { PrototypeVersionId } from '../../../lib/prototypeVersion';
 
-type FocusView = 'all' | 'products' | 'locations' | 'trips';
+type FocusView = 'products' | 'locations' | 'trips';
 
 type StatusTableFilter = 'all' | 'draft' | 'committed';
 
 function filterRowsByFocusView(rows: AssortmentRow[], _view: FocusView): AssortmentRow[] {
   return rows;
 }
-
-/**
- * Product-level aggregation dimensions for the "All" tab. The user picks one
- * to control how rows roll up in the aggregate review table.
- */
-const PRODUCT_AGGREGATION_OPTIONS = [
-  { id: 'sku', label: 'SKU' },
-  { id: 'product', label: 'Product' },
-  { id: 'department', label: 'Department' },
-  { id: 'sub-department', label: 'Sub Department' },
-  { id: 'size', label: 'Size' },
-  { id: 'style', label: 'Style' },
-  { id: 'season', label: 'Season' },
-  { id: 'gender', label: 'Gender' },
-] as const;
-
-type ProductAggregationId = (typeof PRODUCT_AGGREGATION_OPTIONS)[number]['id'];
-
-/** Location-level aggregation dimensions for the "All" tab. */
-const LOCATION_AGGREGATION_OPTIONS = [
-  { id: 'location', label: 'Location' },
-  { id: 'country', label: 'Country' },
-  { id: 'location-type', label: 'Location Type' },
-  { id: 'region', label: 'Region' },
-  { id: 'location-group', label: 'Location Group' },
-  { id: 'location-cluster', label: 'Location Cluster' },
-] as const;
-
-type LocationAggregationId = (typeof LOCATION_AGGREGATION_OPTIONS)[number]['id'];
 
 const FILTERS_MENU_ITEMS = [
   'Sending locations',
@@ -117,16 +87,13 @@ const initRow = (r: AssortmentRow, isDraft = false): AssortmentRow => ({
   },
 });
 
-export type RebalancingPrototypeV1Props = {
+export type RebalancingPrototypeV1BProps = {
   prototypeVersion: PrototypeVersionId;
-  /** Header Back: consume one in-workspace step (drill-down) before Layout pops task-list history. */
-  registerWorkspaceBackHandler?: (handler: (() => boolean) | null) => void;
 };
 
-export function RebalancingPrototypeV1({
+export function RebalancingPrototypeV1B({
   prototypeVersion,
-  registerWorkspaceBackHandler,
-}: RebalancingPrototypeV1Props) {
+}: RebalancingPrototypeV1BProps) {
   const [rows, setRows] = useState<AssortmentRow[]>(() =>
     mockRows.slice(0, 5).map((r) => initRow(r, false))
   );
@@ -135,22 +102,7 @@ export function RebalancingPrototypeV1({
     openFrom: 'assortment' | 'initial-allocation';
   } | null>(null);
   const [confirmCommitRevert, setConfirmCommitRevert] = useState<ConfirmCommitRevertState | null>(null);
-  const [focusView, setFocusView] = useState<FocusView>('all');
-  const [productAggregation, setProductAggregation] = useState<ProductAggregationId>('product');
-  const [locationAggregation, setLocationAggregation] = useState<LocationAggregationId>('location-group');
-  const [locationsToAggregation, setLocationsToAggregation] = useState<LocationAggregationId>('location');
-  const [productAggMenuOpen, setProductAggMenuOpen] = useState(false);
-  const [locationAggMenuOpen, setLocationAggMenuOpen] = useState(false);
-  const [locationsToMenuOpen, setLocationsToMenuOpen] = useState(false);
-  const productAggMenuRef = useRef<HTMLDivElement>(null);
-  const locationAggMenuRef = useRef<HTMLDivElement>(null);
-  const locationsToMenuRef = useRef<HTMLDivElement>(null);
-  const productAggButtonRef = useRef<HTMLButtonElement>(null);
-  const locationAggButtonRef = useRef<HTMLButtonElement>(null);
-  const locationsToButtonRef = useRef<HTMLButtonElement>(null);
-  const productAggMenuId = useId();
-  const locationAggMenuId = useId();
-  const locationsToMenuId = useId();
+  const [focusView, setFocusView] = useState<FocusView>('products');
   const [statusTableFilter, setStatusTableFilter] = useState<StatusTableFilter>('all');
   const [tripType, setTripType] = useState<'rebalancing' | 'replenishment'>('rebalancing');
   const [includeZeroTransfers, setIncludeZeroTransfers] = useState(true);
@@ -176,28 +128,6 @@ export function RebalancingPrototypeV1({
   const [productTransfersDrillRowId, setProductTransfersDrillRowId] = useState<string | null>(null);
   /** Locations tab: row drill-down to per-location product list */
   const [locationProductsDrill, setLocationProductsDrill] = useState<LocationTableRow | null>(null);
-
-  useEffect(() => {
-    if (!registerWorkspaceBackHandler) return;
-    const handler = (): boolean => {
-      if (productTransfersDrillRowId != null) {
-        setProductTransfersDrillRowId(null);
-        return true;
-      }
-      if (locationProductsDrill != null) {
-        setLocationProductsDrill(null);
-        return true;
-      }
-      return false;
-    };
-    registerWorkspaceBackHandler(handler);
-    return () => registerWorkspaceBackHandler(null);
-  }, [
-    registerWorkspaceBackHandler,
-    productTransfersDrillRowId,
-    locationProductsDrill,
-  ]);
-
   const optimisingToSuccessTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSuccessGroupsCountRef = useRef<number>(0);
 
@@ -246,63 +176,6 @@ export function RebalancingPrototypeV1({
       document.removeEventListener('mousedown', onPointerDown);
     };
   }, [sortMenuOpen]);
-
-  useEffect(() => {
-    if (!productAggMenuOpen) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setProductAggMenuOpen(false);
-    };
-    const onPointerDown = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (productAggMenuRef.current?.contains(target)) return;
-      if (productAggButtonRef.current?.contains(target)) return;
-      setProductAggMenuOpen(false);
-    };
-    document.addEventListener('keydown', onKeyDown);
-    document.addEventListener('mousedown', onPointerDown);
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      document.removeEventListener('mousedown', onPointerDown);
-    };
-  }, [productAggMenuOpen]);
-
-  useEffect(() => {
-    if (!locationAggMenuOpen) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setLocationAggMenuOpen(false);
-    };
-    const onPointerDown = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (locationAggMenuRef.current?.contains(target)) return;
-      if (locationAggButtonRef.current?.contains(target)) return;
-      setLocationAggMenuOpen(false);
-    };
-    document.addEventListener('keydown', onKeyDown);
-    document.addEventListener('mousedown', onPointerDown);
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      document.removeEventListener('mousedown', onPointerDown);
-    };
-  }, [locationAggMenuOpen]);
-
-  useEffect(() => {
-    if (!locationsToMenuOpen) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setLocationsToMenuOpen(false);
-    };
-    const onPointerDown = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (locationsToMenuRef.current?.contains(target)) return;
-      if (locationsToButtonRef.current?.contains(target)) return;
-      setLocationsToMenuOpen(false);
-    };
-    document.addEventListener('keydown', onKeyDown);
-    document.addEventListener('mousedown', onPointerDown);
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      document.removeEventListener('mousedown', onPointerDown);
-    };
-  }, [locationsToMenuOpen]);
 
   const filteredMenuItems = useMemo(() => {
     const q = filtersSearchQuery.trim().toLowerCase();
@@ -639,14 +512,14 @@ export function RebalancingPrototypeV1({
       )}
 
       <div
-        className="flex min-h-0 min-w-0 w-full flex-1 flex-col gap-3 overflow-y-auto bg-white px-6 pt-4 pb-12"
+        className="flex min-h-0 min-w-0 w-full flex-1 flex-col gap-4 overflow-y-auto bg-white px-6 pt-4 pb-12"
         data-walkthrough-root
       >
         <KpisPanel open={kpisPanelOpen} onClose={() => setKpisPanelOpen(false)} />
 
         {/* Top bar: tabs + trip controls; second row: search, sort, filter, settings */}
         <div
-          className="flex w-full min-w-0 flex-col gap-3"
+          className="flex w-full min-w-0 flex-col gap-3 pb-4"
           data-node-id="14764:268954"
         >
           <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-x-6 gap-y-3">
@@ -657,7 +530,6 @@ export function RebalancingPrototypeV1({
             >
               {(
                 [
-                  { id: 'all' as const, label: 'All' },
                   { id: 'products' as const, label: 'Products' },
                   { id: 'locations' as const, label: 'Locations' },
                   { id: 'trips' as const, label: 'Trips' },
@@ -928,260 +800,7 @@ export function RebalancingPrototypeV1({
 
         <div className="flex min-w-0 flex-col gap-0">
           <div className="min-w-0">
-            {focusView === 'all' ? (
-              productTransfersParentRow ? (
-                <ProductTransfersTable
-                  parentRow={productTransfersParentRow}
-                  onBack={() => setProductTransfersDrillRowId(null)}
-                  showBreadcrumb={false}
-                  showTotalsRow
-                />
-              ) : (
-              <>
-                <AssortmentTable
-                  rows={tableRows}
-                  columnVisibility={columnVisibility}
-                  hideKpiBadges
-                  showTotalsRow
-                  recTransfersButtonsLeft
-                  recTransferActionPopover
-                  recTransferActionPurple
-                  productDetailsAggregated
-                  productDetailsHeaderSlot={
-                    <div className="flex items-center gap-4">
-                      <div className="shrink-0" style={{ width: 200 }}>
-                        <button
-                          ref={productAggButtonRef}
-                          type="button"
-                          id={`${productAggMenuId}-trigger`}
-                          aria-expanded={productAggMenuOpen}
-                          aria-haspopup="listbox"
-                          aria-controls={productAggMenuId}
-                          onClick={() => {
-                            setProductAggMenuOpen((o) => !o);
-                            setLocationAggMenuOpen(false);
-                            setLocationsToMenuOpen(false);
-                          }}
-                          style={{ width: 155 }}
-                          className="flex h-8 min-h-8 shrink-0 items-center justify-between gap-2 rounded border border-[#e9eaeb] bg-white px-3 text-left font-['Inter',sans-serif] text-sm font-semibold text-[#101828] outline-none transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0"
-                        >
-                          <span className="min-w-0 truncate">Product group</span>
-                          <ChevronDown
-                            size={16}
-                            strokeWidth={2}
-                            className={`shrink-0 text-[#101828] transition-transform ${productAggMenuOpen ? 'rotate-180' : ''}`}
-                            aria-hidden
-                          />
-                        </button>
-                      </div>
-                      <button
-                        ref={locationAggButtonRef}
-                        type="button"
-                        id={`${locationAggMenuId}-trigger`}
-                        aria-expanded={locationAggMenuOpen}
-                        aria-haspopup="listbox"
-                        aria-controls={locationAggMenuId}
-                        onClick={() => {
-                          setLocationAggMenuOpen((o) => !o);
-                          setProductAggMenuOpen(false);
-                          setLocationsToMenuOpen(false);
-                        }}
-                        style={{ width: 155 }}
-                        className="flex h-8 min-h-8 shrink-0 items-center justify-between gap-2 rounded border border-[#e9eaeb] bg-white px-3 text-left font-['Inter',sans-serif] text-sm font-semibold text-[#101828] outline-none transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0"
-                      >
-                        <span className="min-w-0 truncate">From location</span>
-                        <ChevronDown
-                          size={16}
-                          strokeWidth={2}
-                          className={`shrink-0 text-[#101828] transition-transform ${locationAggMenuOpen ? 'rotate-180' : ''}`}
-                          aria-hidden
-                        />
-                      </button>
-                      <button
-                        ref={locationsToButtonRef}
-                        type="button"
-                        id={`${locationsToMenuId}-trigger`}
-                        aria-expanded={locationsToMenuOpen}
-                        aria-haspopup="listbox"
-                        aria-controls={locationsToMenuId}
-                        onClick={() => {
-                          setLocationsToMenuOpen((o) => !o);
-                          setProductAggMenuOpen(false);
-                          setLocationAggMenuOpen(false);
-                        }}
-                        style={{ width: 145 }}
-                        className="flex h-8 min-h-8 shrink-0 items-center justify-between gap-2 rounded border border-[#e9eaeb] bg-white px-3 text-left font-['Inter',sans-serif] text-sm font-semibold text-[#101828] outline-none transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0"
-                      >
-                        <span className="min-w-0 truncate">To location</span>
-                        <ChevronDown
-                          size={16}
-                          strokeWidth={2}
-                          className={`shrink-0 text-[#101828] transition-transform ${locationsToMenuOpen ? 'rotate-180' : ''}`}
-                          aria-hidden
-                        />
-                      </button>
-                    </div>
-                  }
-                  onSelectRow={onSelectRow}
-                  onSelectAll={onSelectAll}
-                  onAssort={onAssort}
-                  onUnassort={onUnassort}
-                  onSumIaChange={onSumIaChange}
-                  onAvgIaChange={onAvgIaChange}
-                  onCommit={onCommit}
-                  onRevert={onRevert}
-                  onRowClick={(row) => setProductTransfersDrillRowId(row.id)}
-                  onEditRow={(row, openFrom) => {
-                    const selected = rows.filter((r) => r.selected);
-                    const rowsToEdit =
-                      openFrom === 'initial-allocation' && selected.length >= 2
-                        ? selected
-                        : [row];
-                    setEditAllocation({ rows: rowsToEdit, openFrom });
-                  }}
-                  onRequestCommit={(row) => {
-                    const selected = rows.filter((r) => r.selected);
-                    const rowsToCommit = selected.length > 0 ? selected : [row];
-                    setConfirmCommitRevert({ action: 'commit', rows: rowsToCommit });
-                  }}
-                  onRequestRevert={(row) => {
-                    const selected = rows.filter((r) => r.selected && r.hasPendingChanges);
-                    const rowsToRevert =
-                      selected.some((r) => r.id === row.id) && selected.length > 0
-                        ? selected
-                        : [row];
-                    setConfirmCommitRevert({ action: 'revert', rows: rowsToRevert });
-                  }}
-                />
-                {productAggMenuOpen && productAggButtonRef.current
-                  ? createPortal(
-                      <div
-                        ref={productAggMenuRef}
-                        id={productAggMenuId}
-                        role="listbox"
-                        aria-labelledby={`${productAggMenuId}-trigger`}
-                        style={{
-                          position: 'fixed',
-                          top: productAggButtonRef.current.getBoundingClientRect().bottom + 4,
-                          left: productAggButtonRef.current.getBoundingClientRect().left,
-                          width: 200,
-                        }}
-                        className="z-50 flex flex-col gap-0.5 rounded-lg border border-[#e9eaeb] bg-white p-1.5 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.12),0_4px_8px_-4px_rgba(15,23,42,0.08)]"
-                      >
-                        {PRODUCT_AGGREGATION_OPTIONS.map((opt) => {
-                          const selected = productAggregation === opt.id;
-                          return (
-                            <button
-                              key={opt.id}
-                              type="button"
-                              role="option"
-                              aria-selected={selected}
-                              onClick={() => {
-                                setProductAggregation(opt.id);
-                                setProductAggMenuOpen(false);
-                              }}
-                              className={`flex h-8 w-full shrink-0 cursor-pointer items-center justify-between gap-2 rounded-md bg-white px-3 py-0 text-left font-['Inter',sans-serif] text-[12px] font-medium leading-normal text-[#00050a] transition-colors ${drillDropdownMenuItemHover}`}
-                            >
-                              <span className="min-w-0 truncate">{opt.label}</span>
-                              {selected ? (
-                                <Check size={14} strokeWidth={2} className="shrink-0 text-[#6B7280]" aria-hidden />
-                              ) : (
-                                <span className="inline-block h-3.5 w-3.5 shrink-0" aria-hidden />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>,
-                      document.body
-                    )
-                  : null}
-                {locationAggMenuOpen && locationAggButtonRef.current
-                  ? createPortal(
-                      <div
-                        ref={locationAggMenuRef}
-                        id={locationAggMenuId}
-                        role="listbox"
-                        aria-labelledby={`${locationAggMenuId}-trigger`}
-                        style={{
-                          position: 'fixed',
-                          top: locationAggButtonRef.current.getBoundingClientRect().bottom + 4,
-                          left: locationAggButtonRef.current.getBoundingClientRect().left,
-                          width: 200,
-                        }}
-                        className="z-50 flex flex-col gap-0.5 rounded-lg border border-[#e9eaeb] bg-white p-1.5 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.12),0_4px_8px_-4px_rgba(15,23,42,0.08)]"
-                      >
-                        {LOCATION_AGGREGATION_OPTIONS.map((opt) => {
-                          const selected = locationAggregation === opt.id;
-                          return (
-                            <button
-                              key={opt.id}
-                              type="button"
-                              role="option"
-                              aria-selected={selected}
-                              onClick={() => {
-                                setLocationAggregation(opt.id);
-                                setLocationAggMenuOpen(false);
-                              }}
-                              className={`flex h-8 w-full shrink-0 cursor-pointer items-center justify-between gap-2 rounded-md bg-white px-3 py-0 text-left font-['Inter',sans-serif] text-[12px] font-medium leading-normal text-[#00050a] transition-colors ${drillDropdownMenuItemHover}`}
-                            >
-                              <span className="min-w-0 truncate">{opt.label}</span>
-                              {selected ? (
-                                <Check size={14} strokeWidth={2} className="shrink-0 text-[#6B7280]" aria-hidden />
-                              ) : (
-                                <span className="inline-block h-3.5 w-3.5 shrink-0" aria-hidden />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>,
-                      document.body
-                    )
-                  : null}
-                {locationsToMenuOpen && locationsToButtonRef.current
-                  ? createPortal(
-                      <div
-                        ref={locationsToMenuRef}
-                        id={locationsToMenuId}
-                        role="listbox"
-                        aria-labelledby={`${locationsToMenuId}-trigger`}
-                        style={{
-                          position: 'fixed',
-                          top: locationsToButtonRef.current.getBoundingClientRect().bottom + 4,
-                          left: locationsToButtonRef.current.getBoundingClientRect().left,
-                          width: 200,
-                        }}
-                        className="z-50 flex flex-col gap-0.5 rounded-lg border border-[#e9eaeb] bg-white p-1.5 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.12),0_4px_8px_-4px_rgba(15,23,42,0.08)]"
-                      >
-                        {LOCATION_AGGREGATION_OPTIONS.map((opt) => {
-                          const selected = locationsToAggregation === opt.id;
-                          return (
-                            <button
-                              key={opt.id}
-                              type="button"
-                              role="option"
-                              aria-selected={selected}
-                              onClick={() => {
-                                setLocationsToAggregation(opt.id);
-                                setLocationsToMenuOpen(false);
-                              }}
-                              className={`flex h-8 w-full shrink-0 cursor-pointer items-center justify-between gap-2 rounded-md bg-white px-3 py-0 text-left font-['Inter',sans-serif] text-[12px] font-medium leading-normal text-[#00050a] transition-colors ${drillDropdownMenuItemHover}`}
-                            >
-                              <span className="min-w-0 truncate">{opt.label}</span>
-                              {selected ? (
-                                <Check size={14} strokeWidth={2} className="shrink-0 text-[#6B7280]" aria-hidden />
-                              ) : (
-                                <span className="inline-block h-3.5 w-3.5 shrink-0" aria-hidden />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>,
-                      document.body
-                    )
-                  : null}
-              </>
-              )
-            ) : focusView === 'locations' ? (
+            {focusView === 'locations' ? (
               locationProductsDrill ? (
                 <LocationProductsDrillView
                   location={locationProductsDrill}
@@ -1197,17 +816,11 @@ export function RebalancingPrototypeV1({
                 parentRow={productTransfersParentRow}
                 onBack={() => setProductTransfersDrillRowId(null)}
                 showBreadcrumb={false}
-                showTotalsRow
               />
             ) : (
               <AssortmentTable
                 rows={tableRows}
                 columnVisibility={columnVisibility}
-                hideKpiBadges
-                showTotalsRow
-                recTransfersButtonsLeft
-                recTransferActionPopover
-                recTransferActionPurple
                 onSelectRow={onSelectRow}
                 onSelectAll={onSelectAll}
                 onAssort={onAssort}

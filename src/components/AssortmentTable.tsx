@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, type DragEvent, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, useMemo, type DragEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import {
   ChevronDown,
   ChevronLeft,
@@ -13,6 +14,7 @@ import { HEADER_INFO_TOOLTIPS } from '../data/headerInfoTooltips';
 import { AutoneHeaderInfoTooltip } from './AutoneHeaderInfoTooltip';
 import { AssortmentCellKpiTrigger, type AssortmentCellKpiContent } from './AssortmentCellKpiTrigger';
 import { ProductDetailsPopover } from './ProductDetailsPopover';
+import { TransitionArrowSeparator } from './TransitionArrowSeparator';
 
 /** Body cell primary label (titles, names) — Inter 14px semibold #101828 */
 const tableCellPrimary =
@@ -26,12 +28,29 @@ const tableCellNumeric =
 const tableCellSecondary =
   "font-['Inter',sans-serif] text-[12px] font-normal leading-normal text-[#6A7282]";
 
-/** Grip in thead — same box height as header label (`text-[14px]` + `leading-normal`). */
+/** Grip in thead — compact handle (~12px), matches header row density. */
 const tableHeaderGripIcon =
-  "h-[1lh] w-[1lh] shrink-0 text-[#6A7282]";
+  'h-3 w-3 shrink-0 text-[#6A7282]';
 
 /** Row cells stay white (no hover fill). */
 const tableRowHoverTd = '';
+
+/**
+ * V1-only ("All" tab) dummy "to location" data used for the third sticky sub-column
+ * when `productDetailsAggregated` is true. Picked deterministically by row index so
+ * the same row always shows the same destination during demos. Mix of cities and
+ * cluster categories to mirror the variety of values in `row.locationCluster.name`.
+ */
+const DUMMY_TO_LOCATIONS: { name: string; count: number }[] = [
+  { name: 'Paris', count: 5 },
+  { name: 'Toulouse', count: 3 },
+  { name: 'Strasbourg', count: 4 },
+  { name: 'Lille', count: 2 },
+  { name: 'Nantes', count: 4 },
+  { name: 'Rennes', count: 3 },
+  { name: 'Outlet', count: 3 },
+  { name: 'Pop-up', count: 2 },
+];
 
 function formatCoverageWeeks(n: number): string {
   return `${n} ${n === 1 ? 'week' : 'weeks'}`;
@@ -218,6 +237,35 @@ interface AssortmentTableProps {
   columnVisibility?: Partial<Record<TableColumnVisibilityKey, boolean>>;
   /** Opens product-level drill-down (e.g. location transfers). Clicks on inputs/buttons do not fire. */
   onRowClick?: (row: AssortmentRow) => void;
+  /** When true, suppress every in-cell `KPI` chip + popover (used by V1; other prototypes leave this off). */
+  hideKpiBadges?: boolean;
+  /** When true, render a second header row containing column totals styled like a compact data row (used by V1). */
+  showTotalsRow?: boolean;
+  /** When true, the Recommended transfers cell stacks `VIS` / `REV` to the LEFT of the numbers (used by V1). */
+  recTransfersButtonsLeft?: boolean;
+  /**
+   * When provided, replaces the "Product details" sticky column header text with
+   * arbitrary content (e.g. aggregation dropdowns) and widens the sticky column to
+   * accommodate the slot. Used by the V1 "All" aggregate-review tab.
+   */
+  productDetailsHeaderSlot?: ReactNode;
+  /**
+   * When true, hovering the VIS / REV buttons in the Recommended transfers cell
+   * reveals a "Recommendation reasons" popover explaining each tag (V1 only).
+   */
+  recTransferActionPopover?: boolean;
+  /**
+   * When true, the VIS / REV chips use a purple (#6864E6) border + text on a
+   * white background (V1 only).
+   */
+  recTransferActionPurple?: boolean;
+  /**
+   * When true, the "Product details" sticky column body splits into three
+   * sub-columns aligned with the V1 All-view aggregation dropdowns
+   * (Product group / Location group / Locations to). Also hides the
+   * standalone gripLocations column since locations now live in sub-col 2.
+   */
+  productDetailsAggregated?: boolean;
 }
 
 export function AssortmentTable({
@@ -238,6 +286,13 @@ export function AssortmentTable({
   productDrillDownActive = false,
   columnVisibility: columnVisibilityProp,
   onRowClick,
+  hideKpiBadges = false,
+  showTotalsRow = false,
+  recTransfersButtonsLeft = false,
+  productDetailsHeaderSlot,
+  recTransferActionPopover = false,
+  recTransferActionPurple = false,
+  productDetailsAggregated = false,
 }: AssortmentTableProps) {
   const mergedColumnVisibility = {
     ...defaultTableColumnVisibility(),
@@ -255,6 +310,16 @@ export function AssortmentTable({
   const [gripColumnOrder, setGripColumnOrder] = useState<GripColumnId[]>(() => [
     ...BASE_GRIP_COLUMN_IDS,
   ]);
+
+  /** V1-only: anchor element for the "Recommendation reasons" popover. */
+  const [recReasonsAnchor, setRecReasonsAnchor] = useState<HTMLElement | null>(null);
+
+  /**
+   * V1-only ("All" tab) sub-column widths (px) used for both header dropdowns
+   * and body cell sub-divs. They sum to 430px + 32px gap-4 + 32px cell px-4 = 494px,
+   * fitting comfortably in the 540px sticky-col width.
+   */
+  const aggSubColWidths = { product: 200, locationGroup: 155, locationsTo: 145 } as const;
 
   useEffect(() => {
     if (productDrillDownActive) {
@@ -315,6 +380,7 @@ export function AssortmentTable({
   );
 
   const filteredGripColumnOrder = visibleGripColumnOrder.filter((id) => {
+    if (productDetailsAggregated && id === 'gripLocations') return false;
     if (DRILL_GRIP_ID_SET.has(id)) return true;
     const key = GRIP_VISIBILITY_KEY[id];
     if (!key) return true;
@@ -551,8 +617,155 @@ export function AssortmentTable({
     }
   };
 
-  const recommendedTransferActionBtn =
-    'rounded border border-[#E3E8F0] bg-white px-2 py-1 font-[\'Inter\',sans-serif] text-[11px] font-semibold leading-none text-[#0267FF] transition-colors hover:bg-slate-50';
+  const recommendedTransferActionBtn = recTransferActionPurple
+    ? 'rounded border border-[#6864E6] bg-white px-2 py-1 font-[\'Inter\',sans-serif] text-[11px] font-semibold leading-none text-[#6864E6] transition-colors hover:bg-slate-50'
+    : 'rounded border border-[#E3E8F0] bg-white px-2 py-1 font-[\'Inter\',sans-serif] text-[11px] font-semibold leading-none text-[#0267FF] transition-colors hover:bg-slate-50';
+
+  /** Per-column aggregates for the totals row. From/to columns sum endpoints; depth uses average. */
+  const columnTotals = useMemo(() => {
+    const sum = (sel: (r: AssortmentRow) => number) => rows.reduce((s, r) => s + sel(r), 0);
+    const avg = (sel: (r: AssortmentRow) => number) =>
+      rows.length === 0 ? 0 : sum(sel) / rows.length;
+    return {
+      transfersL7d: sum((r) => r.transfers.l7d),
+      transfersL30d: sum((r) => r.transfers.l30d),
+      revenueIncreaseEur: sum((r) => r.revenueIncreaseEur),
+      recommendedTransfersPrimary: sum((r) => r.recommendedTransfers.primary),
+      recommendedTransfersSecondary: sum((r) => r.recommendedTransfers.secondary),
+      salesL7d: sum((r) => r.sales.l7d),
+      salesL30d: sum((r) => r.sales.l30d),
+      forecastPerWeek: sum((r) => r.forecastPerWeek),
+      stockoutsFrom: sum((r) => r.stockouts.from),
+      stockoutsTo: sum((r) => r.stockouts.to),
+      locationsFrom: sum((r) => r.locationsTransition.from),
+      locationsTo: sum((r) => r.locationsTransition.to),
+      overstocksFrom: sum((r) => r.overstocksTransition.from),
+      overstocksTo: sum((r) => r.overstocksTransition.to),
+      understocksFrom: sum((r) => r.understocksTransition.from),
+      understocksTo: sum((r) => r.understocksTransition.to),
+      depthFrom: avg((r) => r.depthTransition.from),
+      depthTo: avg((r) => r.depthTransition.to),
+    };
+  }, [rows]);
+
+  /** Totals-cell typography — mirrors data-row `tableCellNumeric` / `tableCellSecondary` exactly so the row reads as a continuation. */
+  const totalsCellPrimary = `${tableCellNumeric} tabular-nums`;
+  const totalsCellSecondary = `${tableCellSecondary} tabular-nums`;
+  const totalsThClassRight = `h-[40px] min-h-[40px] max-h-[40px] box-border px-4 pt-0 pb-2 text-right align-top ${theadCellBg}`;
+  const totalsThClassLeft = `h-[40px] min-h-[40px] max-h-[40px] box-border px-3 pt-0 pb-2 text-left align-top ${theadCellBg}`;
+
+  /** Renders one `<th>` of the totals row for a given grip column. Mirrors body cell layout/alignment. */
+  const renderGripColumnTotalsCell = (columnId: GripColumnId): ReactNode => {
+    switch (columnId) {
+      case 'transfers':
+        return (
+          <th key={columnId} className={totalsThClassRight} aria-label="Transfers totals">
+            <div className="flex min-w-0 flex-col items-end gap-1">
+              <div className={totalsCellPrimary}>{columnTotals.transfersL7d.toLocaleString()} L7D</div>
+              <div className={totalsCellSecondary}>{columnTotals.transfersL30d.toLocaleString()} L30D</div>
+            </div>
+          </th>
+        );
+      case 'sales':
+        return (
+          <th key={columnId} className={totalsThClassRight} aria-label="Revenue increase total">
+            <div className={totalsCellPrimary}>{formatRevenueIncreaseEurK(columnTotals.revenueIncreaseEur)}</div>
+          </th>
+        );
+      case 'scheduleStart':
+        return (
+          <th key={columnId} className={totalsThClassRight} aria-label="Recommended transfers totals">
+            <div className="flex min-w-0 flex-col items-end gap-1">
+              <div className={totalsCellPrimary}>{columnTotals.recommendedTransfersPrimary.toLocaleString()}</div>
+              <div className={totalsCellSecondary}>{columnTotals.recommendedTransfersSecondary.toLocaleString()}</div>
+            </div>
+          </th>
+        );
+      case 'scheduleEnd':
+        return (
+          <th key={columnId} className={totalsThClassRight} aria-label="Sales totals">
+            <div className="flex min-w-0 flex-col items-end gap-1">
+              <div className={totalsCellPrimary}>{columnTotals.salesL7d.toLocaleString()} L7D</div>
+              <div className={totalsCellSecondary}>{columnTotals.salesL30d.toLocaleString()} L30D</div>
+            </div>
+          </th>
+        );
+      case 'forecastPerWeek':
+        return (
+          <th key={columnId} className={totalsThClassRight} aria-label="Forecast per week total">
+            <div className={totalsCellPrimary}>
+              {columnTotals.forecastPerWeek.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </div>
+          </th>
+        );
+      case 'targetCoverage':
+        return (
+          <th key={columnId} className={totalsThClassRight} aria-label="Stockouts total">
+            <div className={totalsCellPrimary}>
+              {columnTotals.stockoutsFrom.toLocaleString()}
+              <TransitionArrowSeparator />
+              {columnTotals.stockoutsTo.toLocaleString()}
+            </div>
+          </th>
+        );
+      case 'gripLocations':
+        return (
+          <th key={columnId} className={totalsThClassRight} aria-label="Locations total">
+            <div className={totalsCellPrimary}>
+              {columnTotals.locationsFrom.toLocaleString()}
+              <TransitionArrowSeparator />
+              {columnTotals.locationsTo.toLocaleString()}
+            </div>
+          </th>
+        );
+      case 'gripOverstocks':
+        return (
+          <th key={columnId} className={totalsThClassRight} aria-label="Overstocks total">
+            <div className={totalsCellPrimary}>
+              {columnTotals.overstocksFrom.toLocaleString()}
+              <TransitionArrowSeparator />
+              {columnTotals.overstocksTo.toLocaleString()}
+            </div>
+          </th>
+        );
+      case 'gripUnderstocks':
+        return (
+          <th key={columnId} className={totalsThClassRight} aria-label="Understocks total">
+            <div className={totalsCellPrimary}>
+              {columnTotals.understocksFrom.toLocaleString()}
+              <TransitionArrowSeparator />
+              {columnTotals.understocksTo.toLocaleString()}
+            </div>
+          </th>
+        );
+      case 'gripDepth':
+        return (
+          <th key={columnId} className={totalsThClassRight} aria-label="Depth total">
+            <div className={totalsCellPrimary}>
+              {columnTotals.depthFrom.toFixed(1)}
+              <TransitionArrowSeparator />
+              {columnTotals.depthTo.toFixed(1)}
+            </div>
+          </th>
+        );
+      case 'gripWarehouseUnits':
+        // Per design: warehouse units totals deliberately blank in the totals row.
+        return <th key={columnId} className={totalsThClassRight} aria-hidden />;
+      case 'drillMinQty':
+      case 'drillInventory':
+      case 'drillTarget':
+      case 'drillForecast':
+      case 'drillSkuLocs':
+        return (
+          <th key={columnId} className={totalsThClassLeft} aria-hidden />
+        );
+      default:
+        return null;
+    }
+  };
 
   const renderGripColumnBodyCell = (
     columnId: GripColumnId,
@@ -586,40 +799,63 @@ export function AssortmentTable({
             </div>
           </td>
         );
-      case 'scheduleStart':
+      case 'scheduleStart': {
+        const recTransferHoverProps = recTransferActionPopover
+          ? {
+              onMouseEnter: (e: ReactMouseEvent<HTMLDivElement>) =>
+                setRecReasonsAnchor(e.currentTarget),
+              onMouseLeave: () => setRecReasonsAnchor(null),
+            }
+          : {};
+        const recTransferActions = (
+          <div className="flex shrink-0 items-center gap-1" {...recTransferHoverProps}>
+            <button
+              type="button"
+              className={recommendedTransferActionBtn}
+              aria-label="Visible"
+              onClick={(e) => e.stopPropagation()}
+            >
+              VIS
+            </button>
+            <button
+              type="button"
+              className={recommendedTransferActionBtn}
+              aria-label="Review"
+              onClick={(e) => e.stopPropagation()}
+            >
+              REV
+            </button>
+          </div>
+        );
+        const recTransferNumbers = (
+          <div className="flex min-w-0 flex-col items-end text-right">
+            <div className={`${tableCellNumeric} tabular-nums`}>
+              {row.recommendedTransfers.primary.toLocaleString()}
+            </div>
+            <div className={`${tableCellSecondary} tabular-nums`}>
+              {row.recommendedTransfers.secondary.toLocaleString()}
+            </div>
+          </div>
+        );
         return (
           <td
             key={columnId}
             className={`min-h-[86px] min-w-[240px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
           >
-            <div className="flex min-w-0 flex-col items-end gap-2 text-right">
-              <div className={`${tableCellNumeric} tabular-nums`}>
-                {row.recommendedTransfers.primary.toLocaleString()}
+            {recTransfersButtonsLeft ? (
+              <div className="flex min-w-0 items-center justify-end gap-3">
+                {recTransferActions}
+                {recTransferNumbers}
               </div>
-              <div className={`${tableCellSecondary} tabular-nums`}>
-                {row.recommendedTransfers.secondary.toLocaleString()}
+            ) : (
+              <div className="flex min-w-0 flex-col items-end gap-2 text-right">
+                {recTransferNumbers}
+                {recTransferActions}
               </div>
-              <div className="flex shrink-0 items-center justify-end gap-1">
-                <button
-                  type="button"
-                  className={recommendedTransferActionBtn}
-                  aria-label="Visible"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  VIS
-                </button>
-                <button
-                  type="button"
-                  className={recommendedTransferActionBtn}
-                  aria-label="Review"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  REV
-                </button>
-              </div>
-            </div>
+            )}
           </td>
         );
+      }
       case 'scheduleEnd': {
         const { l7d, l30d, showPeriodLabels } = row.sales;
         return (
@@ -636,7 +872,7 @@ export function AssortmentTable({
                 {l30d.toLocaleString()}
                 {showPeriodLabels ? ' L30D' : ''}
               </div>
-              {row.showKpiBadge ? (
+              {row.showKpiBadge && !hideKpiBadges ? (
                 <div className="pointer-events-auto mt-1">
                   <AssortmentCellKpiTrigger align="end" {...kpiPopoverSales(row)} />
                 </div>
@@ -658,7 +894,7 @@ export function AssortmentTable({
                   maximumFractionDigits: 2,
                 })}
               </span>
-              {row.showKpiBadge ? (
+              {row.showKpiBadge && !hideKpiBadges ? (
                 <div className="pointer-events-auto mt-1">
                   <AssortmentCellKpiTrigger align="end" {...kpiPopoverForecast(row)} />
                 </div>
@@ -672,7 +908,9 @@ export function AssortmentTable({
             key={columnId}
             className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
           >
-            {row.stockouts.from.toLocaleString()} → {row.stockouts.to.toLocaleString()}
+            {row.stockouts.from.toLocaleString()}
+            <TransitionArrowSeparator />
+            {row.stockouts.to.toLocaleString()}
           </td>
         );
       case 'gripLocations':
@@ -681,7 +919,9 @@ export function AssortmentTable({
             key={columnId}
             className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
           >
-            {row.locationsTransition.from.toLocaleString()} → {row.locationsTransition.to.toLocaleString()}
+            {row.locationsTransition.from.toLocaleString()}
+            <TransitionArrowSeparator />
+            {row.locationsTransition.to.toLocaleString()}
           </td>
         );
       case 'gripOverstocks':
@@ -690,7 +930,9 @@ export function AssortmentTable({
             key={columnId}
             className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
           >
-            {row.overstocksTransition.from.toLocaleString()} → {row.overstocksTransition.to.toLocaleString()}
+            {row.overstocksTransition.from.toLocaleString()}
+            <TransitionArrowSeparator />
+            {row.overstocksTransition.to.toLocaleString()}
           </td>
         );
       case 'gripUnderstocks':
@@ -699,7 +941,9 @@ export function AssortmentTable({
             key={columnId}
             className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
           >
-            {row.understocksTransition.from.toLocaleString()} → {row.understocksTransition.to.toLocaleString()}
+            {row.understocksTransition.from.toLocaleString()}
+            <TransitionArrowSeparator />
+            {row.understocksTransition.to.toLocaleString()}
           </td>
         );
       case 'gripDepth':
@@ -708,7 +952,9 @@ export function AssortmentTable({
             key={columnId}
             className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
           >
-            {row.depthTransition.from.toFixed(1)} → {row.depthTransition.to.toFixed(1)}
+            {row.depthTransition.from.toFixed(1)}
+            <TransitionArrowSeparator />
+            {row.depthTransition.to.toFixed(1)}
           </td>
         );
       case 'gripWarehouseUnits':
@@ -717,7 +963,8 @@ export function AssortmentTable({
             key={columnId}
             className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
           >
-            {row.warehouseUnitsTransition.from.toLocaleString()} →{' '}
+            {row.warehouseUnitsTransition.from.toLocaleString()}
+            <TransitionArrowSeparator />
             {row.warehouseUnitsTransition.to.toLocaleString()}
           </td>
         );
@@ -786,25 +1033,88 @@ export function AssortmentTable({
           <thead
             className="[&_th]:border-t-0 [&_th]:border-b-[0.5px] [&_th]:border-solid [&_th]:border-[#E3E8F0] [&_th]:font-['Inter',sans-serif]"
           >
-            <tr className="h-[62px] font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828] [&_th]:whitespace-nowrap">
+            <tr
+              className={`font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828] [&_th]:whitespace-nowrap${
+                productDetailsHeaderSlot && showTotalsRow
+                  ? ' h-[60px] [&_th]:!pb-0 [&>th:not([rowspan="2"])]:!border-b-0'
+                  : showTotalsRow
+                    ? ' h-[40px] [&_th]:!h-[40px] [&_th]:!min-h-[40px] [&_th]:!max-h-[40px] [&_th]:!pb-0 [&_th]:!border-b-0'
+                    : ' h-[62px]'
+              }`}
+            >
               <th
-                className={`sticky left-0 z-30 h-[62px] min-h-[62px] max-h-[62px] w-14 min-w-14 max-w-14 box-border ${theadCellBg} px-4 py-0 text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
+                rowSpan={productDetailsHeaderSlot && showTotalsRow ? 2 : 1}
+                className={`sticky left-0 z-30 ${
+                  productDetailsHeaderSlot && showTotalsRow
+                    ? 'h-[100px] min-h-[100px] max-h-[100px]'
+                    : productDetailsHeaderSlot
+                      ? 'h-[60px] min-h-[60px] max-h-[60px]'
+                      : 'h-[62px] min-h-[62px] max-h-[62px]'
+                } w-14 min-w-14 max-w-14 box-border ${theadCellBg} px-4 py-0 text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
                 scope="col"
                 aria-label="Selection"
-              />
+              >
+                {productDetailsHeaderSlot ? (
+                  <div className="flex h-full items-center">
+                    <input
+                      type="checkbox"
+                      checked={rows.length > 0 && rows.every((r) => r.selected)}
+                      onChange={(e) => _onSelectAll(e.target.checked)}
+                      className="w-4 h-4 rounded border-2 border-[#e9eaeb] bg-white text-sky-600 focus:ring-sky-500"
+                      aria-label="Select all rows"
+                    />
+                  </div>
+                ) : null}
+              </th>
               {showProductDetails && (
                 <th
-                  className={`sticky left-14 z-20 h-[62px] min-h-[62px] max-h-[62px] w-[280px] min-w-[280px] max-w-[280px] box-border ${theadCellBg} px-4 py-0 text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
+                  rowSpan={productDetailsHeaderSlot && showTotalsRow ? 2 : 1}
+                  className={`sticky left-14 z-20 ${
+                    productDetailsHeaderSlot && showTotalsRow
+                      ? 'h-[100px] min-h-[100px] max-h-[100px] w-[560px] min-w-[560px] max-w-[560px]'
+                      : productDetailsHeaderSlot
+                        ? 'h-[60px] min-h-[60px] max-h-[60px] w-[560px] min-w-[560px] max-w-[560px]'
+                        : 'h-[62px] min-h-[62px] max-h-[62px] w-[280px] min-w-[280px] max-w-[280px]'
+                  } box-border ${theadCellBg} px-4 py-0 text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
                   scope="col"
                 >
-                  <div className="flex h-full min-h-0 flex-col justify-center gap-2">
-                    <span>Product details</span>
-                  </div>
+                  {productDetailsHeaderSlot ? (
+                    <div className="flex h-full min-h-0 items-center">
+                      {productDetailsHeaderSlot}
+                    </div>
+                  ) : (
+                    <div className="flex h-full min-h-0 flex-col justify-center gap-2">
+                      <span>Product details</span>
+                    </div>
+                  )}
                 </th>
               )}
               {!designOnly &&
                 filteredGripColumnOrder.map((columnId) => renderGripColumnHeader(columnId))}
               </tr>
+            {showTotalsRow && (
+              <tr
+                className="h-[40px] font-['Inter',sans-serif] [&_th]:whitespace-nowrap"
+                aria-label="Column totals"
+              >
+                {!productDetailsHeaderSlot && (
+                  <>
+                    <th
+                      className={`sticky left-0 z-30 h-[40px] min-h-[40px] max-h-[40px] w-14 min-w-14 max-w-14 box-border ${theadCellBg} px-4 py-0 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
+                      aria-hidden
+                    />
+                    {showProductDetails && (
+                      <th
+                        className={`sticky left-14 z-20 h-[40px] min-h-[40px] max-h-[40px] w-[280px] min-w-[280px] max-w-[280px] box-border ${theadCellBg} px-4 py-0 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
+                        aria-hidden
+                      />
+                    )}
+                  </>
+                )}
+                {!designOnly &&
+                  filteredGripColumnOrder.map((columnId) => renderGripColumnTotalsCell(columnId))}
+              </tr>
+            )}
           </thead>
           <tbody className="[&_td]:border-t-0 [&_td]:border-b-[0.5px] [&_td]:border-solid [&_td]:border-[#E3E8F0]">
             {rows.map((row, rowIndex) => {
@@ -846,45 +1156,118 @@ export function AssortmentTable({
                 </td>
                 {showProductDetails && (
                   <td
-                    className={`sticky left-14 z-20 min-h-[86px] w-[280px] min-w-[280px] max-w-[280px] box-border bg-white py-3 px-4 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
+                    className={`sticky left-14 z-20 min-h-[86px] ${
+                      productDetailsHeaderSlot
+                        ? 'w-[560px] min-w-[560px] max-w-[560px]'
+                        : 'w-[280px] min-w-[280px] max-w-[280px]'
+                    } box-border bg-white py-3 px-4 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
                   >
-                    <div className="flex min-w-0 gap-3">
-                      <div
-                        className="relative h-[48px] w-[48px] shrink-0 overflow-hidden rounded bg-[#f5f5f5]"
-                        data-name="Product image"
-                        data-node-id="12371:53131"
-                      >
-                        <img
-                          src={detail.imageSrc}
-                          alt={detail.title}
-                          className="pointer-events-none absolute inset-0 size-full max-w-none object-contain"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className={`min-w-0 ${tableCellPrimary}`}>{detail.title}</div>
-                        <div className="mt-0.5 flex min-w-0 items-center gap-1">
-                          <span className={`min-w-0 truncate ${tableCellSecondary}`}>{detail.sku}</span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              void navigator.clipboard?.writeText(detail.sku);
-                            }}
-                            className="inline-flex shrink-0 rounded p-0.5 text-[#6A7282] transition-colors hover:bg-slate-100 hover:text-sky-600"
-                            aria-label="Copy SKU"
+                    {productDetailsAggregated ? (
+                      <div className="flex min-w-0 items-start gap-4">
+                        <div
+                          className="flex min-w-0 shrink-0 gap-2"
+                          style={{ width: aggSubColWidths.product }}
+                        >
+                          <div
+                            className="relative h-[48px] w-[48px] shrink-0 overflow-hidden rounded bg-[#f5f5f5]"
+                            data-name="Product image"
                           >
-                            <Copy size={14} strokeWidth={2} aria-hidden />
-                          </button>
-                          <ProductDetailsPopover detail={detail} />
-                        </div>
-                        <div className={`mt-0.5 ${tableCellSecondary}`}>{detail.colorLabel}</div>
-                        {row.showKpiBadge ? (
-                          <div className="pointer-events-auto mt-1">
-                            <AssortmentCellKpiTrigger align="start" {...kpiPopoverProduct(row)} />
+                            <img
+                              src={detail.imageSrc}
+                              alt={detail.title}
+                              className="pointer-events-none absolute inset-0 size-full max-w-none object-contain"
+                            />
                           </div>
-                        ) : null}
+                          <div className="min-w-0 flex-1">
+                            <div className={`min-w-0 truncate ${tableCellPrimary}`}>{detail.title}</div>
+                            <div className="mt-0.5 flex min-w-0 items-center gap-1">
+                              <span className={`min-w-0 truncate ${tableCellSecondary}`}>{detail.sku}</span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  void navigator.clipboard?.writeText(detail.sku);
+                                }}
+                                className="inline-flex shrink-0 rounded p-0.5 text-[#6A7282] transition-colors hover:bg-slate-100 hover:text-sky-600"
+                                aria-label="Copy SKU"
+                              >
+                                <Copy size={14} strokeWidth={2} aria-hidden />
+                              </button>
+                              <ProductDetailsPopover detail={detail} />
+                            </div>
+                            <div className={`mt-0.5 truncate ${tableCellSecondary}`}>{detail.colorLabel}</div>
+                          </div>
+                        </div>
+                        <div
+                          className="flex min-w-0 shrink-0 flex-col"
+                          style={{ width: aggSubColWidths.locationGroup }}
+                        >
+                          <div className={`min-w-0 truncate ${tableCellPrimary}`}>
+                            {row.locationCluster.name}
+                          </div>
+                          <div className={`mt-0.5 truncate ${tableCellSecondary}`}>
+                            {row.locationCluster.locationCount.toLocaleString()}{' '}
+                            {row.locationCluster.locationCount === 1 ? 'location' : 'locations'}
+                          </div>
+                        </div>
+                        {(() => {
+                          const toLoc =
+                            DUMMY_TO_LOCATIONS[rowIndex % DUMMY_TO_LOCATIONS.length];
+                          return (
+                            <div
+                              className="flex min-w-0 shrink-0 flex-col"
+                              style={{ width: aggSubColWidths.locationsTo }}
+                            >
+                              <div className={`min-w-0 truncate ${tableCellPrimary}`}>
+                                {toLoc.name}
+                              </div>
+                              <div className={`mt-0.5 truncate ${tableCellSecondary}`}>
+                                {toLoc.count.toLocaleString()}{' '}
+                                {toLoc.count === 1 ? 'location' : 'locations'}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
-                    </div>
+                    ) : (
+                      <div className="flex min-w-0 gap-3">
+                        <div
+                          className="relative h-[48px] w-[48px] shrink-0 overflow-hidden rounded bg-[#f5f5f5]"
+                          data-name="Product image"
+                          data-node-id="12371:53131"
+                        >
+                          <img
+                            src={detail.imageSrc}
+                            alt={detail.title}
+                            className="pointer-events-none absolute inset-0 size-full max-w-none object-contain"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className={`min-w-0 ${tableCellPrimary}`}>{detail.title}</div>
+                          <div className="mt-0.5 flex min-w-0 items-center gap-1">
+                            <span className={`min-w-0 truncate ${tableCellSecondary}`}>{detail.sku}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                void navigator.clipboard?.writeText(detail.sku);
+                              }}
+                              className="inline-flex shrink-0 rounded p-0.5 text-[#6A7282] transition-colors hover:bg-slate-100 hover:text-sky-600"
+                              aria-label="Copy SKU"
+                            >
+                              <Copy size={14} strokeWidth={2} aria-hidden />
+                            </button>
+                            <ProductDetailsPopover detail={detail} />
+                          </div>
+                          <div className={`mt-0.5 ${tableCellSecondary}`}>{detail.colorLabel}</div>
+                          {row.showKpiBadge && !hideKpiBadges ? (
+                            <div className="pointer-events-auto mt-1">
+                              <AssortmentCellKpiTrigger align="start" {...kpiPopoverProduct(row)} />
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    )}
                   </td>
                 )}
                 {!designOnly &&
@@ -909,6 +1292,39 @@ export function AssortmentTable({
           </button>
         </div>
       </div>
+      {recTransferActionPopover && recReasonsAnchor
+        ? createPortal(
+            <div
+              role="tooltip"
+              style={{
+                position: 'fixed',
+                top: recReasonsAnchor.getBoundingClientRect().top - 8,
+                left: recReasonsAnchor.getBoundingClientRect().right + 8,
+              }}
+              className="pointer-events-none z-[60] w-[360px] max-w-[calc(100vw-32px)] rounded-lg border border-[#E3E8F0] bg-white p-3 shadow-[0_12px_32px_-4px_rgba(15,23,42,0.16),0_4px_12px_-4px_rgba(15,23,42,0.08)]"
+            >
+              <h3 className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                Recommendation reasons
+              </h3>
+              <div className="my-2 h-px w-full bg-[#E3E8F0]" aria-hidden />
+              <ul className="flex flex-col gap-2">
+                <li className="flex items-center gap-2">
+                  <span className={`${recommendedTransferActionBtn} shrink-0`}>VIS</span>
+                  <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#101828]">
+                    Original recommendation will increase visibility at destination
+                  </span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className={`${recommendedTransferActionBtn} shrink-0`}>REV</span>
+                  <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#101828]">
+                    Original recommendation will lead to increasing revenue
+                  </span>
+                </li>
+              </ul>
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import type { PrototypeVersionId } from '../lib/prototypeVersion';
 import { MAIN_NAV_ASSORTMENT_BODY_IDS } from '../mainNavModuleIds';
 import { RebalancingTaskListScreen } from './rebalancing/RebalancingTaskListScreen';
 import { RebalancingPrototypeV1 } from './rebalancing/prototypes/RebalancingPrototypeV1';
+import { RebalancingPrototypeV1B } from './rebalancing/prototypes/RebalancingPrototypeV1B';
 import { RebalancingPrototypeV2 } from './rebalancing/prototypes/RebalancingPrototypeV2';
 import { RebalancingPrototypeV3 } from './rebalancing/prototypes/RebalancingPrototypeV3';
 import { RebalancingPrototypeV4 } from './rebalancing/prototypes/RebalancingPrototypeV4';
@@ -14,12 +15,27 @@ type MainContentProps = {
   /** After first task list visit, workspace is shown (persisted in localStorage). */
   rebalancingListIntroCompleted?: boolean;
   onEnterRebalancingWorkspace?: () => void;
+  /**
+   * Lets the active rebalancing prototype consume header Back once (e.g. close a drill-down)
+   * before Layout restores the previous sidebar/task-list snapshot.
+   */
+  registerWorkspaceBackHandler?: (handler: (() => boolean) | null) => void;
 };
 
-function rebalancingWorkspaceForVersion(prototypeVersion: PrototypeVersionId) {
+function rebalancingWorkspaceForVersion(
+  prototypeVersion: PrototypeVersionId,
+  registerWorkspaceBackHandler?: (handler: (() => boolean) | null) => void
+) {
   switch (prototypeVersion) {
     case 'v1':
-      return <RebalancingPrototypeV1 prototypeVersion={prototypeVersion} />;
+      return (
+        <RebalancingPrototypeV1
+          prototypeVersion={prototypeVersion}
+          registerWorkspaceBackHandler={registerWorkspaceBackHandler}
+        />
+      );
+    case 'v1b':
+      return <RebalancingPrototypeV1B prototypeVersion={prototypeVersion} />;
     case 'v2':
       return <RebalancingPrototypeV2 prototypeVersion={prototypeVersion} />;
     case 'v3':
@@ -36,6 +52,7 @@ export function MainContent({
   prototypeVersion = 'v1',
   rebalancingListIntroCompleted = true,
   onEnterRebalancingWorkspace,
+  registerWorkspaceBackHandler,
 }: MainContentProps) {
   if (!MAIN_NAV_ASSORTMENT_BODY_IDS.has(activeMainNavId)) {
     return (
@@ -68,5 +85,5 @@ export function MainContent({
     );
   }
 
-  return rebalancingWorkspaceForVersion(prototypeVersion);
+  return rebalancingWorkspaceForVersion(prototypeVersion, registerWorkspaceBackHandler);
 }

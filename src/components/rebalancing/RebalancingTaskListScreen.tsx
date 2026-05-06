@@ -233,11 +233,11 @@ export function RebalancingTaskListScreen({ onOpenTask, onRecreateTask }: Rebala
         />
       </div>
 
-      <div ref={searchWrapRef} className="flex w-full min-w-0 items-center justify-start">
+      <div ref={searchWrapRef} className="flex w-full min-w-0 items-center justify-end">
         {!searchOpen ? (
           <button
             type="button"
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[4px] border border-[#E3E8F0] bg-white text-[#101828] transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#0267FF]"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[4px] border border-[#E3E8F0] bg-white text-[#101828] transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#0267FF]"
             aria-label="Open search"
             aria-expanded={false}
             onClick={() => setSearchOpen(true)}
@@ -246,7 +246,7 @@ export function RebalancingTaskListScreen({ onOpenTask, onRecreateTask }: Rebala
           </button>
         ) : (
           <div
-            className="flex h-12 w-[150px] min-w-0 shrink-0 items-center gap-2.5 rounded-[4px] border border-[#E3E8F0] bg-white px-3 py-0"
+            className="flex h-10 w-[150px] min-w-0 shrink-0 items-center gap-2.5 rounded-[4px] border border-[#E3E8F0] bg-white px-3 py-0"
             role="search"
           >
             <span className="pointer-events-none flex shrink-0 text-[#101828]" aria-hidden>

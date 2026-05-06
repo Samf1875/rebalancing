@@ -19,10 +19,12 @@ import { AutoneReceivingLocationIcon } from './icons/AutoneReceivingLocationIcon
 import { HEADER_INFO_TOOLTIPS } from '../data/headerInfoTooltips';
 import {
   MOCK_PRODUCT_TRANSFER_LOCATIONS,
+  MOCK_PRODUCT_TRANSFER_SUMMARY,
   type ProductTransferLocationRow,
   type ProductTransferStorageCapacity,
   type TuBreakdownItem,
 } from '../data/mockProductTransferLocations';
+import { TransitionArrowSeparator } from './TransitionArrowSeparator';
 
 function storageCapacityPill(phase: ProductTransferStorageCapacity) {
   if (phase === 'saturated') {
@@ -50,12 +52,24 @@ const tableRowHoverTd = '';
 const headerTitleClass =
   "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
 
-function formatArrowPair(from: number, to: number): string {
-  return `${from.toLocaleString()} → ${to.toLocaleString()}`;
+function renderArrowPair(from: number, to: number): ReactNode {
+  return (
+    <>
+      {from.toLocaleString()}
+      <TransitionArrowSeparator />
+      {to.toLocaleString()}
+    </>
+  );
 }
 
-function formatCoveragePair(fromPct: number, toPct: number): string {
-  return `${fromPct}% → ${toPct}%`;
+function renderCoveragePair(fromPct: number, toPct: number): ReactNode {
+  return (
+    <>
+      {fromPct}%
+      <TransitionArrowSeparator />
+      {toPct}%
+    </>
+  );
 }
 
 function truncateSku(sku: string, max = 14): string {
@@ -246,7 +260,8 @@ function formatCurrencyEur(value: number): string {
 function formatStockArrow(from: number, to: number): ReactNode {
   return (
     <>
-      {from.toLocaleString()} <span className="mx-0.5 font-normal text-[#9CA3AF]">→</span>{' '}
+      {from.toLocaleString()}
+      <TransitionArrowSeparator />
       {to.toLocaleString()}
     </>
   );
@@ -265,8 +280,9 @@ function formatWeeksCoverageArrow(
   const fmt = (n: number) => (Number.isInteger(n) ? n.toString() : n.toFixed(1));
   return (
     <>
-      {fmt(fromWeeks)} <span className="mx-0.5 font-normal text-[#9CA3AF]">→</span> {fmt(toWeeks)}{' '}
-      ({targetWeeks} target)
+      {fmt(fromWeeks)}
+      <TransitionArrowSeparator />
+      {fmt(toWeeks)} ({targetWeeks} target)
     </>
   );
 }
@@ -289,7 +305,7 @@ function TransferBadgePopoverContent({
     <>
       <p className="flex items-center gap-1 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
         <span>{sourceName}</span>
-        <span className="mx-0.5 font-normal text-[#9CA3AF]">→</span>
+        <TransitionArrowSeparator className="mx-0 shrink-0" />
         <span>{popRow.name}</span>
       </p>
       <p className={`${transferPopSection} mt-1`}>Maximum units per trip: 100</p>
@@ -400,7 +416,7 @@ function TransferOutBadgePopoverContent({
     <>
       <p className="flex items-center gap-1 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
         <span>{popRow.name}</span>
-        <span className="mx-0.5 font-normal text-[#9CA3AF]">→</span>
+        <TransitionArrowSeparator className="mx-0 shrink-0" />
         <span>{destinationName}</span>
       </p>
       <div className="my-1.5 border-t border-[#E3E8F0]" />
@@ -543,15 +559,24 @@ type ProductTransfersTableProps = {
   onBack: () => void;
   /** When false, breadcrumb is rendered by the parent (e.g. aligned in the table-tools row). Default true. */
   showBreadcrumb?: boolean;
+  /** When true, render a second header row containing column totals (used by V1; other prototypes leave this off). */
+  showTotalsRow?: boolean;
 };
 
 export function ProductTransfersTable({
   parentRow,
   onBack,
   showBreadcrumb = true,
+  showTotalsRow = false,
 }: ProductTransfersTableProps) {
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [showTuBreakdown, setShowTuBreakdown] = useState(false);
+  /** Tracks pointer hover anywhere over the TU column (header, totals, or any body cell). */
+  const [tuColumnHover, setTuColumnHover] = useState(false);
+  const tuColumnHoverProps = {
+    onMouseEnter: () => setTuColumnHover(true),
+    onMouseLeave: () => setTuColumnHover(false),
+  };
   const [tuBadgePopover, setTuBadgePopover] = useState<{
     rowId: string;
     index: number;
@@ -743,11 +768,13 @@ export function ProductTransfersTable({
         />
       </td>
       <td
-        className={`sticky left-14 z-20 min-h-[86px] min-w-min max-w-max box-border ${rowBgClass} px-4 py-3 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
+        className={`sticky left-14 z-20 min-h-[86px] box-border ${rowBgClass} px-4 py-3 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd} ${
+          showTotalsRow ? 'w-[200px] min-w-[200px] max-w-[200px]' : 'min-w-min max-w-max'
+        }`}
       >
         <div className="min-w-0">
           <div className="flex w-full min-w-0 flex-nowrap items-center gap-1.5 leading-none">
-            <span className={`shrink-0 ${tableCellPrimary}`}>{row.name}</span>
+            <span className={`min-w-0 truncate ${tableCellPrimary}`}>{row.name}</span>
             <span className="ml-auto flex shrink-0 items-center gap-1.5 pl-3">
               <RowFilterButton rowName={row.name} />
               {row.transferHub ? (
@@ -764,14 +791,17 @@ export function ProductTransfersTable({
           <div className={`mt-0.5 ${tableCellSecondary}`}>{row.code}</div>
         </div>
       </td>
-      <td className={`min-h-[86px] min-w-[112px] px-4 py-3 text-right align-top ${tableRowHoverTd}`}>
-        <div className={`tabular-nums ${tableCellNumeric}`}>{formatArrowPair(row.stock.from, row.stock.to)}</div>
+      <td className={`min-h-[86px] ${showTotalsRow ? 'min-w-[96px]' : 'min-w-[112px]'} px-4 py-3 text-right align-top ${tableRowHoverTd}`}>
+        <div className={`tabular-nums ${tableCellNumeric}`}>{renderArrowPair(row.stock.from, row.stock.to)}</div>
       </td>
-      <td className={`min-h-[86px] min-w-[112px] px-4 py-3 text-right align-top ${tableRowHoverTd}`}>
+      <td
+        className={`min-h-[86px] min-w-[112px] px-4 py-3 text-right align-top ${tableRowHoverTd}`}
+        {...tuColumnHoverProps}
+      >
         <div className="flex min-w-0 flex-col items-end gap-0">
           <div className="tabular-nums text-[14px] font-medium leading-normal">
             <span className="text-[#101828]">{row.tu.from.toLocaleString()}</span>
-            <span className="mx-0.5 font-normal text-[#9CA3AF]">→</span>
+            <TransitionArrowSeparator />
             <span className="text-[#101828]">{row.tu.to.toLocaleString()}</span>
           </div>
           {showTuBreakdown && row.tuBreakdown != null && row.tuBreakdown.length > 0 ? (
@@ -803,12 +833,12 @@ export function ProductTransfersTable({
         <div className={`tabular-nums ${tableCellNumeric}`}>{row.forecastPerWeek.toFixed(2)}</div>
       </td>
       <td className={`min-h-[86px] min-w-[112px] px-4 py-3 text-right align-top ${tableRowHoverTd}`}>
-        <div className={`tabular-nums ${tableCellNumeric}`}>{formatArrowPair(row.stockouts.from, row.stockouts.to)}</div>
+        <div className={`tabular-nums ${tableCellNumeric}`}>{renderArrowPair(row.stockouts.from, row.stockouts.to)}</div>
       </td>
       <td className={`min-h-[86px] min-w-[140px] px-4 py-3 text-right align-top ${tableRowHoverTd}`}>
         <div className="flex min-w-0 flex-col items-end gap-1">
           <div className={`tabular-nums ${tableCellNumeric}`}>
-            {formatCoveragePair(row.coverage.fromPct, row.coverage.toPct)}
+            {renderCoveragePair(row.coverage.fromPct, row.coverage.toPct)}
           </div>
           <div className={`tabular-nums ${tableCellSecondary}`}>{row.coverage.targetWeeks}</div>
         </div>
@@ -836,14 +866,24 @@ export function ProductTransfersTable({
             <thead
               className="[&_th]:border-t-0 [&_th]:border-b-[0.5px] [&_th]:border-solid [&_th]:border-[#E3E8F0] [&_th]:bg-white [&_th]:font-['Inter',sans-serif]"
             >
-              <tr className="[&_th]:whitespace-nowrap [&_th]:align-top">
+              <tr
+                className={`[&_th]:whitespace-nowrap [&_th]:align-top${
+                  showTotalsRow
+                    ? ' [&_th]:!pb-0 [&_th]:!border-b-0 [&_th>div]:!min-h-[28px] [&_th>div>:last-child]:hidden'
+                    : ''
+                }`}
+              >
                 <th
                   className="sticky left-0 z-30 w-14 min-w-14 max-w-14 bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                   scope="col"
                   aria-label="Selection"
                 />
                 <th
-                  className="sticky left-14 z-20 min-w-min max-w-max bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                  className={`sticky left-14 z-20 bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${
+                    showTotalsRow
+                      ? 'w-[200px] min-w-[200px] max-w-[200px]'
+                      : 'min-w-min max-w-max'
+                  }`}
                   scope="col"
                 >
                   {headerStack(
@@ -857,7 +897,7 @@ export function ProductTransfersTable({
                     </span>
                   )}
                 </th>
-                <th className="min-w-[120px] px-4 py-[10px] text-right" scope="col">
+                <th className={`${showTotalsRow ? 'min-w-[96px]' : 'min-w-[120px]'} px-4 py-[10px] text-right`} scope="col">
                   {headerStackRight(
                     <AutoneHeaderInfoTooltip
                       label="Stock"
@@ -874,7 +914,11 @@ export function ProductTransfersTable({
                     </span>
                   )}
                 </th>
-                <th className="min-w-[120px] px-4 py-[10px] text-right" scope="col">
+                <th
+                  className="min-w-[120px] px-4 py-[10px] text-right"
+                  scope="col"
+                  {...tuColumnHoverProps}
+                >
                   {headerStackRight(
                     <span className="inline-flex items-center justify-end gap-1">
                       <AutoneHeaderInfoTooltip
@@ -885,7 +929,11 @@ export function ProductTransfersTable({
                       <button
                         type="button"
                         onClick={() => setShowTuBreakdown((v) => !v)}
-                        className={`rounded p-0.5 text-[#6A7282] outline-none transition-colors hover:bg-slate-100 hover:text-[#101828] focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0 ${showTuBreakdown ? 'bg-slate-100 text-[#101828]' : ''}`}
+                        className={`rounded p-0.5 text-[#6A7282] outline-none transition-[color,background-color,opacity] hover:bg-slate-100 hover:text-[#101828] focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0 ${showTuBreakdown ? 'bg-slate-100 text-[#101828]' : ''}${
+                          showTotalsRow && !showTuBreakdown && !tuColumnHover
+                            ? ' opacity-0 focus-visible:opacity-100'
+                            : ''
+                        }`}
                         aria-pressed={showTuBreakdown}
                         aria-label={
                           showTuBreakdown
@@ -950,22 +998,120 @@ export function ProductTransfersTable({
                     </span>
                   )}
                 </th>
-                <th className="min-w-[160px] bg-[#F9FAFB] px-4 py-[10px] text-left" scope="col">
-                  <div className="flex min-h-[52px] flex-col justify-center py-[2px]">
-                    <AutoneHeaderInfoTooltip
-                      label="Storage capacity"
-                      topAlign="start"
-                      content={HEADER_INFO_TOOLTIPS.storageCapacity}
-                      hoverWith={
-                        <span className={`text-left font-['Inter',sans-serif] text-[14px] font-semibold leading-tight text-[#101828]`}>
-                          <span className="block">Storage</span>
-                          <span className="block">capacity</span>
-                        </span>
-                      }
-                    />
-                  </div>
+                <th
+                  className={`${
+                    showTotalsRow ? 'min-w-[176px]' : 'min-w-[160px]'
+                  } bg-[#F9FAFB] px-4 py-[10px] text-left`}
+                  scope="col"
+                >
+                  {showTotalsRow ? (
+                    headerStack(
+                      <AutoneHeaderInfoTooltip
+                        label="Storage capacity"
+                        topAlign="start"
+                        content={HEADER_INFO_TOOLTIPS.storageCapacity}
+                        hoverWith={
+                          <span
+                            className={`whitespace-nowrap text-left font-['Inter',sans-serif] text-[14px] font-semibold leading-tight text-[#101828]`}
+                          >
+                            Storage capacity
+                          </span>
+                        }
+                      />,
+                      <span className="invisible text-[12px] leading-snug" aria-hidden>
+                        —
+                      </span>
+                    )
+                  ) : (
+                    <div className="flex min-h-[52px] flex-col justify-center py-[2px]">
+                      <AutoneHeaderInfoTooltip
+                        label="Storage capacity"
+                        topAlign="start"
+                        content={HEADER_INFO_TOOLTIPS.storageCapacity}
+                        hoverWith={
+                          <span
+                            className={`text-left font-['Inter',sans-serif] text-[14px] font-semibold leading-tight text-[#101828]`}
+                          >
+                            <span className="block">Storage</span>
+                            <span className="block">capacity</span>
+                          </span>
+                        }
+                      />
+                    </div>
+                  )}
                 </th>
               </tr>
+              {showTotalsRow && (
+                <tr
+                  className="font-['Inter',sans-serif] [&_th]:whitespace-nowrap"
+                  aria-label="Column totals"
+                >
+                  <th
+                    className="sticky left-0 z-30 h-[40px] min-h-[40px] max-h-[40px] w-14 min-w-14 max-w-14 bg-white px-4 py-0 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                    aria-hidden
+                  />
+                  <th
+                    className="sticky left-14 z-20 h-[40px] min-h-[40px] max-h-[40px] w-[200px] min-w-[200px] max-w-[200px] bg-white px-4 py-0 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                    aria-hidden
+                  />
+                  <th className="h-[40px] min-h-[40px] max-h-[40px] min-w-[96px] bg-white px-4 pt-0 pb-2 text-right align-top">
+                    <div className={`tabular-nums ${tableCellNumeric}`}>
+                      {renderArrowPair(
+                        MOCK_PRODUCT_TRANSFER_SUMMARY.stock.from,
+                        MOCK_PRODUCT_TRANSFER_SUMMARY.stock.to
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    className="h-[40px] min-h-[40px] max-h-[40px] bg-white px-4 pt-0 pb-2 text-right align-top"
+                    {...tuColumnHoverProps}
+                  >
+                    <div className={`tabular-nums ${tableCellNumeric}`}>
+                      {renderArrowPair(
+                        MOCK_PRODUCT_TRANSFER_SUMMARY.tu.from,
+                        MOCK_PRODUCT_TRANSFER_SUMMARY.tu.to
+                      )}
+                    </div>
+                  </th>
+                  <th className="h-[40px] min-h-[40px] max-h-[40px] bg-white px-4 pt-0 pb-2 text-right align-top">
+                    <div className="flex min-w-0 flex-col items-end gap-1">
+                      <div className={`tabular-nums ${tableCellNumeric}`}>
+                        {MOCK_PRODUCT_TRANSFER_SUMMARY.sales.l7d.toLocaleString()} L7D
+                      </div>
+                      <div className={`tabular-nums ${tableCellSecondary}`}>
+                        {MOCK_PRODUCT_TRANSFER_SUMMARY.sales.l30d.toLocaleString()} L30D
+                      </div>
+                    </div>
+                  </th>
+                  <th className="h-[40px] min-h-[40px] max-h-[40px] bg-white px-4 pt-0 pb-2 text-right align-top">
+                    <div className={`tabular-nums ${tableCellNumeric}`}>
+                      {MOCK_PRODUCT_TRANSFER_SUMMARY.forecastPerWeek.toFixed(2)}
+                    </div>
+                  </th>
+                  <th className="h-[40px] min-h-[40px] max-h-[40px] bg-white px-4 pt-0 pb-2 text-right align-top">
+                    <div className={`tabular-nums ${tableCellNumeric}`}>
+                      {renderArrowPair(
+                        MOCK_PRODUCT_TRANSFER_SUMMARY.stockouts.from,
+                        MOCK_PRODUCT_TRANSFER_SUMMARY.stockouts.to
+                      )}
+                    </div>
+                  </th>
+                  <th className="h-[40px] min-h-[40px] max-h-[40px] bg-white px-4 pt-0 pb-2 text-right align-top">
+                    <div className="flex min-w-0 flex-col items-end gap-1">
+                      <div className={`inline-flex items-center justify-end gap-0.5 ${tableCellNumeric}`}>
+                        <span>before</span>
+                        <TransitionArrowSeparator className="mx-0 shrink-0" />
+                        <span>after</span>
+                      </div>
+                      <div className={tableCellSecondary}>target weeks</div>
+                    </div>
+                  </th>
+                  <th
+                    className="h-[40px] min-h-[40px] max-h-[40px] min-w-[176px] bg-[#F9FAFB] px-4 py-0 align-top"
+                    aria-hidden
+                  />
+                </tr>
+              )}
             </thead>
             <tbody className="[&_td]:border-t-0 [&_td]:border-b-[0.5px] [&_td]:border-solid [&_td]:border-[#E3E8F0]">
               {rows.map((r) => renderDataRow(r))}
@@ -1140,9 +1286,7 @@ export function ProductTransfersTable({
                       className="flex flex-wrap items-center gap-1 font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
                     >
                       <span>PR AC Lille</span>
-                      <span aria-hidden className="font-normal text-[#9CA3AF]">
-                        →
-                      </span>
+                      <TransitionArrowSeparator className="mx-0 shrink-0" />
                       <span>Lulli Eshop</span>
                     </h2>
                     <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#6A7282]">
@@ -1268,8 +1412,10 @@ export function ProductTransfersTable({
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
                             Department storage capacity
                           </span>
-                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
-                            35 → 45 (max 50)
+                          <span className="inline-flex shrink-0 items-center gap-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            <span>35</span>
+                            <TransitionArrowSeparator className="mx-0 shrink-0" />
+                            <span>45 (max 50)</span>
                           </span>
                         </li>
                         <li className="flex items-center justify-between gap-2">
@@ -1318,16 +1464,20 @@ export function ProductTransfersTable({
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
                             Department storage capacity
                           </span>
-                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
-                            170 → 172 (max 190)
+                          <span className="inline-flex shrink-0 items-center gap-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            <span>170</span>
+                            <TransitionArrowSeparator className="mx-0 shrink-0" />
+                            <span>172 (max 190)</span>
                           </span>
                         </li>
                         <li className="flex items-center justify-between gap-2">
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
                             Total weeks coverage
                           </span>
-                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
-                            11.7 → 11.7 (1 target)
+                          <span className="inline-flex shrink-0 items-center gap-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                            <span>11.7</span>
+                            <TransitionArrowSeparator className="mx-0 shrink-0" />
+                            <span>11.7 (1 target)</span>
                           </span>
                         </li>
                         <li className="flex items-center justify-between gap-2">
@@ -1440,16 +1590,20 @@ export function ProductTransfersTable({
                             <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
                               Department storage capacity
                             </span>
-                            <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
-                              170 → 172 (max 190)
+                            <span className="inline-flex shrink-0 items-center gap-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                              <span>170</span>
+                              <TransitionArrowSeparator className="mx-0 shrink-0" />
+                              <span>172 (max 190)</span>
                             </span>
                           </li>
                           <li className="flex items-center justify-between gap-2">
                             <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
                               Total weeks coverage
                             </span>
-                            <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
-                              11.7 → 11.7 (1 target)
+                            <span className="inline-flex shrink-0 items-center gap-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                              <span>11.7</span>
+                              <TransitionArrowSeparator className="mx-0 shrink-0" />
+                              <span>11.7 (1 target)</span>
                             </span>
                           </li>
                           <li className="flex items-center justify-between gap-2">
@@ -1597,7 +1751,7 @@ export function ProductTransfersTable({
                       className="flex flex-wrap items-center gap-1 font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
                     >
                       <span>{transferDetail.sourceName}</span>
-                      <span aria-hidden className="font-normal text-[#9CA3AF]">→</span>
+                      <TransitionArrowSeparator className="mx-0 shrink-0" />
                       <span>{transferDetail.destinationName}</span>
                     </h2>
                     <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#6A7282]">
@@ -1711,8 +1865,10 @@ export function ProductTransfersTable({
                           </div>
                           <ul className="ml-5 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
                             <li className="flex items-center justify-between gap-2">
-                              <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                                Total stock before → after
+                              <span className="inline-flex flex-wrap items-center gap-x-0.5 font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                                <span>Total stock before</span>
+                                <TransitionArrowSeparator className="mx-0 shrink-0" />
+                                <span>after</span>
                               </span>
                               <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
                                 {formatStockArrow(
@@ -1761,8 +1917,10 @@ export function ProductTransfersTable({
                           </div>
                           <ul className="ml-5 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
                             <li className="flex items-center justify-between gap-2">
-                              <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                                Total stock before → after
+                              <span className="inline-flex flex-wrap items-center gap-x-0.5 font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                                <span>Total stock before</span>
+                                <TransitionArrowSeparator className="mx-0 shrink-0" />
+                                <span>after</span>
                               </span>
                               <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
                                 {formatStockArrow(
@@ -1792,8 +1950,10 @@ export function ProductTransfersTable({
                               </span>
                             </li>
                             <li className="flex items-center justify-between gap-2">
-                              <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                                Warehouse units before → after
+                              <span className="inline-flex flex-wrap items-center gap-x-0.5 font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                                <span>Warehouse units before</span>
+                                <TransitionArrowSeparator className="mx-0 shrink-0" />
+                                <span>after</span>
                               </span>
                               <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
                                 {transferDetail.destination.warehouseUnits != null

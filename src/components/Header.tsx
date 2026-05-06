@@ -15,6 +15,8 @@ type HeaderProps = {
   onShare?: () => void;
   onDownload?: () => void;
   onSubmitRebalancing?: () => void;
+  /** Step back one screen using the Layout-level navigation history. Shown to the left of the title. */
+  onBack?: () => void;
 };
 
 export function Header({
@@ -26,6 +28,7 @@ export function Header({
   onShare,
   onDownload,
   onSubmitRebalancing,
+  onBack,
 }: HeaderProps) {
   const isRebalancing = activeMainNavId === 'refresh';
   const prototypeSubtitle =
@@ -38,14 +41,26 @@ export function Header({
         className="flex w-full shrink-0 items-center justify-between bg-[#12171e] px-6 py-6"
         data-name="Top bar"
       >
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h1 className="text-2xl font-semibold leading-none tracking-normal text-white">
-            Rebalancing
-          </h1>
-          <p className="text-sm font-normal leading-snug text-[#a6aaaf]">
-            Optimize your inventory between points of sales
-            {prototypeSubtitle}
-          </p>
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          {!taskList && (
+            <button
+              type="button"
+              onClick={() => onBack?.()}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded text-white transition-colors hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0267FF]"
+              aria-label="Back"
+            >
+              <ArrowLeft size={20} strokeWidth={2} aria-hidden />
+            </button>
+          )}
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <h1 className="text-2xl font-semibold leading-none tracking-normal text-white">
+              Rebalancing
+            </h1>
+            <p className="text-sm font-normal leading-snug text-[#a6aaaf]">
+              Optimize your inventory between points of sales
+              {prototypeSubtitle}
+            </p>
+          </div>
         </div>
         <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
           {taskList ? (

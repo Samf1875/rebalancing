@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, GripVertical, Info } from 'lucide-react';
 import { HEADER_INFO_TOOLTIPS } from '../data/headerInfoTooltips';
 import { MOCK_LOCATION_ROWS, type LocationTableRow } from '../data/mockLocations';
 import { AutoneHeaderInfoTooltip } from './AutoneHeaderInfoTooltip';
+import { TransitionArrowSeparator } from './TransitionArrowSeparator';
 import { AutoneArrowDownIcon } from './AutoneArrowDownIcon';
 
 const tableCellPrimary =
@@ -236,28 +237,36 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
           <span className={`tabular-nums ${tableCellNumeric}`}>
-            {row.stockouts.from} → {row.stockouts.to}
+            {row.stockouts.from}
+            <TransitionArrowSeparator />
+            {row.stockouts.to}
           </span>
         </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
           <span className={`tabular-nums ${tableCellNumeric}`}>
-            {row.overstocks.from.toLocaleString()} → {row.overstocks.to.toLocaleString()}
+            {row.overstocks.from.toLocaleString()}
+            <TransitionArrowSeparator />
+            {row.overstocks.to.toLocaleString()}
           </span>
         </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
           <span className={`tabular-nums ${tableCellNumeric}`}>
-            {row.understocks.from} → {row.understocks.to}
+            {row.understocks.from}
+            <TransitionArrowSeparator />
+            {row.understocks.to}
           </span>
         </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
           <span className={`tabular-nums ${tableCellNumeric}`}>
-            {row.depth.from.toFixed(1)} → {row.depth.to.toFixed(1)}
+            {row.depth.from.toFixed(1)}
+            <TransitionArrowSeparator />
+            {row.depth.to.toFixed(1)}
           </span>
         </CellGripInset>
       </td>
@@ -491,28 +500,36 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
               <td className="px-4 py-3 align-middle">
                 <CellGripInset align="right">
                   <span className={`tabular-nums ${tableCellNumeric}`}>
-                    {summary.stockouts.from} → {summary.stockouts.to}
+                    {summary.stockouts.from}
+                    <TransitionArrowSeparator />
+                    {summary.stockouts.to}
                   </span>
                 </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">
                 <CellGripInset align="right">
                   <span className={`tabular-nums ${tableCellNumeric}`}>
-                    {summary.overstocks.from.toLocaleString()} → {summary.overstocks.to.toLocaleString()}
+                    {summary.overstocks.from.toLocaleString()}
+                    <TransitionArrowSeparator />
+                    {summary.overstocks.to.toLocaleString()}
                   </span>
                 </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">
                 <CellGripInset align="right">
                   <span className={`tabular-nums ${tableCellNumeric}`}>
-                    {summary.understocks.from} → {summary.understocks.to}
+                    {summary.understocks.from}
+                    <TransitionArrowSeparator />
+                    {summary.understocks.to}
                   </span>
                 </CellGripInset>
               </td>
               <td className="px-4 py-3 align-middle">
                 <CellGripInset align="right">
                   <span className={`tabular-nums ${tableCellNumeric}`}>
-                    {summary.depth.from.toFixed(1)} → {summary.depth.to.toFixed(1)}
+                    {summary.depth.from.toFixed(1)}
+                    <TransitionArrowSeparator />
+                    {summary.depth.to.toFixed(1)}
                   </span>
                 </CellGripInset>
               </td>
