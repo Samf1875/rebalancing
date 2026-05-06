@@ -136,18 +136,12 @@ function TuBreakdownBadge({
         : item.kind === 'transfer-out'
           ? 'bg-white text-[#2EB8C2] border border-[#2EB8C2]'
           : 'bg-white text-[#6864E6] border border-[#6864E6]';
-  const openRingClasses =
-    item.kind === 'in-transit' || item.kind === 'transfer-out'
-      ? ''
-      : 'ring-2 ring-white ring-offset-1 ring-offset-transparent';
 
   return (
     <button
       type="button"
       data-tu-badge=""
-      className={`inline-flex h-[26px] w-[50px] shrink-0 cursor-pointer items-center justify-center gap-[5px] rounded-[2px] font-['Inter',sans-serif] text-[11px] font-medium tabular-nums outline-none transition-[box-shadow] focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-1 ${colorClasses} ${
-        isOpen ? openRingClasses : ''
-      }`}
+      className={`inline-flex h-[26px] w-[50px] shrink-0 cursor-pointer items-center justify-center gap-[5px] rounded-[2px] font-['Inter',sans-serif] text-[11px] font-medium tabular-nums outline-none transition-[box-shadow] focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-1 ${colorClasses}`}
       aria-expanded={isOpen}
       aria-haspopup="dialog"
       onMouseEnter={(e) => handleOpen(e.currentTarget)}

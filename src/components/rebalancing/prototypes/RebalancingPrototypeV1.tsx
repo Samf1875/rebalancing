@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useId } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useMemo, useId } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Sparkles,
@@ -169,6 +169,11 @@ export function RebalancingPrototypeV1({
   const [filtersSearchQuery, setFiltersSearchQuery] = useState('');
   const filtersMenuRef = useRef<HTMLDivElement>(null);
   const filtersMenuId = useId();
+  /** Toolbar search (left of Stock after): icon collapses / expands to text field. */
+  const [workspaceSearchExpanded, setWorkspaceSearchExpanded] = useState(false);
+  const [workspaceSearchQuery, setWorkspaceSearchQuery] = useState('');
+  const workspaceSearchContainerRef = useRef<HTMLDivElement>(null);
+  const workspaceSearchInputRef = useRef<HTMLInputElement>(null);
   const [columnCustomiseOpen, setColumnCustomiseOpen] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState(defaultTableColumnVisibility);
   const [kpisPanelOpen, setKpisPanelOpen] = useState(false);
@@ -304,6 +309,29 @@ export function RebalancingPrototypeV1({
     };
   }, [locationsToMenuOpen]);
 
+  useLayoutEffect(() => {
+    if (workspaceSearchExpanded) workspaceSearchInputRef.current?.focus();
+  }, [workspaceSearchExpanded]);
+
+  useEffect(() => {
+    if (!workspaceSearchExpanded) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (workspaceSearchContainerRef.current?.contains(e.target as Node)) return;
+      setWorkspaceSearchExpanded(false);
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    return () => document.removeEventListener('mousedown', onPointerDown);
+  }, [workspaceSearchExpanded]);
+
+  useEffect(() => {
+    if (!workspaceSearchExpanded) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setWorkspaceSearchExpanded(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [workspaceSearchExpanded]);
+
   const filteredMenuItems = useMemo(() => {
     const q = filtersSearchQuery.trim().toLowerCase();
     if (!q) return [...FILTERS_MENU_ITEMS];
@@ -394,12 +422,21 @@ export function RebalancingPrototypeV1({
     return () => clearTimeout(id);
   }, [commitSuccessBannerVisible]);
 
-  const filteredRows = (() => {
+  const filteredRows = useMemo(() => {
     let f = filterRowsByFocusView(rows, focusView);
     if (statusTableFilter === 'draft') f = f.filter((r) => r.hasPendingChanges);
     else if (statusTableFilter === 'committed') f = f.filter((r) => !r.hasPendingChanges);
+    const q = workspaceSearchQuery.trim().toLowerCase();
+    if (q) {
+      f = f.filter((r) => {
+        const d = r.productCellDetail;
+        const haystack =
+          `${d.title} ${d.sku} ${d.colorLabel} ${r.locationCluster.name}`.toLowerCase();
+        return haystack.includes(q);
+      });
+    }
     return f;
-  })();
+  }, [rows, focusView, statusTableFilter, workspaceSearchQuery]);
   const tableRows = filteredRows;
 
   const productTransfersParentRow = useMemo(
@@ -768,6 +805,49 @@ export function RebalancingPrototypeV1({
             <div
               className={`flex min-w-0 flex-wrap items-center gap-2 ${productTransfersParentRow ? 'shrink-0 justify-end' : 'flex-1 justify-end'}`}
             >
+            <div ref={workspaceSearchContainerRef} className="relative shrink-0">
+              {workspaceSearchExpanded ? (
+                <div className="flex h-8 min-h-8 w-[min(100vw-12rem,360px)] min-w-[220px] max-w-[360px] items-center gap-2 rounded border border-[#e9eaeb] bg-white px-2 shadow-sm outline-none transition-colors focus-within:ring-2 focus-within:ring-[#0267FF] focus-within:ring-offset-0">
+                  <Search
+                    size={16}
+                    strokeWidth={2}
+                    className="pointer-events-none shrink-0 text-[#6B7280]"
+                    aria-hidden
+                  />
+                  <input
+                    ref={workspaceSearchInputRef}
+                    type="search"
+                    value={workspaceSearchQuery}
+                    onChange={(e) => setWorkspaceSearchQuery(e.target.value)}
+                    placeholder="Search products or locations"
+                    autoComplete="off"
+                    className="min-w-0 flex-1 bg-transparent font-['Inter',sans-serif] text-sm leading-none text-[#101828] placeholder:text-[#6B7280] outline-none"
+                    aria-label="Search workspace"
+                  />
+                  <button
+                    type="button"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-[#6B7280] transition-colors hover:bg-slate-100 hover:text-[#101828]"
+                    aria-label="Close search"
+                    onClick={() => {
+                      setWorkspaceSearchQuery('');
+                      setWorkspaceSearchExpanded(false);
+                    }}
+                  >
+                    <X size={14} strokeWidth={2} aria-hidden />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setWorkspaceSearchExpanded(true)}
+                  className={`flex h-8 w-8 min-h-8 min-w-8 shrink-0 items-center justify-center rounded border border-[#e9eaeb] bg-white text-[#101828] transition-colors hover:bg-slate-50 ${workspaceSearchQuery.trim() ? 'ring-1 ring-[#0267FF]/40' : ''}`}
+                  aria-label="Search"
+                  aria-expanded={false}
+                >
+                  <Search size={16} strokeWidth={2} aria-hidden />
+                </button>
+              )}
+            </div>
             <div className="relative min-w-0 max-w-full shrink" ref={sortMenuRef}>
               <div className="flex min-w-0 max-w-full items-stretch">
                 <button
@@ -835,21 +915,6 @@ export function RebalancingPrototypeV1({
                 </div>
               )}
             </div>
-            <button
-              type="button"
-              onClick={() => setColumnCustomiseOpen(true)}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-[#e9eaeb] bg-white text-[#101828] transition-colors hover:bg-slate-50"
-              aria-label="Settings"
-            >
-              <Settings size={16} strokeWidth={2} aria-hidden />
-            </button>
-            <button
-              type="button"
-              className="flex h-8 w-8 min-h-8 min-w-8 shrink-0 items-center justify-center rounded border border-[#e9eaeb] bg-white text-[#101828] transition-colors hover:bg-slate-50"
-              aria-label="Search"
-            >
-              <Search size={16} strokeWidth={2} aria-hidden />
-            </button>
             <div className="relative shrink-0" ref={filtersMenuRef}>
               <button
                 type="button"
@@ -921,6 +986,14 @@ export function RebalancingPrototypeV1({
                 </div>
               )}
             </div>
+            <button
+              type="button"
+              onClick={() => setColumnCustomiseOpen(true)}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-[#e9eaeb] bg-white text-[#101828] transition-colors hover:bg-slate-50"
+              aria-label="Settings"
+            >
+              <Settings size={16} strokeWidth={2} aria-hidden />
+            </button>
             </div>
           </div>
         </div>
