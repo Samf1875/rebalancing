@@ -6,6 +6,7 @@ import {
   ChevronDown,
   Copy,
   Filter,
+  Home,
   Lightbulb,
   Package,
   Pencil,
@@ -51,6 +52,8 @@ const tableCellSecondary =
 const tableRowHoverTd = '';
 const headerTitleClass =
   "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
+/** Second header line: hidden when `showTotalsRow` compacts thead; keep real subtitles visible. */
+const transferHeaderSubPlaceholderClass = 'tt-header-sub-placeholder';
 
 function renderArrowPair(from: number, to: number): ReactNode {
   return (
@@ -141,6 +144,9 @@ function TuBreakdownBadge({
     <button
       type="button"
       data-tu-badge=""
+      data-stock-box-id={
+        item.kind === 'warehouse' && item.stockBoxId != null ? item.stockBoxId : undefined
+      }
       className={`inline-flex h-[26px] w-[50px] shrink-0 cursor-pointer items-center justify-center gap-[5px] rounded-[2px] font-['Inter',sans-serif] text-[11px] font-medium tabular-nums outline-none transition-[box-shadow] focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-1 ${colorClasses}`}
       aria-expanded={isOpen}
       aria-haspopup="dialog"
@@ -216,6 +222,49 @@ const transferPopPill =
 const transferPopSection =
   "font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]";
 
+/** Recommendations considered — rejected routes for Lulli Eshop stock-on-hand chip stockBox_SKU_A only */
+const LULLI_STOCK_BOX_SKU_A_REJECTED_ROUTES: { store: string; reason: string; scope: string }[] = [
+  {
+    store: 'BENOA SAINT FLORENT',
+    reason: 'Receiving store had no capacity',
+    scope: 'Receiving store constraint',
+  },
+  {
+    store: 'BENOA PORTO VECCHIO',
+    reason: 'Trip full — no capacity for this transfer',
+    scope: 'Trip constraint',
+  },
+  {
+    store: 'BENOA PORTO VECCHIO',
+    reason: 'Receiving store had no capacity',
+    scope: 'Receiving store constraint',
+  },
+  {
+    store: 'BENOA CALVI',
+    reason: 'Receiving store had no capacity',
+    scope: 'Receiving store constraint',
+  },
+  {
+    store: 'BENOA AJACCIO',
+    reason: 'Trip full — no capacity for this transfer',
+    scope: 'Trip constraint',
+  },
+  {
+    store: 'BENOA AJACCIO',
+    reason: 'Receiving store had no capacity',
+    scope: 'Receiving store constraint',
+  },
+];
+
+/** Recommendations considered — rejected routes for Lulli Eshop stock-on-hand chip stockBox_SKU_B only */
+const LULLI_STOCK_BOX_SKU_B_REJECTED_ROUTES: { store: string; reason: string; scope: string }[] = [
+  {
+    store: 'BENOA ILE ROUSSE',
+    reason: 'Higher-value SKUs took priority on this route',
+    scope: 'Trip constraint',
+  },
+];
+
 function TransferPopRow({
   icon,
   label,
@@ -281,6 +330,58 @@ function formatWeeksCoverageArrow(
   );
 }
 
+/** Placeholder visibility % (before → after); wired to real data later. */
+const MOCK_VISIBILITY_SENDING = { fromPct: 20, toPct: 0 };
+const MOCK_VISIBILITY_RECEIVING = { fromPct: 60, toPct: 90 };
+
+/** Tooltip for Product visibility impact (same AutoneHeaderInfoTooltip simple mode as column headers). */
+const PRODUCT_VISIBILITY_IMPACT_TOOLTIP =
+  "Share of this product's sizes present at the location. Different from weeks coverage, which measures whether stock levels meet demand.";
+
+function RecommendedTransferProductVisibilityImpact({
+  sendingLabel,
+  receivingLabel,
+}: {
+  sendingLabel: string;
+  receivingLabel: string;
+}) {
+  return (
+    <>
+      <div className="mb-2 mt-4">
+        <AutoneHeaderInfoTooltip
+          label="Product visibility impact"
+          content={PRODUCT_VISIBILITY_IMPACT_TOOLTIP}
+          topAlign="start"
+          portalZIndexClass="z-[220]"
+          hoverWith={<span className={transferPopSection}>Product visibility impact</span>}
+        />
+      </div>
+      <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+            {sendingLabel}
+          </span>
+          <span className="inline-flex shrink-0 items-center gap-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+            <span>{MOCK_VISIBILITY_SENDING.fromPct}%</span>
+            <TransitionArrowSeparator className="mx-0 shrink-0" />
+            <span>{MOCK_VISIBILITY_SENDING.toPct}%</span>
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+            {receivingLabel}
+          </span>
+          <span className="inline-flex shrink-0 items-center gap-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+            <span>{MOCK_VISIBILITY_RECEIVING.fromPct}%</span>
+            <TransitionArrowSeparator className="mx-0 shrink-0" />
+            <span>{MOCK_VISIBILITY_RECEIVING.toPct}%</span>
+          </span>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function TransferBadgePopoverContent({
   popRow,
   popItem,
@@ -294,7 +395,6 @@ function TransferBadgePopoverContent({
 }) {
   const sourceRow = rows.find((r) => r.id === popItem.fromLocationId);
   const sourceName = sourceRow?.name ?? 'Unknown source';
-  const availableToSend = sourceRow ? sourceRow.stock.from : 0;
   return (
     <>
       <p className="flex items-center gap-1 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
@@ -312,16 +412,6 @@ function TransferBadgePopoverContent({
           label="Transfer units"
           value={popItem.count.toLocaleString()}
         />
-        <TransferPopRow
-          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
-          label="Available to send"
-          value={availableToSend.toLocaleString()}
-        />
-        <TransferPopRow
-          icon={<ArrowLeftRight className="size-3.5" strokeWidth={2} aria-hidden />}
-          label="Trip type"
-          value={popItem.tripType}
-        />
       </div>
 
       <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation</p>
@@ -331,50 +421,7 @@ function TransferBadgePopoverContent({
           label="Transfer units"
           value={popItem.count.toLocaleString()}
         />
-        <TransferPopRow
-          icon={<TrendingUp className="size-3.5" strokeWidth={2} aria-hidden />}
-          label="Revenue increase"
-          value={formatCurrencyEur(popItem.revenueIncrease)}
-        />
-      </div>
-
-      {popItem.reasons.length > 0 ? (
-        <>
-          <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation reasons</p>
-          <div className="flex flex-col gap-1.5">
-            {popItem.reasons.map((reason, idx) => (
-              <TransferPopReason key={`${popRow.id}-reason-${idx}`} label={reason} />
-            ))}
-          </div>
-        </>
-      ) : null}
-
-      <div className="my-2 border-t border-[#E3E8F0]" />
-
-      <p className={`${transferPopSection} mb-1.5`}>Total weeks coverage</p>
-      <div className="flex flex-col gap-1.5">
-        <TransferPopRow
-          icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={sourceName}
-          value={
-            sourceRow
-              ? formatWeeksCoverageArrow(
-                  sourceRow.stock,
-                  sourceRow.forecastPerWeek,
-                  sourceRow.coverage.targetWeeks
-                )
-              : '—'
-          }
-        />
-        <TransferPopRow
-          icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={popRow.name}
-          value={formatWeeksCoverageArrow(
-            popRow.stock,
-            popRow.forecastPerWeek,
-            popRow.coverage.targetWeeks
-          )}
-        />
+        <TransferPopReason label={`Increase revenue by ${formatCurrencyEur(popItem.revenueIncrease)}`} />
       </div>
 
       {onMoreDetail ? (
@@ -405,7 +452,6 @@ function TransferOutBadgePopoverContent({
     ? rows.find((r) => r.id === popItem.toLocationId)
     : undefined;
   const destinationName = destinationRow?.name ?? 'Multiple destinations';
-  const availableToSend = popRow.stock.from;
   return (
     <>
       <p className="flex items-center gap-1 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
@@ -413,6 +459,7 @@ function TransferOutBadgePopoverContent({
         <TransitionArrowSeparator className="mx-0 shrink-0" />
         <span>{destinationName}</span>
       </p>
+      <p className={`${transferPopSection} mt-1`}>Maximum units per trip: 100</p>
       <div className="my-1.5 border-t border-[#E3E8F0]" />
 
       <p className={`${transferPopSection} mb-1.5`}>Transfer info</p>
@@ -422,18 +469,6 @@ function TransferOutBadgePopoverContent({
           label="Transfer units"
           value={popItem.count.toLocaleString()}
         />
-        <TransferPopRow
-          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
-          label="Available to send"
-          value={availableToSend.toLocaleString()}
-        />
-        {popItem.tripType ? (
-          <TransferPopRow
-            icon={<ArrowLeftRight className="size-3.5" strokeWidth={2} aria-hidden />}
-            label="Trip type"
-            value={popItem.tripType}
-          />
-        ) : null}
       </div>
 
       <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation</p>
@@ -443,69 +478,8 @@ function TransferOutBadgePopoverContent({
           label="Transfer units"
           value={popItem.count.toLocaleString()}
         />
-        {typeof popItem.revenueIncrease === 'number' ? (
-          <TransferPopRow
-            icon={<TrendingUp className="size-3.5" strokeWidth={2} aria-hidden />}
-            label="Revenue increase"
-            value={formatCurrencyEur(popItem.revenueIncrease)}
-          />
-        ) : null}
-      </div>
-
-      {popItem.reasons && popItem.reasons.length > 0 ? (
-        <>
-          <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation reasons</p>
-          <div className="flex flex-col gap-1.5">
-            {popItem.reasons.map((reason, idx) => (
-              <TransferPopReason key={`${popRow.id}-out-reason-${idx}`} label={reason} />
-            ))}
-          </div>
-        </>
-      ) : null}
-
-      <div className="my-2 border-t border-[#E3E8F0]" />
-
-      <p className={`${transferPopSection} mb-1.5`}>Total stock</p>
-      <div className="flex flex-col gap-1.5">
-        <TransferPopRow
-          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={popRow.name}
-          value={formatStockArrow(popRow.stock.from, popRow.stock.to)}
-        />
-        <TransferPopRow
-          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={destinationName}
-          value={
-            destinationRow
-              ? formatStockArrow(destinationRow.stock.from, destinationRow.stock.to)
-              : '—'
-          }
-        />
-      </div>
-
-      <p className={`${transferPopSection} mt-2 mb-1.5`}>Total weeks coverage</p>
-      <div className="flex flex-col gap-1.5">
-        <TransferPopRow
-          icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={popRow.name}
-          value={formatWeeksCoverageArrow(
-            popRow.stock,
-            popRow.forecastPerWeek,
-            popRow.coverage.targetWeeks
-          )}
-        />
-        <TransferPopRow
-          icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={destinationName}
-          value={
-            destinationRow
-              ? formatWeeksCoverageArrow(
-                  destinationRow.stock,
-                  destinationRow.forecastPerWeek,
-                  destinationRow.coverage.targetWeeks
-                )
-              : '—'
-          }
+        <TransferPopReason
+          label={`Increase revenue by ${formatCurrencyEur(popItem.revenueIncrease ?? 0)}`}
         />
       </div>
 
@@ -583,6 +557,7 @@ export function ProductTransfersTable({
     weeksCoverage: string;
     stockOnHand: number;
     reasons: string[];
+    stockBoxId?: 'stockBox_SKU_A' | 'stockBox_SKU_B';
   } | null>(null);
   const [transferDetail, setTransferDetail] = useState<{
     direction: 'in' | 'out';
@@ -802,7 +777,11 @@ export function ProductTransfersTable({
             <div className="mt-2 flex w-full flex-wrap justify-end gap-1">
               {row.tuBreakdown.map((item, idx) => (
                 <TuBreakdownBadge
-                  key={`${row.id}-tu-${idx}`}
+                  key={
+                    item.kind === 'warehouse' && item.stockBoxId != null
+                      ? `${row.id}-tu-${item.stockBoxId}`
+                      : `${row.id}-tu-${idx}`
+                  }
                   item={item}
                   rowId={row.id}
                   index={idx}
@@ -863,7 +842,7 @@ export function ProductTransfersTable({
               <tr
                 className={`[&_th]:whitespace-nowrap [&_th]:align-top${
                   showTotalsRow
-                    ? ' [&_th]:!pb-0 [&_th]:!border-b-0 [&_th>div]:!min-h-[28px] [&_th>div>:last-child]:hidden'
+                    ? ' [&_th]:!pb-0 [&_th]:!border-b-0 [&_th>div]:!min-h-[28px] [&_th_.tt-header-sub-placeholder]:hidden'
                     : ''
                 }`}
               >
@@ -886,8 +865,8 @@ export function ProductTransfersTable({
                       content={HEADER_INFO_TOOLTIPS.locations}
                       hoverWith={<span className={headerTitleClass}>Locations</span>}
                     />,
-                    <span className="invisible text-[12px] leading-snug" aria-hidden>
-                      —
+                    <span className={`${tableCellSecondary} leading-snug`}>
+                      {rows.length} location{rows.length === 1 ? '' : 's'}
                     </span>
                   )}
                 </th>
@@ -903,7 +882,8 @@ export function ProductTransfersTable({
                         </span>
                       }
                     />,
-                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                    <span className={`invisible text-[12px] leading-snug ${transferHeaderSubPlaceholderClass}`}
+                      aria-hidden>
                       —
                     </span>
                   )}
@@ -938,7 +918,8 @@ export function ProductTransfersTable({
                         <Pencil size={14} className="shrink-0" strokeWidth={2} aria-hidden />
                       </button>
                     </span>,
-                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                    <span className={`invisible text-[12px] leading-snug ${transferHeaderSubPlaceholderClass}`}
+                      aria-hidden>
                       —
                     </span>
                   )}
@@ -950,7 +931,8 @@ export function ProductTransfersTable({
                       content={ASSORTMENT_HEADER_RICH.salesL7dL30d.body}
                       hoverWith={<span className={headerTitleClass}>Sales</span>}
                     />,
-                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                    <span className={`invisible text-[12px] leading-snug ${transferHeaderSubPlaceholderClass}`}
+                      aria-hidden>
                       —
                     </span>
                   )}
@@ -962,7 +944,8 @@ export function ProductTransfersTable({
                       content={HEADER_INFO_TOOLTIPS.forecastPerWk}
                       hoverWith={<span className={headerTitleClass}>Forecast per wk.</span>}
                     />,
-                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                    <span className={`invisible text-[12px] leading-snug ${transferHeaderSubPlaceholderClass}`}
+                      aria-hidden>
                       —
                     </span>
                   )}
@@ -974,7 +957,8 @@ export function ProductTransfersTable({
                       content={HEADER_INFO_TOOLTIPS.stockouts}
                       hoverWith={<span className={headerTitleClass}>Stockouts</span>}
                     />,
-                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                    <span className={`invisible text-[12px] leading-snug ${transferHeaderSubPlaceholderClass}`}
+                      aria-hidden>
                       —
                     </span>
                   )}
@@ -987,7 +971,8 @@ export function ProductTransfersTable({
                       content={HEADER_INFO_TOOLTIPS.coverage}
                       hoverWith={<span className={headerTitleClass}>Coverage</span>}
                     />,
-                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                    <span className={`invisible text-[12px] leading-snug ${transferHeaderSubPlaceholderClass}`}
+                      aria-hidden>
                       —
                     </span>
                   )}
@@ -1012,7 +997,8 @@ export function ProductTransfersTable({
                           </span>
                         }
                       />,
-                      <span className="invisible text-[12px] leading-snug" aria-hidden>
+                      <span className={`invisible text-[12px] leading-snug ${transferHeaderSubPlaceholderClass}`}
+                      aria-hidden>
                         —
                       </span>
                     )
@@ -1112,9 +1098,6 @@ export function ProductTransfersTable({
             </tbody>
           </table>
         </div>
-        <div className="flex items-center justify-between gap-4 bg-white px-4 py-2 text-xs text-[#00050a]">
-          <span>{rows.length} locations</span>
-        </div>
       </div>
 
       {tuBadgePopover != null
@@ -1137,9 +1120,13 @@ export function ProductTransfersTable({
                   : 'Transfer units';
             const forecast = popRow.forecastPerWeek;
             const weeksCoverageText =
-              forecast > 0
-                ? `${(popItem.count / forecast).toFixed(1)} (${popRow.coverage.targetWeeks} target)`
-                : 'N/A (0 forecast)';
+              popItem.kind === 'warehouse' && popItem.stockBoxId != null
+                ? forecast > 0
+                  ? `${(popRow.stock.from / forecast).toFixed(1)} (${popRow.coverage.targetWeeks} target)`
+                  : 'N/A (0 forecast)'
+                : forecast > 0
+                  ? `${(popItem.count / forecast).toFixed(1)} (${popRow.coverage.targetWeeks} target)`
+                  : 'N/A (0 forecast)';
             const ariaLabel = isExtensiveTransfer
               ? `Transfer details for ${popRow.name}`
               : `${detailLabel} at ${popRow.name}`;
@@ -1236,11 +1223,16 @@ export function ProductTransfersTable({
                             rowName: popRow.name,
                             count: popItem.count,
                             weeksCoverage: weeksCoverageText,
-                            stockOnHand: popRow.stock.from,
+                            stockOnHand:
+                              popItem.kind === 'warehouse' && popItem.stockBoxId != null
+                                ? popItem.count
+                                : popRow.stock.from,
                             reasons:
                               popItem.kind === 'warehouse' && popItem.reasons
                                 ? popItem.reasons
                                 : [],
+                            stockBoxId:
+                              popItem.kind === 'warehouse' ? popItem.stockBoxId : undefined,
                           });
                           setTuBadgePopover(null);
                         }}
@@ -1384,6 +1376,11 @@ export function ProductTransfersTable({
                     </div>
                   </div>
 
+                  <RecommendedTransferProductVisibilityImpact
+                    sendingLabel="Sending store: PR AC Lille"
+                    receivingLabel="Receiving store: Lulli Eshop"
+                  />
+
                   <p className={`${transferPopSection} mb-2 mt-4`}>Stock check</p>
                   <div className="flex flex-col gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
                     <div className="flex flex-col gap-1.5">
@@ -1417,7 +1414,7 @@ export function ProductTransfersTable({
                             Total weeks coverage
                           </span>
                           <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium text-[#101828]">
-                            N/A (0 forecast)
+                            N/A (unassorted)
                           </span>
                         </li>
                         <li className="flex items-center justify-between gap-2">
@@ -1426,14 +1423,6 @@ export function ProductTransfersTable({
                           </span>
                           <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
                             0.00 per week
-                          </span>
-                        </li>
-                        <li className="flex items-center justify-between gap-2">
-                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                            Available warehouse units
-                          </span>
-                          <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
-                            {formatStockArrow(0, 0)}
                           </span>
                         </li>
                       </ul>
@@ -1484,7 +1473,7 @@ export function ProductTransfersTable({
                         </li>
                         <li className="flex items-center justify-between gap-2">
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                            Available warehouse units
+                            Warehouse coverage
                           </span>
                           <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
                             {formatStockArrow(0, 0)}
@@ -1577,7 +1566,7 @@ export function ProductTransfersTable({
                               Total stock
                             </span>
                             <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
-                              {formatStockArrow(9, 9)}
+                              {formatStockArrow(1, 1)}
                             </span>
                           </li>
                           <li className="flex items-center justify-between gap-2">
@@ -1610,7 +1599,7 @@ export function ProductTransfersTable({
                           </li>
                           <li className="flex items-center justify-between gap-2">
                             <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
-                              Available warehouse units
+                              Warehouse coverage
                             </span>
                             <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
                               {formatStockArrow(0, 0)}
@@ -1623,89 +1612,147 @@ export function ProductTransfersTable({
 
                   <div className="mt-4 border-t border-[#E3E8F0] pt-4">
                     <p className={`${transferPopSection} mb-2`}>Recommendations considered</p>
-                    <p className={`${transferPopSection} mb-3`}>
-                      Transfers that were evaluated but not included in the final recommendation proposal
-                    </p>
-                    <div className="flex flex-col gap-3">
-                      <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
-                        <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
-                          <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
-                            <AutoneReceivingLocationIcon direction="in" />
-                          </span>
-                          Receiving store: PR PP Nancy
+                    {warehouseDetail.stockBoxId === 'stockBox_SKU_A' ? (
+                      <>
+                        <p className={`${transferPopSection} mb-3`}>
+                          Routes evaluated for this unit that were not included in the final proposal
                         </p>
-                        <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
-                          <TransferPopRow
-                            icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
-                            label="Transfer units"
-                            value="1"
-                          />
-                          <div className="flex items-start gap-2">
-                            <span
-                              aria-hidden
-                              className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
+                        <div className="flex flex-col gap-3">
+                          {LULLI_STOCK_BOX_SKU_A_REJECTED_ROUTES.map((card, idx) => (
+                            <div
+                              key={`${card.store}-${card.reason}-${idx}`}
+                              className="flex flex-col gap-2 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3"
                             >
-                              <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
-                            </span>
-                            <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
-                              Store met target coverage with higher value moves
+                              <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                                <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                                  <Home className="size-[1em]" strokeWidth={2} aria-hidden />
+                                </span>
+                                Receiving store: {card.store}
+                              </p>
+                              <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                                {card.reason}
+                              </p>
+                              <p className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                                {card.scope}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : warehouseDetail.stockBoxId === 'stockBox_SKU_B' ? (
+                      <>
+                        <p className={`${transferPopSection} mb-3`}>
+                          Routes evaluated for this unit that were not included in the final proposal
+                        </p>
+                        <div className="flex flex-col gap-3">
+                          {LULLI_STOCK_BOX_SKU_B_REJECTED_ROUTES.map((card, idx) => (
+                            <div
+                              key={`${card.store}-${card.reason}-${idx}`}
+                              className="flex flex-col gap-2 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3"
+                            >
+                              <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                                <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                                  <Home className="size-[1em]" strokeWidth={2} aria-hidden />
+                                </span>
+                                Receiving store: {card.store}
+                              </p>
+                              <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                                {card.reason}
+                              </p>
+                              <p className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                                {card.scope}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className={`${transferPopSection} mb-3`}>
+                          Transfers that were evaluated but not included in the final recommendation proposal
+                        </p>
+                        <div className="flex flex-col gap-3">
+                          <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                            <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                              <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                                <AutoneReceivingLocationIcon direction="in" />
+                              </span>
+                              Receiving store: PR PP Nancy
                             </p>
+                            <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
+                              <TransferPopRow
+                                icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+                                label="Transfer units"
+                                value="1"
+                              />
+                              <div className="flex items-start gap-2">
+                                <span
+                                  aria-hidden
+                                  className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
+                                >
+                                  <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
+                                </span>
+                                <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                                  Store met target coverage with higher value moves
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                            <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                              <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                                <AutoneReceivingLocationIcon direction="in" />
+                              </span>
+                              Receiving store: GL PP Biarritz
+                            </p>
+                            <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
+                              <TransferPopRow
+                                icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+                                label="Transfer units"
+                                value="2"
+                              />
+                              <div className="flex items-start gap-2">
+                                <span
+                                  aria-hidden
+                                  className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
+                                >
+                                  <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
+                                </span>
+                                <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                                  Other stock moves chosen to meet trip capacity minimum
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                            <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                              <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                                <AutoneReceivingLocationIcon direction="in" />
+                              </span>
+                              Receiving store: PR AC Toulon
+                            </p>
+                            <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
+                              <TransferPopRow
+                                icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
+                                label="Transfer units"
+                                value="1"
+                              />
+                              <div className="flex items-start gap-2">
+                                <span
+                                  aria-hidden
+                                  className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
+                                >
+                                  <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
+                                </span>
+                                <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                                  Unassorted location chosen
+                                </p>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
-                        <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
-                          <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
-                            <AutoneReceivingLocationIcon direction="in" />
-                          </span>
-                          Receiving store: GL PP Biarritz
-                        </p>
-                        <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
-                          <TransferPopRow
-                            icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
-                            label="Transfer units"
-                            value="2"
-                          />
-                          <div className="flex items-start gap-2">
-                            <span
-                              aria-hidden
-                              className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
-                            >
-                              <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
-                            </span>
-                            <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
-                              Other stock moves chosen to meet trip capacity minimum
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
-                        <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
-                          <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
-                            <AutoneReceivingLocationIcon direction="in" />
-                          </span>
-                          Receiving store: PR AC Toulon
-                        </p>
-                        <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
-                          <TransferPopRow
-                            icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
-                            label="Transfer units"
-                            value="1"
-                          />
-                          <div className="flex items-start gap-2">
-                            <span
-                              aria-hidden
-                              className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
-                            >
-                              <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
-                            </span>
-                            <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
-                              Unassorted location chosen
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1838,6 +1885,11 @@ export function ProductTransfersTable({
                       </ul>
                     </>
                   ) : null}
+
+                  <RecommendedTransferProductVisibilityImpact
+                    sendingLabel={`Sending store: ${transferDetail.sourceName}`}
+                    receivingLabel={`Receiving store: ${transferDetail.destinationName}`}
+                  />
 
                   <div className="mt-5 border-t border-[#E3E8F0] pt-4">
                     <p className={`${transferPopSection} mb-2`}>Total stock</p>

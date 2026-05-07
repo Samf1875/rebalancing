@@ -71,6 +71,11 @@ type BaseProps = {
    * Rich mode only: `light` — white panel, 8px radius, 16px padding (Coverage mock).
    */
   richAppearance?: 'dark' | 'light';
+  /**
+   * Portal wrapper z-index class (default matches table headers). Use a higher value when
+   * the trigger sits inside a slideout/overlay above z-[100] so the bubble is visible.
+   */
+  portalZIndexClass?: string;
 };
 
 type SimpleMode = BaseProps & {
@@ -237,6 +242,7 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
     richBubbleMaxWidthClass,
     richAppearance = 'dark',
     topAlign = 'center',
+    portalZIndexClass = 'z-[100]',
   } = props;
 
   const isRich = 'rich' in props && props.rich != null;
@@ -393,8 +399,8 @@ export function AutoneHeaderInfoTooltip(props: AutoneHeaderInfoTooltipProps) {
 
   const wrapClass =
     side === 'top'
-      ? `pointer-events-none fixed z-[100] flex max-w-[calc(100vw-24px)] flex-col ${isTopStart ? 'items-start' : 'items-center'}`
-      : 'pointer-events-none fixed z-[100] flex max-w-[calc(100vw-24px)] flex-row items-center';
+      ? `pointer-events-none fixed ${portalZIndexClass} flex max-w-[calc(100vw-24px)] flex-col ${isTopStart ? 'items-start' : 'items-center'}`
+      : `pointer-events-none fixed ${portalZIndexClass} flex max-w-[calc(100vw-24px)] flex-row items-center`;
 
   const triggerClass =
     'inline-flex shrink-0 items-center gap-1.5 rounded px-0.5 text-[#101828] transition-colors hover:text-[#00050a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#0267FF]';

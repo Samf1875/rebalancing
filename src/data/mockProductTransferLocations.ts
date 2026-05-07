@@ -5,6 +5,8 @@ export type TuBreakdownItem =
       count: number;
       /** Free-form bullet reasons displayed in the recommendation popover */
       reasons?: string[];
+      /** Optional id when one location row shows multiple stock-on-hand chips (e.g. per-SKU). */
+      stockBoxId?: 'stockBox_SKU_A' | 'stockBox_SKU_B';
     }
   | {
       kind: 'transfer';
@@ -106,8 +108,21 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     code: '610',
     stock: { from: 9, to: 9 },
     warehouseUnits: { from: 120, to: 118 },
-    tu: { from: 9, to: 9 },
-    tuBreakdown: [{ kind: 'warehouse', count: 9, reasons: ['Increase visibility'] }],
+    tu: { from: 2, to: 2 },
+    tuBreakdown: [
+      {
+        kind: 'warehouse',
+        count: 1,
+        stockBoxId: 'stockBox_SKU_A',
+        reasons: ['Increase visibility'],
+      },
+      {
+        kind: 'warehouse',
+        count: 1,
+        stockBoxId: 'stockBox_SKU_B',
+        reasons: ['Increase visibility'],
+      },
+    ],
     sales: { l7d: 1, l30d: 3 },
     forecastPerWeek: 0.77,
     stockouts: { from: 0, to: 0 },
