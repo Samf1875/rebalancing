@@ -1560,7 +1560,7 @@ export function ProductTransfersTable({
                               Total stock
                             </span>
                             <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
-                              {formatStockArrow(9, 9)}
+                              {formatStockArrow(1, 1)}
                             </span>
                           </li>
                           <li className="flex items-center justify-between gap-2">

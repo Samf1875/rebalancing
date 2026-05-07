@@ -108,7 +108,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     code: '610',
     stock: { from: 9, to: 9 },
     warehouseUnits: { from: 120, to: 118 },
-    tu: { from: 9, to: 9 },
+    tu: { from: 2, to: 2 },
     tuBreakdown: [
       {
         kind: 'warehouse',
