@@ -1417,7 +1417,7 @@ export function ProductTransfersTable({
                             Total weeks coverage
                           </span>
                           <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium text-[#101828]">
-                            N/A (0 forecast)
+                            N/A (unassorted)
                           </span>
                         </li>
                         <li className="flex items-center justify-between gap-2">
