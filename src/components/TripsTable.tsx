@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { GripVertical } from 'lucide-react';
 import { HEADER_INFO_TOOLTIPS } from '../data/headerInfoTooltips';
 import { MOCK_TRIP_ROWS, type TripBadge, type TripTableRow } from '../data/mockTrips';
@@ -21,9 +21,9 @@ const tableRowHoverTd = '';
 
 const theadBg = 'bg-white';
 const stickyColShadow = 'shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]';
-/** Match Locations / Assortment header band. */
-const tripThRowH = 'h-[62px] min-h-[62px] max-h-[62px]';
-const tripThCell = `${tripThRowH} box-border align-middle`;
+/** Header band — two lines (title + total). Keep `<th>` as table-cell; flex belongs on inner wrappers only. */
+const tripThRowH = 'min-h-[72px]';
+const tripThCell = `${tripThRowH} box-border py-2 align-middle`;
 /** After checkbox (`left-14` = 3.5rem). */
 const tripLocCol =
   'w-[200px] min-w-[200px] max-w-[200px] box-border';
@@ -40,6 +40,9 @@ const tripThLabelCellStart =
 /** Match cap / font-size of 14px label (`1em`), not full line box (`1lh`). */
 const tripThGripWrap =
   "inline-flex h-[1em] w-[1em] shrink-0 items-center justify-center self-center font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#6A7282]";
+/** Summary line under header title — bold primary, matches reference mock. */
+const tripThTotalLine =
+  "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal tabular-nums text-[#101828]";
 
 function TripColumnGrip() {
   return (
@@ -49,7 +52,7 @@ function TripColumnGrip() {
   );
 }
 
-/** Match V1 AssortmentTable `recTransferActionPurple` — VIS / REV chips. */
+/** Purple-outline chip style for VIS / REV row actions. */
 const tripRecommendedActionBtn =
   "rounded border border-[#6864E6] bg-white px-2 py-1 font-['Inter',sans-serif] text-[11px] font-semibold leading-none text-[#6864E6] transition-colors hover:bg-slate-50";
 
@@ -68,6 +71,18 @@ export function TripsTable() {
   const selectAllRef = useRef<HTMLInputElement>(null);
 
   const rows = MOCK_TRIP_ROWS;
+
+  const tripHeaderTotals = useMemo(() => {
+    const transfersSum = rows.reduce((s, r) => s + r.transfers, 0);
+    const revenueSumEur = rows.reduce((s, r) => s + r.revenueEur, 0);
+    const recommendedSum = rows.reduce((s, r) => s + r.recommended, 0);
+    const productsSummable = rows.length > 0 && rows.every((r) => r.productCount != null);
+    const productsTotal = productsSummable
+      ? rows.reduce((s, r) => s + (r.productCount as number), 0)
+      : null;
+    return { transfersSum, revenueSumEur, recommendedSum, productsTotal };
+  }, [rows]);
+
   const allSelected = rows.length > 0 && rows.every((r) => selected[r.id]);
   const someSelected = rows.some((r) => selected[r.id]);
 
@@ -166,7 +181,7 @@ export function TripsTable() {
             className={`[&_th]:border-t-0 [&_th]:border-b-[0.5px] [&_th]:border-solid [&_th]:border-[#E3E8F0] [&_th]:font-['Inter',sans-serif] ${theadBg}`}
           >
             <tr
-              className={`${tripThRowH} text-[14px] font-semibold leading-normal text-[#101828] [&_th]:whitespace-nowrap [&_th]:align-middle [&_th]:py-0 [&_th]:px-4`}
+              className={`${tripThRowH} text-[14px] font-semibold leading-normal text-[#101828] [&_th]:whitespace-nowrap [&_th]:align-middle [&_th]:px-4`}
             >
               <th
                 className={`sticky left-0 z-30 w-14 min-w-14 max-w-14 ${tripThCell} ${theadBg} text-left ${stickyColShadow}`}
@@ -190,45 +205,67 @@ export function TripsTable() {
                 <span className={tripThLabelCellStart}>Receiving location</span>
               </th>
               <th className={`min-w-[140px] text-right ${tripThCell} ${theadBg}`} scope="col">
-                <span className={tripThLabelRowEnd}>
-                  <TripColumnGrip />
-                  <AutoneHeaderInfoTooltip
-                    label="Transfers"
-                    content={HEADER_INFO_TOOLTIPS.tripsTransfers}
-                    hoverWith={<span>Transfers</span>}
-                    side="top"
-                  />
-                </span>
+                <div className="flex w-full flex-col items-end gap-1 whitespace-normal">
+                  <span className={`${tripThLabelRowEnd} whitespace-nowrap`}>
+                    <TripColumnGrip />
+                    <AutoneHeaderInfoTooltip
+                      label="Transfers"
+                      content={HEADER_INFO_TOOLTIPS.tripsTransfers}
+                      hoverWith={<span>Transfers</span>}
+                      side="top"
+                    />
+                  </span>
+                  <span className={`${tripThTotalLine} whitespace-nowrap`} aria-label="Transfers total">
+                    {tripHeaderTotals.transfersSum.toLocaleString('en-US')} units
+                  </span>
+                </div>
               </th>
               <th className={`min-w-[160px] text-right ${tripThCell} ${theadBg}`} scope="col">
-                <span className={tripThLabelRowEnd}>
-                  <TripColumnGrip />
-                  <AutoneHeaderInfoTooltip
-                    label="Revenue increase"
-                    content={HEADER_INFO_TOOLTIPS.revenueIncrease}
-                    hoverWith={<span>Revenue increase</span>}
-                    side="top"
-                  />
-                  <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
-                </span>
+                <div className="flex w-full flex-col items-end gap-1 whitespace-normal">
+                  <span className={`${tripThLabelRowEnd} whitespace-nowrap`}>
+                    <TripColumnGrip />
+                    <AutoneHeaderInfoTooltip
+                      label="Revenue increase"
+                      content={HEADER_INFO_TOOLTIPS.revenueIncrease}
+                      hoverWith={<span>Revenue increase</span>}
+                      side="top"
+                    />
+                    <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
+                  </span>
+                  <span className={`${tripThTotalLine} whitespace-nowrap`} aria-label="Revenue increase total">
+                    {formatEurK(tripHeaderTotals.revenueSumEur)}
+                  </span>
+                </div>
               </th>
               <th className={`min-w-[260px] text-right ${tripThCell} ${theadBg}`} scope="col">
-                <span className={tripThLabelRowEnd}>
-                  <TripColumnGrip />
-                  <AutoneHeaderInfoTooltip
-                    label="Recommended transfers"
-                    content={HEADER_INFO_TOOLTIPS.tripsRecommendedTransfers}
-                    hoverWith={<span>Recommended transfers</span>}
-                    side="top"
-                  />
-                  <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
-                </span>
+                <div className="flex w-full flex-col items-end gap-1 whitespace-normal">
+                  <span className={`${tripThLabelRowEnd} whitespace-nowrap`}>
+                    <TripColumnGrip />
+                    <AutoneHeaderInfoTooltip
+                      label="Recommended transfers"
+                      content={HEADER_INFO_TOOLTIPS.tripsRecommendedTransfers}
+                      hoverWith={<span>Recommended transfers</span>}
+                      side="top"
+                    />
+                    <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
+                  </span>
+                  <span className={`${tripThTotalLine} whitespace-nowrap`} aria-label="Recommended transfers total">
+                    {tripHeaderTotals.recommendedSum.toLocaleString('en-US')} units
+                  </span>
+                </div>
               </th>
               <th className={`min-w-[120px] text-right ${tripThCell} ${theadBg}`} scope="col">
-                <span className={`${tripThLabelRowEnd} w-full`}>
-                  <TripColumnGrip />
-                  <span>Products</span>
-                </span>
+                <div className="flex w-full flex-col items-end gap-1 whitespace-normal">
+                  <span className={`${tripThLabelRowEnd} w-full whitespace-nowrap`}>
+                    <TripColumnGrip />
+                    <span>Products</span>
+                  </span>
+                  <span className={`${tripThTotalLine} whitespace-nowrap`} aria-label="Products total">
+                    {tripHeaderTotals.productsTotal == null
+                      ? 'N/A'
+                      : tripHeaderTotals.productsTotal.toLocaleString('en-US')}
+                  </span>
+                </div>
               </th>
             </tr>
           </thead>

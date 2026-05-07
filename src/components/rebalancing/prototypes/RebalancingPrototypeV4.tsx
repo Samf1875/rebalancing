@@ -35,6 +35,13 @@ import { ColumnCustomiseDrawer } from '../../ColumnCustomiseDrawer';
 import { KpisPanel } from '../KpisPanel';
 import { RebalancingWorkspaceSummaryBanner } from '../RebalancingWorkspaceSummaryBanner';
 import type { PrototypeVersionId } from '../../../lib/prototypeVersion';
+import {
+  PinnedFiltersBar,
+  SavedFiltersMenuPanel,
+  SavedFiltersToolbarTrigger,
+  togglePinnedSavedFilter,
+  type PinnableSavedFilterId,
+} from '../SavedFiltersToolbar';
 
 type FocusView = 'products' | 'locations' | 'trips';
 
@@ -119,8 +126,13 @@ export function RebalancingPrototypeV4({
   const [generateRecModalOpen, setGenerateRecModalOpen] = useState(false);
   const [filtersMenuOpen, setFiltersMenuOpen] = useState(false);
   const [filtersSearchQuery, setFiltersSearchQuery] = useState('');
+  const [savedFiltersMenuOpen, setSavedFiltersMenuOpen] = useState(false);
+  const [pinnedSavedFiltersOrder, setPinnedSavedFiltersOrder] = useState<PinnableSavedFilterId[]>([]);
   const filtersMenuRef = useRef<HTMLDivElement>(null);
   const filtersMenuId = useId();
+  const savedFiltersMenuRef = useRef<HTMLDivElement>(null);
+  const savedFiltersMenuId = useId();
+  const savedFiltersTriggerId = `${savedFiltersMenuId}-trigger`;
   const scopeMenuRef = useRef<HTMLDivElement>(null);
   const scopePopoverId = useId();
   const [scopePopoverOpen, setScopePopoverOpen] = useState(false);
@@ -163,6 +175,28 @@ export function RebalancingPrototypeV4({
       document.removeEventListener('mousedown', onPointerDown);
     };
   }, [filtersMenuOpen]);
+
+  useEffect(() => {
+    if (!savedFiltersMenuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSavedFiltersMenuOpen(false);
+    };
+    const onPointerDown = (e: MouseEvent) => {
+      if (savedFiltersMenuRef.current?.contains(e.target as Node)) return;
+      setSavedFiltersMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('mousedown', onPointerDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('mousedown', onPointerDown);
+    };
+  }, [savedFiltersMenuOpen]);
+
+  const pinnedSavedFiltersSet = useMemo(
+    () => new Set<string>(pinnedSavedFiltersOrder),
+    [pinnedSavedFiltersOrder]
+  );
 
   useEffect(() => {
     if (!sortMenuOpen) return;
@@ -734,6 +768,12 @@ export function RebalancingPrototypeV4({
                   onBack={() => setProductTransfersDrillRowId(null)}
                 />
               ) : null}
+              <PinnedFiltersBar
+                pinnedOrder={pinnedSavedFiltersOrder}
+                onRemove={(id) =>
+                  setPinnedSavedFiltersOrder((prev) => prev.filter((x) => x !== id))
+                }
+              />
               <div
                 className={`flex min-w-0 flex-wrap items-center gap-2 ${productTransfersParentRow ? 'shrink-0 justify-end' : 'flex-1 justify-start'}`}
               >
@@ -828,18 +868,17 @@ export function RebalancingPrototypeV4({
                 aria-haspopup="dialog"
                 aria-controls={filtersMenuId}
                 onClick={() => {
+                  setSavedFiltersMenuOpen(false);
                   setFiltersMenuOpen((o) => {
                     const next = !o;
                     if (next) setFiltersSearchQuery('');
                     return next;
                   });
                 }}
-                className="flex h-12 shrink-0 items-center gap-2 rounded-lg border border-[#e9eaeb] bg-white px-4 text-[#101828] transition-colors hover:bg-slate-50"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-[#e9eaeb] bg-white text-[#101828] transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0"
+                aria-label="Filters"
               >
                 <Filter size={18} strokeWidth={2} className="shrink-0" aria-hidden />
-                <span className="font-['Inter',sans-serif] text-sm font-normal leading-none">
-                  Filters
-                </span>
               </button>
               {filtersMenuOpen && (
                 <div
@@ -889,6 +928,30 @@ export function RebalancingPrototypeV4({
                     )}
                   </div>
                 </div>
+              )}
+            </div>
+            <div className="relative shrink-0" ref={savedFiltersMenuRef}>
+              <SavedFiltersToolbarTrigger
+                open={savedFiltersMenuOpen}
+                triggerId={savedFiltersTriggerId}
+                menuId={savedFiltersMenuId}
+                triggerClassName="h-12 min-h-12 rounded-lg px-4"
+                onClick={() => {
+                  setFiltersMenuOpen(false);
+                  setSavedFiltersMenuOpen((o) => !o);
+                }}
+              />
+              {savedFiltersMenuOpen && (
+                <SavedFiltersMenuPanel
+                  menuId={savedFiltersMenuId}
+                  triggerId={savedFiltersTriggerId}
+                  pinnedIds={pinnedSavedFiltersSet}
+                  panelTopClass="top-[52px]"
+                  onTogglePin={(id) =>
+                    setPinnedSavedFiltersOrder((prev) => togglePinnedSavedFilter(prev, id))
+                  }
+                  onPickView={() => {}}
+                />
               )}
             </div>
             </div>

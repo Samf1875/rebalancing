@@ -216,11 +216,13 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
           <span className={`tabular-nums ${tableCellNumeric}`}>{row.recommendedOut}</span>
         </CellGripInset>
       </td>
-      <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
+      <td
+        className={`h-[86px] min-h-[86px] min-w-[160px] px-4 py-3 align-middle ${tableRowHoverTd}`}
+      >
         <CellGripInset align="right">
           <div className="flex min-w-0 flex-col items-end gap-1">
-            <div className={`${tableCellNumeric} tabular-nums`}>{row.salesL7d}</div>
-            <div className={`${tableCellSecondary} tabular-nums`}>{row.salesL30d}</div>
+            <div className={`whitespace-nowrap ${tableCellNumeric} tabular-nums`}>{row.salesL7d}</div>
+            <div className={`whitespace-nowrap ${tableCellSecondary} tabular-nums`}>{row.salesL30d}</div>
           </div>
         </CellGripInset>
       </td>
@@ -279,261 +281,263 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
       data-name="Locations table"
     >
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[2160px] border-collapse">
+        <table className="w-full min-w-[2220px] border-collapse">
           <thead
             className="[&_th]:border-t-0 [&_th]:border-b-[0.5px] [&_th]:border-solid [&_th]:border-[#E3E8F0] [&_th]:bg-white [&_th]:font-['Inter',sans-serif]"
           >
-            <tr className="h-[62px] min-h-[62px] max-h-[62px] text-[14px] font-semibold leading-normal text-[#101828] [&_th]:whitespace-nowrap [&_th]:align-middle">
+            <tr className="min-h-[72px] text-[14px] font-semibold leading-normal text-[#101828] [&_th]:align-top">
               <th
-                className="sticky left-0 z-30 h-[62px] min-h-[62px] max-h-[62px] w-14 min-w-14 max-w-14 box-border overflow-hidden bg-white px-4 py-0 text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                className="sticky left-0 z-30 min-h-[72px] w-14 min-w-14 max-w-14 box-border bg-white px-4 py-2 text-left align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                 scope="col"
               >
-                <label className="flex cursor-pointer items-center gap-2">
-                  <input
-                    ref={selectAllRef}
-                    type="checkbox"
-                    checked={allSelected}
-                    onChange={(e) => toggleAll(e.target.checked)}
-                    className="h-4 w-4 rounded border-2 border-[#e9eaeb] bg-white text-sky-600 focus:ring-sky-500"
-                    aria-label="Select all locations"
-                  />
-                </label>
+                <div className="flex items-start pt-0.5">
+                  <label className="flex cursor-pointer items-center gap-2">
+                    <input
+                      ref={selectAllRef}
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={(e) => toggleAll(e.target.checked)}
+                      className="h-4 w-4 rounded border-2 border-[#e9eaeb] bg-white text-sky-600 focus:ring-sky-500"
+                      aria-label="Select all locations"
+                    />
+                  </label>
+                </div>
               </th>
               <th
-                className="sticky left-14 z-20 h-[62px] min-h-[62px] max-h-[62px] w-[180px] min-w-[180px] max-w-[180px] box-border overflow-hidden bg-white px-4 py-0 text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                className="sticky left-14 z-20 min-h-[72px] w-[180px] min-w-[180px] max-w-[180px] box-border bg-white px-4 py-2 text-left align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                 scope="col"
               >
-                <span className="inline-flex items-center gap-2">
-                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
-                  Location
+                <span className="inline-flex items-center gap-2 whitespace-nowrap">
+                    <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                    Location
                 </span>
               </th>
               <th
-                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                className="min-h-[72px] min-w-[120px] box-border px-4 py-2 text-right align-top"
                 scope="col"
               >
-                <GripLabel label="Transfers in" align="right" />
+                <div className="flex w-full flex-col items-end gap-1 whitespace-normal">
+                  <div className="flex w-full justify-end whitespace-nowrap">
+                    <GripLabel label="Transfers in" align="right" />
+                  </div>
+                  <CellGripInset align="right">
+                    <div className="flex flex-col items-end gap-1 text-right">
+                      <div className={`${tableCellNumeric} tabular-nums`}>{summary.transfersInUnits} units</div>
+                      <div className={`${tableCellSecondary} tabular-nums`}>{summary.transfersInTrips} trips</div>
+                    </div>
+                  </CellGripInset>
+                </div>
               </th>
               <th
-                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                className="min-h-[72px] min-w-[120px] box-border px-4 py-2 text-right align-top"
                 scope="col"
               >
-                <GripLabel label="Transfers out" align="right" />
+                <div className="flex w-full flex-col items-end gap-1 whitespace-normal">
+                  <div className="flex w-full justify-end whitespace-nowrap">
+                    <GripLabel label="Transfers out" align="right" />
+                  </div>
+                  <CellGripInset align="right">
+                    <div className="flex flex-col items-end gap-1 text-right">
+                      <div className={`${tableCellNumeric} tabular-nums`}>{summary.transfersOutUnits} units</div>
+                      <div className={`${tableCellSecondary} tabular-nums`}>{summary.transfersOutTrips} trips</div>
+                    </div>
+                  </CellGripInset>
+                </div>
               </th>
               <th
-                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[140px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                className="min-h-[72px] min-w-[140px] box-border px-4 py-2 text-right align-top"
                 scope="col"
               >
-                <span className="inline-flex w-full items-center justify-end gap-2">
-                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
-                  <span className={tableHeaderGripInsetFont}>Revenue increase</span>
-                  <AutoneHeaderInfoTooltip
-                    label="Revenue increase"
-                    content={HEADER_INFO_TOOLTIPS.revenueIncrease}
-                    side="top"
-                  />
-                  <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
-                </span>
+                <div className="flex w-full flex-col items-end gap-1 whitespace-normal">
+                  <div className="inline-flex w-full items-center justify-end gap-2 whitespace-nowrap">
+                    <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                    <span className={tableHeaderGripInsetFont}>Revenue increase</span>
+                    <AutoneHeaderInfoTooltip
+                      label="Revenue increase"
+                      content={HEADER_INFO_TOOLTIPS.revenueIncrease}
+                      side="top"
+                    />
+                    <AutoneArrowDownIcon size={14} className="text-[#6A7282]" />
+                  </div>
+                  <CellGripInset align="right">
+                    <span className={`tabular-nums ${tableCellNumeric}`}>{formatEurK(summary.revenueEur)}</span>
+                  </CellGripInset>
+                </div>
               </th>
               <th
-                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[220px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                className="min-h-[72px] min-w-[220px] box-border px-4 py-2 text-right align-top"
                 scope="col"
               >
-                <span className="inline-flex w-full items-center justify-end gap-2">
-                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
-                  <span className={tableHeaderGripInsetFont}>Recommended transfers in</span>
-                  <AutoneHeaderInfoTooltip
-                    label="Recommended transfers in"
-                    content={HEADER_INFO_TOOLTIPS.recommendedTransfers}
-                    side="top"
-                  />
-                </span>
+                <div className="flex w-full flex-col items-end gap-1 whitespace-normal">
+                  <div className="inline-flex w-full items-center justify-end gap-2 whitespace-nowrap">
+                    <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                    <span className={tableHeaderGripInsetFont}>Recommended transfers in</span>
+                    <AutoneHeaderInfoTooltip
+                      label="Recommended transfers in"
+                      content={HEADER_INFO_TOOLTIPS.recommendedTransfers}
+                      side="top"
+                    />
+                  </div>
+                  <CellGripInset align="right">
+                    <span className={`tabular-nums ${tableCellNumeric}`}>{summary.recommendedIn} units</span>
+                  </CellGripInset>
+                </div>
               </th>
               <th
-                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                className="min-h-[72px] min-w-[120px] box-border px-4 py-2 text-right align-top"
                 scope="col"
               >
-                <span className="inline-flex w-full items-center justify-end gap-2">
-                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
-                  <span className={tableHeaderGripInsetFont}>Recommended transfers out</span>
-                  <AutoneHeaderInfoTooltip
-                    label="Recommended transfers out"
-                    content={HEADER_INFO_TOOLTIPS.recommendedTransfersOut}
-                    side="top"
-                  />
-                </span>
+                <div className="flex w-full flex-col items-end gap-1 whitespace-normal">
+                  <div className="inline-flex w-full items-center justify-end gap-2 whitespace-nowrap">
+                    <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                    <span className={tableHeaderGripInsetFont}>Recommended transfers out</span>
+                    <AutoneHeaderInfoTooltip
+                      label="Recommended transfers out"
+                      content={HEADER_INFO_TOOLTIPS.recommendedTransfersOut}
+                      side="top"
+                    />
+                  </div>
+                  <CellGripInset align="right">
+                    <span className={`tabular-nums ${tableCellNumeric}`}>{summary.recommendedOut} units</span>
+                  </CellGripInset>
+                </div>
               </th>
               <th
-                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[100px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                className="min-h-[72px] min-w-[160px] box-border px-4 py-2 text-right align-top"
                 scope="col"
               >
-                <GripLabel label="Sales" align="right" />
+                <div className="flex w-full flex-col items-end gap-1 whitespace-normal">
+                  <div className="w-full whitespace-nowrap text-right">
+                    <GripLabel label="Sales" align="right" />
+                  </div>
+                  <CellGripInset align="right">
+                    <div className="flex min-w-0 flex-col items-end gap-1">
+                      <div className={`whitespace-nowrap ${tableCellNumeric} tabular-nums`}>
+                        {summary.salesL7d} L7D
+                      </div>
+                      <div className={`whitespace-nowrap ${tableCellSecondary} tabular-nums`}>
+                        {summary.salesL30d} L30D
+                      </div>
+                    </div>
+                  </CellGripInset>
+                </div>
               </th>
               <th
-                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                className="min-h-[72px] min-w-[120px] box-border px-4 py-2 text-right align-top"
                 scope="col"
               >
-                <span className="inline-flex w-full items-center justify-end gap-2">
-                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
-                  <span className={tableHeaderGripInsetFont}>Forecast per wk.</span>
-                  <AutoneHeaderInfoTooltip
-                    label="Forecast per wk."
-                    content={HEADER_INFO_TOOLTIPS.forecastPerWk}
-                    side="top"
-                  />
-                </span>
+                <div className="flex w-full flex-col items-end gap-1 whitespace-normal">
+                  <div className="inline-flex w-full items-center justify-end gap-2 whitespace-nowrap">
+                    <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                    <span className={tableHeaderGripInsetFont}>Forecast per wk.</span>
+                    <AutoneHeaderInfoTooltip
+                      label="Forecast per wk."
+                      content={HEADER_INFO_TOOLTIPS.forecastPerWk}
+                      side="top"
+                    />
+                  </div>
+                  <CellGripInset align="right">
+                    <span className={`tabular-nums ${tableCellNumeric}`}>
+                      {summary.forecastPerWk.toFixed(2)} per week
+                    </span>
+                  </CellGripInset>
+                </div>
               </th>
               <th
-                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                className="min-h-[72px] min-w-[120px] box-border px-4 py-2 text-right align-top"
                 scope="col"
               >
-                <span className="inline-flex w-full items-center justify-end gap-2">
-                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
-                  <span className={tableHeaderGripInsetFont}>Stockouts</span>
-                  <AutoneHeaderInfoTooltip
-                    label="Stockouts"
-                    content={HEADER_INFO_TOOLTIPS.stockouts}
-                    side="top"
-                  />
-                </span>
+                <div className="flex w-full flex-col items-end gap-1 whitespace-normal">
+                  <div className="inline-flex w-full items-center justify-end gap-2 whitespace-nowrap">
+                    <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                    <span className={tableHeaderGripInsetFont}>Stockouts</span>
+                    <AutoneHeaderInfoTooltip
+                      label="Stockouts"
+                      content={HEADER_INFO_TOOLTIPS.stockouts}
+                      side="top"
+                    />
+                  </div>
+                  <CellGripInset align="right">
+                    <span className={`tabular-nums ${tableCellNumeric}`}>
+                      {summary.stockouts.from}
+                      <TransitionArrowSeparator />
+                      {summary.stockouts.to}
+                    </span>
+                  </CellGripInset>
+                </div>
               </th>
               <th
-                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                className="min-h-[72px] min-w-[120px] box-border px-4 py-2 text-right align-top"
                 scope="col"
               >
-                <span className="inline-flex w-full items-center justify-end gap-2">
-                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
-                  <span className={tableHeaderGripInsetFont}>Overstocks</span>
-                  <AutoneHeaderInfoTooltip
-                    label="Overstocks"
-                    content={HEADER_INFO_TOOLTIPS.overstocks}
-                    side="top"
-                  />
-                </span>
+                <div className="flex w-full flex-col items-end gap-1 whitespace-normal">
+                  <div className="inline-flex w-full items-center justify-end gap-2 whitespace-nowrap">
+                    <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                    <span className={tableHeaderGripInsetFont}>Overstocks</span>
+                    <AutoneHeaderInfoTooltip
+                      label="Overstocks"
+                      content={HEADER_INFO_TOOLTIPS.overstocks}
+                      side="top"
+                    />
+                  </div>
+                  <CellGripInset align="right">
+                    <span className={`tabular-nums ${tableCellNumeric}`}>
+                      {summary.overstocks.from.toLocaleString()}
+                      <TransitionArrowSeparator />
+                      {summary.overstocks.to.toLocaleString()}
+                    </span>
+                  </CellGripInset>
+                </div>
               </th>
               <th
-                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[120px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                className="min-h-[72px] min-w-[120px] box-border px-4 py-2 text-right align-top"
                 scope="col"
               >
-                <span className="inline-flex w-full items-center justify-end gap-2">
-                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
-                  <span className={tableHeaderGripInsetFont}>Understocks</span>
-                  <AutoneHeaderInfoTooltip
-                    label="Understocks"
-                    content={HEADER_INFO_TOOLTIPS.understocks}
-                    side="top"
-                  />
-                </span>
+                <div className="flex w-full flex-col items-end gap-1 whitespace-normal">
+                  <div className="inline-flex w-full items-center justify-end gap-2 whitespace-nowrap">
+                    <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                    <span className={tableHeaderGripInsetFont}>Understocks</span>
+                    <AutoneHeaderInfoTooltip
+                      label="Understocks"
+                      content={HEADER_INFO_TOOLTIPS.understocks}
+                      side="top"
+                    />
+                  </div>
+                  <CellGripInset align="right">
+                    <span className={`tabular-nums ${tableCellNumeric}`}>
+                      {summary.understocks.from}
+                      <TransitionArrowSeparator />
+                      {summary.understocks.to}
+                    </span>
+                  </CellGripInset>
+                </div>
               </th>
               <th
-                className="h-[62px] min-h-[62px] max-h-[62px] min-w-[100px] box-border overflow-hidden px-4 py-0 text-right align-middle"
+                className="min-h-[72px] min-w-[100px] box-border px-4 py-2 text-right align-top"
                 scope="col"
               >
-                <span className="inline-flex w-full items-center justify-end gap-2">
-                  <GripVertical className={tableHeaderGripIcon} aria-hidden />
-                  <span className={tableHeaderGripInsetFont}>Depth</span>
-                  <AutoneHeaderInfoTooltip
-                    label="Depth"
-                    content={HEADER_INFO_TOOLTIPS.depth}
-                    side="top"
-                  />
-                </span>
+                <div className="flex w-full flex-col items-end gap-1 whitespace-normal">
+                  <div className="inline-flex w-full items-center justify-end gap-2 whitespace-nowrap">
+                    <GripVertical className={tableHeaderGripIcon} aria-hidden />
+                    <span className={tableHeaderGripInsetFont}>Depth</span>
+                    <AutoneHeaderInfoTooltip
+                      label="Depth"
+                      content={HEADER_INFO_TOOLTIPS.depth}
+                      side="top"
+                    />
+                  </div>
+                  <CellGripInset align="right">
+                    <span className={`tabular-nums ${tableCellNumeric}`}>
+                      {summary.depth.from.toFixed(1)}
+                      <TransitionArrowSeparator />
+                      {summary.depth.to.toFixed(1)}
+                    </span>
+                  </CellGripInset>
+                </div>
               </th>
             </tr>
           </thead>
           <tbody className="[&_td]:border-t-0 [&_td]:border-b-[0.5px] [&_td]:border-solid [&_td]:border-[#E3E8F0]">
-            <tr className="bg-white font-semibold">
-              <td className="sticky left-0 z-30 bg-white py-3 px-4 shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]" />
-              <td
-                className={`sticky left-14 z-20 w-[180px] min-w-[180px] max-w-[180px] bg-white px-4 py-3 shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableCellPrimary}`}
-              />
-              <td className="px-4 py-3 align-middle">
-                <CellGripInset align="right">
-                  <div className="flex flex-col items-end gap-1 text-right">
-                    <div className={`${tableCellNumeric} tabular-nums`}>{summary.transfersInUnits} units</div>
-                    <div className={`${tableCellSecondary} tabular-nums`}>{summary.transfersInTrips} trips</div>
-                  </div>
-                </CellGripInset>
-              </td>
-              <td className="px-4 py-3 align-middle">
-                <CellGripInset align="right">
-                  <div className="flex flex-col items-end gap-1 text-right">
-                    <div className={`${tableCellNumeric} tabular-nums`}>{summary.transfersOutUnits} units</div>
-                    <div className={`${tableCellSecondary} tabular-nums`}>{summary.transfersOutTrips} trips</div>
-                  </div>
-                </CellGripInset>
-              </td>
-              <td className="px-4 py-3 align-middle">
-                <CellGripInset align="right">
-                  <span className={`tabular-nums ${tableCellNumeric}`}>
-                    {formatEurK(summary.revenueEur)}
-                  </span>
-                </CellGripInset>
-              </td>
-              <td className="px-4 py-3 align-middle">
-                <CellGripInset align="right">
-                  <span className={`tabular-nums ${tableCellNumeric}`}>{summary.recommendedIn} units</span>
-                </CellGripInset>
-              </td>
-              <td className="px-4 py-3 align-middle">
-                <CellGripInset align="right">
-                  <span className={`tabular-nums ${tableCellNumeric}`}>
-                    {summary.recommendedOut} units
-                  </span>
-                </CellGripInset>
-              </td>
-              <td className="px-4 py-3 align-middle">
-                <CellGripInset align="right">
-                  <div className="flex min-w-0 flex-col items-end gap-1">
-                    <div className={`${tableCellNumeric} tabular-nums`}>{summary.salesL7d} L7D</div>
-                    <div className={`${tableCellSecondary} tabular-nums`}>{summary.salesL30d} L30D</div>
-                  </div>
-                </CellGripInset>
-              </td>
-              <td className="px-4 py-3 align-middle">
-                <CellGripInset align="right">
-                  <span className={`tabular-nums ${tableCellNumeric}`}>
-                    {summary.forecastPerWk.toFixed(2)} per week
-                  </span>
-                </CellGripInset>
-              </td>
-              <td className="px-4 py-3 align-middle">
-                <CellGripInset align="right">
-                  <span className={`tabular-nums ${tableCellNumeric}`}>
-                    {summary.stockouts.from}
-                    <TransitionArrowSeparator />
-                    {summary.stockouts.to}
-                  </span>
-                </CellGripInset>
-              </td>
-              <td className="px-4 py-3 align-middle">
-                <CellGripInset align="right">
-                  <span className={`tabular-nums ${tableCellNumeric}`}>
-                    {summary.overstocks.from.toLocaleString()}
-                    <TransitionArrowSeparator />
-                    {summary.overstocks.to.toLocaleString()}
-                  </span>
-                </CellGripInset>
-              </td>
-              <td className="px-4 py-3 align-middle">
-                <CellGripInset align="right">
-                  <span className={`tabular-nums ${tableCellNumeric}`}>
-                    {summary.understocks.from}
-                    <TransitionArrowSeparator />
-                    {summary.understocks.to}
-                  </span>
-                </CellGripInset>
-              </td>
-              <td className="px-4 py-3 align-middle">
-                <CellGripInset align="right">
-                  <span className={`tabular-nums ${tableCellNumeric}`}>
-                    {summary.depth.from.toFixed(1)}
-                    <TransitionArrowSeparator />
-                    {summary.depth.to.toFixed(1)}
-                  </span>
-                </CellGripInset>
-              </td>
-            </tr>
             {rows.map((row) => renderDataRow(row))}
           </tbody>
         </table>

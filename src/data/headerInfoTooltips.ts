@@ -29,4 +29,11 @@ export const HEADER_INFO_TOOLTIPS = {
     'Total units moving on the proposed trips in this view. Each row shows the transfer size for that route.',
   tripsRecommendedTransfers:
     'Total recommended transfer units across the trips in this view. Per-trip values appear in each row.',
+  /** All-tab aggregated assortment — sticky column sub-headers above dropdowns */
+  allTabProductsColumn:
+    'Product subgroup for this column. Choose how lines are grouped in the product section of each row.',
+  allTabFromLocationColumn:
+    'Source location cluster for the transfers summarized here.',
+  allTabToLocationColumn:
+    'Destination location grouping for proposed moves in this view.',
 } as const;
