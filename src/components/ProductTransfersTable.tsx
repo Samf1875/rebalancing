@@ -285,9 +285,9 @@ function formatWeeksCoverageArrow(
 const MOCK_VISIBILITY_SENDING = { fromPct: 20, toPct: 0 };
 const MOCK_VISIBILITY_RECEIVING = { fromPct: 60, toPct: 90 };
 
-/** Tooltip copy for Product visibility impact (matches header simple-tooltip style). */
-const PRODUCT_VISIBILITY_IMPACT_INFO =
-  "Share of this product's SKUs (sizes/variants) physically present at the location. Different from weeks coverage, which measures stock-vs-demand adequacy.";
+/** Tooltip for Product visibility impact (same AutoneHeaderInfoTooltip simple mode as column headers). */
+const PRODUCT_VISIBILITY_IMPACT_TOOLTIP =
+  "Share of this product's sizes present at the location. Different from weeks coverage, which measures whether stock levels meet demand.";
 
 function RecommendedTransferProductVisibilityImpact({
   sendingLabel,
@@ -301,8 +301,9 @@ function RecommendedTransferProductVisibilityImpact({
       <div className="mb-2 mt-4">
         <AutoneHeaderInfoTooltip
           label="Product visibility impact"
-          content={PRODUCT_VISIBILITY_IMPACT_INFO}
+          content={PRODUCT_VISIBILITY_IMPACT_TOOLTIP}
           topAlign="start"
+          portalZIndexClass="z-[220]"
           hoverWith={<span className={transferPopSection}>Product visibility impact</span>}
         />
       </div>
