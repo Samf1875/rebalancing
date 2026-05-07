@@ -294,53 +294,6 @@ function TransferBadgePopoverContent({
 }) {
   const sourceRow = rows.find((r) => r.id === popItem.fromLocationId);
   const sourceName = sourceRow?.name ?? 'Unknown source';
-  const availableToSend = sourceRow ? sourceRow.stock.from : 0;
-  const isLulliEshopToPpNancyTransferHover =
-    popRow.id === 'loc-645' && popItem.fromLocationId === 'loc-610';
-
-  if (isLulliEshopToPpNancyTransferHover) {
-    return (
-      <>
-        <p className="flex items-center gap-1 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
-          <span>{sourceName}</span>
-          <TransitionArrowSeparator className="mx-0 shrink-0" />
-          <span>{popRow.name}</span>
-        </p>
-        <p className={`${transferPopSection} mt-1`}>Maximum units per trip: 100</p>
-        <div className="my-1.5 border-t border-[#E3E8F0]" />
-
-        <p className={`${transferPopSection} mb-1.5`}>Transfer info</p>
-        <div className="flex flex-col gap-1.5">
-          <TransferPopRow
-            icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
-            label="Transfer units"
-            value={popItem.count.toLocaleString()}
-          />
-        </div>
-
-        <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation</p>
-        <div className="flex flex-col gap-1.5">
-          <TransferPopRow
-            icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
-            label="Transfer units"
-            value={popItem.count.toLocaleString()}
-          />
-          <TransferPopReason label="Increase revenue by €380" />
-        </div>
-
-        {onMoreDetail ? (
-          <button
-            type="button"
-            onClick={onMoreDetail}
-            className="mt-2 inline-block cursor-pointer font-['Inter',sans-serif] text-[11px] font-medium leading-snug text-[#0267FF] underline-offset-2 outline-none hover:underline focus-visible:underline"
-          >
-            More detail...
-          </button>
-        ) : null}
-      </>
-    );
-  }
-
   return (
     <>
       <p className="flex items-center gap-1 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
@@ -358,16 +311,6 @@ function TransferBadgePopoverContent({
           label="Transfer units"
           value={popItem.count.toLocaleString()}
         />
-        <TransferPopRow
-          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
-          label="Available to send"
-          value={availableToSend.toLocaleString()}
-        />
-        <TransferPopRow
-          icon={<ArrowLeftRight className="size-3.5" strokeWidth={2} aria-hidden />}
-          label="Trip type"
-          value={popItem.tripType}
-        />
       </div>
 
       <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation</p>
@@ -377,50 +320,7 @@ function TransferBadgePopoverContent({
           label="Transfer units"
           value={popItem.count.toLocaleString()}
         />
-        <TransferPopRow
-          icon={<TrendingUp className="size-3.5" strokeWidth={2} aria-hidden />}
-          label="Revenue increase"
-          value={formatCurrencyEur(popItem.revenueIncrease)}
-        />
-      </div>
-
-      {popItem.reasons.length > 0 ? (
-        <>
-          <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation reasons</p>
-          <div className="flex flex-col gap-1.5">
-            {popItem.reasons.map((reason, idx) => (
-              <TransferPopReason key={`${popRow.id}-reason-${idx}`} label={reason} />
-            ))}
-          </div>
-        </>
-      ) : null}
-
-      <div className="my-2 border-t border-[#E3E8F0]" />
-
-      <p className={`${transferPopSection} mb-1.5`}>Total weeks coverage</p>
-      <div className="flex flex-col gap-1.5">
-        <TransferPopRow
-          icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={sourceName}
-          value={
-            sourceRow
-              ? formatWeeksCoverageArrow(
-                  sourceRow.stock,
-                  sourceRow.forecastPerWeek,
-                  sourceRow.coverage.targetWeeks
-                )
-              : '—'
-          }
-        />
-        <TransferPopRow
-          icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={popRow.name}
-          value={formatWeeksCoverageArrow(
-            popRow.stock,
-            popRow.forecastPerWeek,
-            popRow.coverage.targetWeeks
-          )}
-        />
+        <TransferPopReason label={`Increase revenue by ${formatCurrencyEur(popItem.revenueIncrease)}`} />
       </div>
 
       {onMoreDetail ? (
@@ -451,7 +351,6 @@ function TransferOutBadgePopoverContent({
     ? rows.find((r) => r.id === popItem.toLocationId)
     : undefined;
   const destinationName = destinationRow?.name ?? 'Multiple destinations';
-  const availableToSend = popRow.stock.from;
   return (
     <>
       <p className="flex items-center gap-1 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
@@ -459,6 +358,7 @@ function TransferOutBadgePopoverContent({
         <TransitionArrowSeparator className="mx-0 shrink-0" />
         <span>{destinationName}</span>
       </p>
+      <p className={`${transferPopSection} mt-1`}>Maximum units per trip: 100</p>
       <div className="my-1.5 border-t border-[#E3E8F0]" />
 
       <p className={`${transferPopSection} mb-1.5`}>Transfer info</p>
@@ -468,18 +368,6 @@ function TransferOutBadgePopoverContent({
           label="Transfer units"
           value={popItem.count.toLocaleString()}
         />
-        <TransferPopRow
-          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
-          label="Available to send"
-          value={availableToSend.toLocaleString()}
-        />
-        {popItem.tripType ? (
-          <TransferPopRow
-            icon={<ArrowLeftRight className="size-3.5" strokeWidth={2} aria-hidden />}
-            label="Trip type"
-            value={popItem.tripType}
-          />
-        ) : null}
       </div>
 
       <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation</p>
@@ -489,69 +377,8 @@ function TransferOutBadgePopoverContent({
           label="Transfer units"
           value={popItem.count.toLocaleString()}
         />
-        {typeof popItem.revenueIncrease === 'number' ? (
-          <TransferPopRow
-            icon={<TrendingUp className="size-3.5" strokeWidth={2} aria-hidden />}
-            label="Revenue increase"
-            value={formatCurrencyEur(popItem.revenueIncrease)}
-          />
-        ) : null}
-      </div>
-
-      {popItem.reasons && popItem.reasons.length > 0 ? (
-        <>
-          <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation reasons</p>
-          <div className="flex flex-col gap-1.5">
-            {popItem.reasons.map((reason, idx) => (
-              <TransferPopReason key={`${popRow.id}-out-reason-${idx}`} label={reason} />
-            ))}
-          </div>
-        </>
-      ) : null}
-
-      <div className="my-2 border-t border-[#E3E8F0]" />
-
-      <p className={`${transferPopSection} mb-1.5`}>Total stock</p>
-      <div className="flex flex-col gap-1.5">
-        <TransferPopRow
-          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={popRow.name}
-          value={formatStockArrow(popRow.stock.from, popRow.stock.to)}
-        />
-        <TransferPopRow
-          icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={destinationName}
-          value={
-            destinationRow
-              ? formatStockArrow(destinationRow.stock.from, destinationRow.stock.to)
-              : '—'
-          }
-        />
-      </div>
-
-      <p className={`${transferPopSection} mt-2 mb-1.5`}>Total weeks coverage</p>
-      <div className="flex flex-col gap-1.5">
-        <TransferPopRow
-          icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={popRow.name}
-          value={formatWeeksCoverageArrow(
-            popRow.stock,
-            popRow.forecastPerWeek,
-            popRow.coverage.targetWeeks
-          )}
-        />
-        <TransferPopRow
-          icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-          label={destinationName}
-          value={
-            destinationRow
-              ? formatWeeksCoverageArrow(
-                  destinationRow.stock,
-                  destinationRow.forecastPerWeek,
-                  destinationRow.coverage.targetWeeks
-                )
-              : '—'
-          }
+        <TransferPopReason
+          label={`Increase revenue by ${formatCurrencyEur(popItem.revenueIncrease ?? 0)}`}
         />
       </div>
 
