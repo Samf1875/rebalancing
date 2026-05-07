@@ -281,6 +281,46 @@ function formatWeeksCoverageArrow(
   );
 }
 
+/** Placeholder visibility % (before → after); wired to real data later. */
+const MOCK_VISIBILITY_SENDING = { fromPct: 20, toPct: 0 };
+const MOCK_VISIBILITY_RECEIVING = { fromPct: 60, toPct: 90 };
+
+function RecommendedTransferProductVisibilityImpact({
+  sendingLabel,
+  receivingLabel,
+}: {
+  sendingLabel: string;
+  receivingLabel: string;
+}) {
+  return (
+    <>
+      <p className={`${transferPopSection} mb-2 mt-4`}>Product visibility impact</p>
+      <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+            {sendingLabel}
+          </span>
+          <span className="inline-flex shrink-0 items-center gap-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+            <span>{MOCK_VISIBILITY_SENDING.fromPct}%</span>
+            <TransitionArrowSeparator className="mx-0 shrink-0" />
+            <span>{MOCK_VISIBILITY_SENDING.toPct}%</span>
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+            {receivingLabel}
+          </span>
+          <span className="inline-flex shrink-0 items-center gap-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+            <span>{MOCK_VISIBILITY_RECEIVING.fromPct}%</span>
+            <TransitionArrowSeparator className="mx-0 shrink-0" />
+            <span>{MOCK_VISIBILITY_RECEIVING.toPct}%</span>
+          </span>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function TransferBadgePopoverContent({
   popRow,
   popItem,
@@ -1257,6 +1297,11 @@ export function ProductTransfersTable({
                     </div>
                   </div>
 
+                  <RecommendedTransferProductVisibilityImpact
+                    sendingLabel="PR AC Lille (sending)"
+                    receivingLabel="Lulli Eshop (receiving)"
+                  />
+
                   <p className={`${transferPopSection} mb-2 mt-4`}>Stock check</p>
                   <div className="flex flex-col gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
                     <div className="flex flex-col gap-1.5">
@@ -1703,6 +1748,11 @@ export function ProductTransfersTable({
                       </ul>
                     </>
                   ) : null}
+
+                  <RecommendedTransferProductVisibilityImpact
+                    sendingLabel={`${transferDetail.sourceName} (sending)`}
+                    receivingLabel={`${transferDetail.destinationName} (receiving)`}
+                  />
 
                   <div className="mt-5 border-t border-[#E3E8F0] pt-4">
                     <p className={`${transferPopSection} mb-2`}>Total stock</p>
