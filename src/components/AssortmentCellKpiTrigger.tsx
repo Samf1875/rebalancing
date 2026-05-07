@@ -9,14 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  AlertTriangle,
-  LineChart,
-  OctagonAlert,
-  Package,
-  Plus,
-  TrendingUp,
-} from 'lucide-react';
+import { AlertTriangle, OctagonAlert, Package, Plus, TrendingUp } from 'lucide-react';
 
 const VIEWPORT_PAD = 12;
 
@@ -28,15 +21,10 @@ export type KpiDriverTone = 'warning' | 'positive' | 'negative';
 
 export type KpiDriverItem = { tone: KpiDriverTone; text: string };
 
-export type KpiPopoverColumn = 'product' | 'sales' | 'forecast';
+export type KpiPopoverColumn = 'product';
 
-const HEADER_BY_COLUMN: Record<
-  KpiPopoverColumn,
-  { accent: string; Icon: typeof Package }
-> = {
+const HEADER_BY_COLUMN: Record<KpiPopoverColumn, { accent: string; Icon: typeof Package }> = {
   product: { accent: 'bg-[#14B8A6]', Icon: Package },
-  sales: { accent: 'bg-[#08a16a]', Icon: TrendingUp },
-  forecast: { accent: 'bg-[#6366f1]', Icon: LineChart },
 };
 
 function DriverRow({ tone, text }: KpiDriverItem) {

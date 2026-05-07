@@ -14,9 +14,9 @@ export const ASSORTMENT_HEADER_RICH: {
     body: 'Image, product name, SKU, and attributes for each product group. Use this column to identify what you are rebalancing.',
   },
   transfers: {
-    title: 'Transfers (units moved)',
+    title: 'Transfers (units & trips)',
     icon: 'info',
-    body: 'Number of units moved between locations in the selected time period. L7D represents the last 7 days. L30D represents the last 30 days.',
+    body: 'First line: units transferred between locations (rolling 7-day window). Second line: transfer trips (rolling 30-day window).',
   },
   revenueIncrease: {
     title: 'Estimated revenue gain',

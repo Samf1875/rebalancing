@@ -136,16 +136,16 @@ const initRow = (r: AssortmentRow, isDraft = false): AssortmentRow => ({
   },
 });
 
-export type RebalancingPrototypeV1Props = {
+export type RebalancingPrototypeV1CProps = {
   prototypeVersion: PrototypeVersionId;
   /** Header Back: consume one in-workspace step (drill-down) before Layout pops task-list history. */
   registerWorkspaceBackHandler?: (handler: (() => boolean) | null) => void;
 };
 
-export function RebalancingPrototypeV1({
+export function RebalancingPrototypeV1C({
   prototypeVersion,
   registerWorkspaceBackHandler,
-}: RebalancingPrototypeV1Props) {
+}: RebalancingPrototypeV1CProps) {
   const [rows, setRows] = useState<AssortmentRow[]>(() =>
     mockRows.slice(0, 5).map((r) => initRow(r, false))
   );

@@ -7,52 +7,6 @@ import {
   formatTransferValueEur,
   type RebalancingTaskRow,
 } from '../../data/mockRebalancingTasks';
-import { RebalancingWorkspaceSummaryBanner } from './RebalancingWorkspaceSummaryBanner';
-
-const TASK_LIST_SUBLINE_ONGOING =
-  'View and manage all active rebalancing batches in one place. Monitor progress, make edits, and ensure everything stays aligned with your strategy.';
-const TASK_LIST_SUBLINE_SUBMITTED = 'View, track, and manage submitted rebalances.';
-
-function RebalancingModuleDetailsBody({
-  contextTitle,
-  contextDescription,
-}: {
-  contextTitle: string;
-  contextDescription: string;
-}) {
-  const p =
-    "font-['Inter',sans-serif] text-sm font-normal leading-relaxed text-[#475467]";
-  const titleSm = "font-['Inter',sans-serif] text-sm font-semibold leading-snug text-[#101828]";
-  return (
-    <div className="space-y-3 pt-[10px]">
-      <div className="space-y-2">
-        <p className={titleSm}>{contextTitle}</p>
-        <p className={p}>{contextDescription}</p>
-      </div>
-      <div className="space-y-3">
-        <p className={titleSm}>Rebalancing Module</p>
-        <p className={p}>Manage and optimize how stock is redistributed across your network.</p>
-        <p className={p}>
-          Rebalancing allows you to move inventory between alternate sources such as stores or local warehouses rather
-          than relying on default replenishment from distribution centers. This helps ensure the right products are
-          available in the right locations at the right time.
-        </p>
-        <p className={p}>Use rebalancing to support three key strategies:</p>
-        <ul className="list-none space-y-2 pl-0 font-['Inter',sans-serif] text-sm leading-relaxed text-[#475467]">
-          <li>Optimize – Balance stock across locations to maintain consistent coverage and assortment</li>
-          <li>Consolidate – Shift inventory to high-performing locations to maximize sell-through</li>
-          <li>
-            Clean up – Return excess or underperforming stock to warehouses to free up space and prepare for next actions
-          </li>
-        </ul>
-        <p className={p}>
-          Rebalancing can be applied across different geographical scopes, from local regions to global networks, giving
-          you flexibility to respond to demand at any level.
-        </p>
-      </div>
-    </div>
-  );
-}
 
 type RebalancingTaskListScreenProps = {
   onOpenTask: (task: RebalancingTaskRow) => void;
@@ -179,58 +133,37 @@ export function RebalancingTaskListScreen({ onOpenTask, onRecreateTask }: Rebala
       className="relative left-0 mx-0 flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col gap-4 self-stretch overflow-y-auto bg-white px-6 pt-4 pb-12"
       data-rebalancing-task-list
     >
-      <div className="flex w-full min-w-0 flex-col gap-3">
-        <div className="flex w-full min-w-0 flex-wrap items-center gap-3">
-          <div
-            className="flex min-w-0 flex-wrap items-center gap-8"
-            role="tablist"
-            aria-label="Rebalancing tasks"
-          >
-            {(
-              [
-                { id: 'ongoing' as const, label: 'Ongoing' },
-                { id: 'submitted' as const, label: 'Submitted' },
-              ] as const
-            ).map(({ id, label }) => {
-              const active = tab === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => setTab(id)}
-                  className={`flex items-center justify-center border-b-2 px-1 py-3 text-sm transition-colors ${
-                    active
-                      ? 'border-[#2EB8C2] font-semibold text-[#00050a]'
-                      : 'border-transparent font-normal text-[#4b535c] hover:text-[#00050a]'
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
+      <div className="flex w-full min-w-0 flex-wrap items-center gap-3">
+        <div
+          className="flex min-w-0 flex-wrap items-center gap-8"
+          role="tablist"
+          aria-label="Rebalancing tasks"
+        >
+          {(
+            [
+              { id: 'ongoing' as const, label: 'Ongoing' },
+              { id: 'submitted' as const, label: 'Submitted' },
+            ] as const
+          ).map(({ id, label }) => {
+            const active = tab === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setTab(id)}
+                className={`flex items-center justify-center border-b-2 px-1 py-3 text-sm transition-colors ${
+                  active
+                    ? 'border-[#2EB8C2] font-semibold text-[#00050a]'
+                    : 'border-transparent font-normal text-[#4b535c] hover:text-[#00050a]'
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
-
-        <RebalancingWorkspaceSummaryBanner
-          headline={tab === 'ongoing' ? 'Rebalancing: Ongoing' : 'Rebalancing: Submitted'}
-          hidePrimaryMetric
-          secondaryMetric={
-            tab === 'ongoing'
-              ? `${visibleTasks.length} rebalancings ongoing`
-              : `${visibleTasks.length} rebalancings submitted`
-          }
-          secondaryMetricTone="muted"
-          subline={tab === 'ongoing' ? TASK_LIST_SUBLINE_ONGOING : TASK_LIST_SUBLINE_SUBMITTED}
-          detailsBody={
-            <RebalancingModuleDetailsBody
-              contextTitle={tab === 'ongoing' ? 'Rebalancing: Ongoing' : 'Rebalancing: Submitted'}
-              contextDescription={tab === 'ongoing' ? TASK_LIST_SUBLINE_ONGOING : TASK_LIST_SUBLINE_SUBMITTED}
-            />
-          }
-          showWorkspaceParameterDetails={false}
-        />
       </div>
 
       <div ref={searchWrapRef} className="flex w-full min-w-0 items-center justify-end">

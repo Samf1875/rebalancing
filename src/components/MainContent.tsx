@@ -3,6 +3,7 @@ import { MAIN_NAV_ASSORTMENT_BODY_IDS } from '../mainNavModuleIds';
 import { RebalancingTaskListScreen } from './rebalancing/RebalancingTaskListScreen';
 import { RebalancingPrototypeV1 } from './rebalancing/prototypes/RebalancingPrototypeV1';
 import { RebalancingPrototypeV1B } from './rebalancing/prototypes/RebalancingPrototypeV1B';
+import { RebalancingPrototypeV1C } from './rebalancing/prototypes/RebalancingPrototypeV1C';
 import { RebalancingPrototypeV2 } from './rebalancing/prototypes/RebalancingPrototypeV2';
 import { RebalancingPrototypeV3 } from './rebalancing/prototypes/RebalancingPrototypeV3';
 import { RebalancingPrototypeV4 } from './rebalancing/prototypes/RebalancingPrototypeV4';
@@ -36,6 +37,13 @@ function rebalancingWorkspaceForVersion(
       );
     case 'v1b':
       return <RebalancingPrototypeV1B prototypeVersion={prototypeVersion} />;
+    case 'v1c':
+      return (
+        <RebalancingPrototypeV1C
+          prototypeVersion={prototypeVersion}
+          registerWorkspaceBackHandler={registerWorkspaceBackHandler}
+        />
+      );
     case 'v2':
       return <RebalancingPrototypeV2 prototypeVersion={prototypeVersion} />;
     case 'v3':
