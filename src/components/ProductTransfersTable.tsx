@@ -295,6 +295,13 @@ function TransferBadgePopoverContent({
   const sourceRow = rows.find((r) => r.id === popItem.fromLocationId);
   const sourceName = sourceRow?.name ?? 'Unknown source';
   const availableToSend = sourceRow ? sourceRow.stock.from : 0;
+  const isLulliEshopToPpNancyTransferHover =
+    popRow.id === 'loc-645' && popItem.fromLocationId === 'loc-610';
+  const recommendationReasonsForDisplay = isLulliEshopToPpNancyTransferHover
+    ? popItem.reasons.filter((r) => r !== 'Increase revenue')
+    : popItem.reasons;
+  const showRecommendationReasons =
+    recommendationReasonsForDisplay.length > 0 || isLulliEshopToPpNancyTransferHover;
   return (
     <>
       <p className="flex items-center gap-1 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
@@ -331,20 +338,25 @@ function TransferBadgePopoverContent({
           label="Transfer units"
           value={popItem.count.toLocaleString()}
         />
-        <TransferPopRow
-          icon={<TrendingUp className="size-3.5" strokeWidth={2} aria-hidden />}
-          label="Revenue increase"
-          value={formatCurrencyEur(popItem.revenueIncrease)}
-        />
+        {isLulliEshopToPpNancyTransferHover ? null : (
+          <TransferPopRow
+            icon={<TrendingUp className="size-3.5" strokeWidth={2} aria-hidden />}
+            label="Revenue increase"
+            value={formatCurrencyEur(popItem.revenueIncrease)}
+          />
+        )}
       </div>
 
-      {popItem.reasons.length > 0 ? (
+      {showRecommendationReasons ? (
         <>
           <p className={`${transferPopSection} mt-2 mb-1.5`}>Recommendation reasons</p>
           <div className="flex flex-col gap-1.5">
-            {popItem.reasons.map((reason, idx) => (
+            {recommendationReasonsForDisplay.map((reason, idx) => (
               <TransferPopReason key={`${popRow.id}-reason-${idx}`} label={reason} />
             ))}
+            {isLulliEshopToPpNancyTransferHover ? (
+              <TransferPopReason label="Increase revenue by €380" />
+            ) : null}
           </div>
         </>
       ) : null}
