@@ -52,6 +52,8 @@ const tableCellSecondary =
 const tableRowHoverTd = '';
 const headerTitleClass =
   "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
+/** Second header line: hidden when `showTotalsRow` compacts thead; keep real subtitles visible. */
+const transferHeaderSubPlaceholderClass = 'tt-header-sub-placeholder';
 
 function renderArrowPair(from: number, to: number): ReactNode {
   return (
@@ -840,7 +842,7 @@ export function ProductTransfersTable({
               <tr
                 className={`[&_th]:whitespace-nowrap [&_th]:align-top${
                   showTotalsRow
-                    ? ' [&_th]:!pb-0 [&_th]:!border-b-0 [&_th>div]:!min-h-[28px] [&_th>div>:last-child]:hidden'
+                    ? ' [&_th]:!pb-0 [&_th]:!border-b-0 [&_th>div]:!min-h-[28px] [&_th_.tt-header-sub-placeholder]:hidden'
                     : ''
                 }`}
               >
@@ -863,8 +865,8 @@ export function ProductTransfersTable({
                       content={HEADER_INFO_TOOLTIPS.locations}
                       hoverWith={<span className={headerTitleClass}>Locations</span>}
                     />,
-                    <span className="invisible text-[12px] leading-snug" aria-hidden>
-                      —
+                    <span className={`${tableCellSecondary} leading-snug`}>
+                      {rows.length} location{rows.length === 1 ? '' : 's'}
                     </span>
                   )}
                 </th>
@@ -880,7 +882,8 @@ export function ProductTransfersTable({
                         </span>
                       }
                     />,
-                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                    <span className={`invisible text-[12px] leading-snug ${transferHeaderSubPlaceholderClass}`}
+                      aria-hidden>
                       —
                     </span>
                   )}
@@ -915,7 +918,8 @@ export function ProductTransfersTable({
                         <Pencil size={14} className="shrink-0" strokeWidth={2} aria-hidden />
                       </button>
                     </span>,
-                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                    <span className={`invisible text-[12px] leading-snug ${transferHeaderSubPlaceholderClass}`}
+                      aria-hidden>
                       —
                     </span>
                   )}
@@ -927,7 +931,8 @@ export function ProductTransfersTable({
                       content={ASSORTMENT_HEADER_RICH.salesL7dL30d.body}
                       hoverWith={<span className={headerTitleClass}>Sales</span>}
                     />,
-                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                    <span className={`invisible text-[12px] leading-snug ${transferHeaderSubPlaceholderClass}`}
+                      aria-hidden>
                       —
                     </span>
                   )}
@@ -939,7 +944,8 @@ export function ProductTransfersTable({
                       content={HEADER_INFO_TOOLTIPS.forecastPerWk}
                       hoverWith={<span className={headerTitleClass}>Forecast per wk.</span>}
                     />,
-                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                    <span className={`invisible text-[12px] leading-snug ${transferHeaderSubPlaceholderClass}`}
+                      aria-hidden>
                       —
                     </span>
                   )}
@@ -951,7 +957,8 @@ export function ProductTransfersTable({
                       content={HEADER_INFO_TOOLTIPS.stockouts}
                       hoverWith={<span className={headerTitleClass}>Stockouts</span>}
                     />,
-                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                    <span className={`invisible text-[12px] leading-snug ${transferHeaderSubPlaceholderClass}`}
+                      aria-hidden>
                       —
                     </span>
                   )}
@@ -964,7 +971,8 @@ export function ProductTransfersTable({
                       content={HEADER_INFO_TOOLTIPS.coverage}
                       hoverWith={<span className={headerTitleClass}>Coverage</span>}
                     />,
-                    <span className="invisible text-[12px] leading-snug" aria-hidden>
+                    <span className={`invisible text-[12px] leading-snug ${transferHeaderSubPlaceholderClass}`}
+                      aria-hidden>
                       —
                     </span>
                   )}
@@ -989,7 +997,8 @@ export function ProductTransfersTable({
                           </span>
                         }
                       />,
-                      <span className="invisible text-[12px] leading-snug" aria-hidden>
+                      <span className={`invisible text-[12px] leading-snug ${transferHeaderSubPlaceholderClass}`}
+                      aria-hidden>
                         —
                       </span>
                     )
@@ -1088,9 +1097,6 @@ export function ProductTransfersTable({
               {rows.map((r) => renderDataRow(r))}
             </tbody>
           </table>
-        </div>
-        <div className="flex items-center justify-between gap-4 bg-white px-4 py-2 text-xs text-[#00050a]">
-          <span>{rows.length} locations</span>
         </div>
       </div>
 
