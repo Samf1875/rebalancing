@@ -285,6 +285,10 @@ function formatWeeksCoverageArrow(
 const MOCK_VISIBILITY_SENDING = { fromPct: 20, toPct: 0 };
 const MOCK_VISIBILITY_RECEIVING = { fromPct: 60, toPct: 90 };
 
+/** Tooltip copy for Product visibility impact (matches header simple-tooltip style). */
+const PRODUCT_VISIBILITY_IMPACT_INFO =
+  "Share of this product's SKUs (sizes/variants) physically present at the location. Different from weeks coverage, which measures stock-vs-demand adequacy.";
+
 function RecommendedTransferProductVisibilityImpact({
   sendingLabel,
   receivingLabel,
@@ -294,7 +298,14 @@ function RecommendedTransferProductVisibilityImpact({
 }) {
   return (
     <>
-      <p className={`${transferPopSection} mb-2 mt-4`}>Product visibility impact</p>
+      <div className="mb-2 mt-4">
+        <AutoneHeaderInfoTooltip
+          label="Product visibility impact"
+          content={PRODUCT_VISIBILITY_IMPACT_INFO}
+          topAlign="start"
+          hoverWith={<span className={transferPopSection}>Product visibility impact</span>}
+        />
+      </div>
       <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
         <div className="flex items-center justify-between gap-2">
           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
@@ -1298,8 +1309,8 @@ export function ProductTransfersTable({
                   </div>
 
                   <RecommendedTransferProductVisibilityImpact
-                    sendingLabel="PR AC Lille (sending)"
-                    receivingLabel="Lulli Eshop (receiving)"
+                    sendingLabel="Sending store: PR AC Lille"
+                    receivingLabel="Receiving store: Lulli Eshop"
                   />
 
                   <p className={`${transferPopSection} mb-2 mt-4`}>Stock check</p>
@@ -1750,8 +1761,8 @@ export function ProductTransfersTable({
                   ) : null}
 
                   <RecommendedTransferProductVisibilityImpact
-                    sendingLabel={`${transferDetail.sourceName} (sending)`}
-                    receivingLabel={`${transferDetail.destinationName} (receiving)`}
+                    sendingLabel={`Sending store: ${transferDetail.sourceName}`}
+                    receivingLabel={`Receiving store: ${transferDetail.destinationName}`}
                   />
 
                   <div className="mt-5 border-t border-[#E3E8F0] pt-4">
