@@ -141,6 +141,9 @@ function TuBreakdownBadge({
     <button
       type="button"
       data-tu-badge=""
+      data-stock-box-id={
+        item.kind === 'warehouse' && item.stockBoxId != null ? item.stockBoxId : undefined
+      }
       className={`inline-flex h-[26px] w-[50px] shrink-0 cursor-pointer items-center justify-center gap-[5px] rounded-[2px] font-['Inter',sans-serif] text-[11px] font-medium tabular-nums outline-none transition-[box-shadow] focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-1 ${colorClasses}`}
       aria-expanded={isOpen}
       aria-haspopup="dialog"
@@ -508,6 +511,7 @@ export function ProductTransfersTable({
     weeksCoverage: string;
     stockOnHand: number;
     reasons: string[];
+    stockBoxId?: 'stockBox_SKU_A' | 'stockBox_SKU_B';
   } | null>(null);
   const [transferDetail, setTransferDetail] = useState<{
     direction: 'in' | 'out';
@@ -727,7 +731,11 @@ export function ProductTransfersTable({
             <div className="mt-2 flex w-full flex-wrap justify-end gap-1">
               {row.tuBreakdown.map((item, idx) => (
                 <TuBreakdownBadge
-                  key={`${row.id}-tu-${idx}`}
+                  key={
+                    item.kind === 'warehouse' && item.stockBoxId != null
+                      ? `${row.id}-tu-${item.stockBoxId}`
+                      : `${row.id}-tu-${idx}`
+                  }
                   item={item}
                   rowId={row.id}
                   index={idx}
@@ -1062,9 +1070,13 @@ export function ProductTransfersTable({
                   : 'Transfer units';
             const forecast = popRow.forecastPerWeek;
             const weeksCoverageText =
-              forecast > 0
-                ? `${(popItem.count / forecast).toFixed(1)} (${popRow.coverage.targetWeeks} target)`
-                : 'N/A (0 forecast)';
+              popItem.kind === 'warehouse' && popItem.stockBoxId != null
+                ? forecast > 0
+                  ? `${(popRow.stock.from / forecast).toFixed(1)} (${popRow.coverage.targetWeeks} target)`
+                  : 'N/A (0 forecast)'
+                : forecast > 0
+                  ? `${(popItem.count / forecast).toFixed(1)} (${popRow.coverage.targetWeeks} target)`
+                  : 'N/A (0 forecast)';
             const ariaLabel = isExtensiveTransfer
               ? `Transfer details for ${popRow.name}`
               : `${detailLabel} at ${popRow.name}`;
@@ -1161,11 +1173,16 @@ export function ProductTransfersTable({
                             rowName: popRow.name,
                             count: popItem.count,
                             weeksCoverage: weeksCoverageText,
-                            stockOnHand: popRow.stock.from,
+                            stockOnHand:
+                              popItem.kind === 'warehouse' && popItem.stockBoxId != null
+                                ? popItem.count
+                                : popRow.stock.from,
                             reasons:
                               popItem.kind === 'warehouse' && popItem.reasons
                                 ? popItem.reasons
                                 : [],
+                            stockBoxId:
+                              popItem.kind === 'warehouse' ? popItem.stockBoxId : undefined,
                           });
                           setTuBadgePopover(null);
                         }}
@@ -1456,6 +1473,14 @@ export function ProductTransfersTable({
                     >
                       {warehouseDetail.rowName}
                     </h2>
+                    {warehouseDetail.stockBoxId ? (
+                      <p
+                        className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]"
+                        aria-label={`Stock box ${warehouseDetail.stockBoxId}`}
+                      >
+                        {warehouseDetail.stockBoxId}
+                      </p>
+                    ) : null}
                   </div>
                   <button
                     type="button"
