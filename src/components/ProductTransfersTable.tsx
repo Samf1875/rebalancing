@@ -254,6 +254,15 @@ const LULLI_STOCK_BOX_SKU_A_REJECTED_ROUTES: { store: string; reason: string; sc
   },
 ];
 
+/** Recommendations considered — rejected routes for Lulli Eshop stock-on-hand chip stockBox_SKU_B only */
+const LULLI_STOCK_BOX_SKU_B_REJECTED_ROUTES: { store: string; reason: string; scope: string }[] = [
+  {
+    store: 'BENOA ILE ROUSSE',
+    reason: 'Higher-value SKUs took priority on this route',
+    scope: 'Trip constraint',
+  },
+];
+
 function TransferPopRow({
   icon,
   label,
@@ -1508,14 +1517,6 @@ export function ProductTransfersTable({
                     >
                       {warehouseDetail.rowName}
                     </h2>
-                    {warehouseDetail.stockBoxId === 'stockBox_SKU_B' ? (
-                      <p
-                        className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]"
-                        aria-label={`Stock box ${warehouseDetail.stockBoxId}`}
-                      >
-                        {warehouseDetail.stockBoxId}
-                      </p>
-                    ) : null}
                   </div>
                   <button
                     type="button"
@@ -1612,6 +1613,33 @@ export function ProductTransfersTable({
                         </p>
                         <div className="flex flex-col gap-3">
                           {LULLI_STOCK_BOX_SKU_A_REJECTED_ROUTES.map((card, idx) => (
+                            <div
+                              key={`${card.store}-${card.reason}-${idx}`}
+                              className="flex flex-col gap-2 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3"
+                            >
+                              <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                                <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                                  <Home className="size-[1em]" strokeWidth={2} aria-hidden />
+                                </span>
+                                Receiving store: {card.store}
+                              </p>
+                              <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                                {card.reason}
+                              </p>
+                              <p className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                                {card.scope}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : warehouseDetail.stockBoxId === 'stockBox_SKU_B' ? (
+                      <>
+                        <p className={`${transferPopSection} mb-3`}>
+                          Routes evaluated for this unit that were not included in the final proposal
+                        </p>
+                        <div className="flex flex-col gap-3">
+                          {LULLI_STOCK_BOX_SKU_B_REJECTED_ROUTES.map((card, idx) => (
                             <div
                               key={`${card.store}-${card.reason}-${idx}`}
                               className="flex flex-col gap-2 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3"
