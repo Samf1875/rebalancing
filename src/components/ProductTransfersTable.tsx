@@ -112,6 +112,58 @@ export function ProductTransfersBreadcrumb({
 
 const TU_POPOVER_PAD = 12;
 
+/** Rows whose purple SOH chips respect the "Show SOH by unit" prototype toggle. */
+const TRANSFERS_SOH_TOGGLE_LULLI_ROW_ID = 'loc-610';
+const TRANSFERS_SOH_TOGGLE_NANCY_ROW_ID = 'loc-645';
+
+function getTuBreakdownForDisplay(
+  row: ProductTransferLocationRow,
+  showSohByUnit: boolean
+): TuBreakdownItem[] {
+  const raw = row.tuBreakdown;
+  if (!raw || raw.length === 0) return [];
+
+  if (row.id === TRANSFERS_SOH_TOGGLE_LULLI_ROW_ID && !showSohByUnit) {
+    const wh = raw.filter((item): item is Extract<TuBreakdownItem, { kind: 'warehouse' }> => item.kind === 'warehouse');
+    if (wh.length === 2) {
+      return [
+        {
+          kind: 'warehouse',
+          count: wh[0].count + wh[1].count,
+          reasons: wh[0].reasons ?? wh[1].reasons,
+        },
+      ];
+    }
+  }
+
+  if (row.id === TRANSFERS_SOH_TOGGLE_NANCY_ROW_ID && showSohByUnit) {
+    const out: TuBreakdownItem[] = [];
+    for (const item of raw) {
+      if (item.kind === 'warehouse' && item.stockBoxId == null && item.count === 2) {
+        out.push(
+          {
+            kind: 'warehouse',
+            count: 1,
+            stockBoxId: 'stockBox_SKU_A',
+            reasons: item.reasons,
+          },
+          {
+            kind: 'warehouse',
+            count: 1,
+            stockBoxId: 'stockBox_SKU_B',
+            reasons: item.reasons,
+          }
+        );
+      } else {
+        out.push(item);
+      }
+    }
+    return out;
+  }
+
+  return raw;
+}
+
 function TuBreakdownBadge({
   item,
   rowId,
@@ -371,10 +423,30 @@ const PRODUCT_VISIBILITY_IMPACT_TOOLTIP =
 function RecommendedTransferProductVisibilityImpact({
   sendingLabel,
   receivingLabel,
+  sendingValue,
+  receivingValue,
 }: {
   sendingLabel: string;
   receivingLabel: string;
+  sendingValue?: ReactNode;
+  receivingValue?: ReactNode;
 }) {
+  const sendingPill =
+    sendingValue ?? (
+      <>
+        <span>{MOCK_VISIBILITY_SENDING.fromPct}%</span>
+        <TransitionArrowSeparator className="mx-0 shrink-0" />
+        <span>{MOCK_VISIBILITY_SENDING.toPct}%</span>
+      </>
+    );
+  const receivingPill =
+    receivingValue ?? (
+      <>
+        <span>{MOCK_VISIBILITY_RECEIVING.fromPct}%</span>
+        <TransitionArrowSeparator className="mx-0 shrink-0" />
+        <span>{MOCK_VISIBILITY_RECEIVING.toPct}%</span>
+      </>
+    );
   return (
     <>
       <div className="mb-2 mt-4">
@@ -392,9 +464,7 @@ function RecommendedTransferProductVisibilityImpact({
             {sendingLabel}
           </span>
           <span className="inline-flex shrink-0 items-center gap-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
-            <span>{MOCK_VISIBILITY_SENDING.fromPct}%</span>
-            <TransitionArrowSeparator className="mx-0 shrink-0" />
-            <span>{MOCK_VISIBILITY_SENDING.toPct}%</span>
+            {sendingPill}
           </span>
         </div>
         <div className="flex items-center justify-between gap-2">
@@ -402,9 +472,7 @@ function RecommendedTransferProductVisibilityImpact({
             {receivingLabel}
           </span>
           <span className="inline-flex shrink-0 items-center gap-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
-            <span>{MOCK_VISIBILITY_RECEIVING.fromPct}%</span>
-            <TransitionArrowSeparator className="mx-0 shrink-0" />
-            <span>{MOCK_VISIBILITY_RECEIVING.toPct}%</span>
+            {receivingPill}
           </span>
         </div>
       </div>
@@ -569,6 +637,8 @@ type ProductTransfersTableProps = {
   showBreadcrumb?: boolean;
   /** When true, render a second header row containing column totals (used by V1; other prototypes leave this off). */
   showTotalsRow?: boolean;
+  /** When true, Lulli Eshop + PR PP Nancy show per-unit purple SOH chips (default false). */
+  showSohByUnit?: boolean;
 };
 
 export function ProductTransfersTable({
@@ -576,6 +646,7 @@ export function ProductTransfersTable({
   onBack,
   showBreadcrumb = true,
   showTotalsRow = false,
+  showSohByUnit = false,
 }: ProductTransfersTableProps) {
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [showTuBreakdown, setShowTuBreakdown] = useState(false);
@@ -598,6 +669,8 @@ export function ProductTransfersTable({
     stockOnHand: number;
     reasons: string[];
     stockBoxId?: 'stockBox_SKU_A' | 'stockBox_SKU_B';
+    stockCheckTotalStock: { from: number; to: number };
+    forecastLine: string;
   } | null>(null);
   const [transferDetail, setTransferDetail] = useState<{
     direction: 'in' | 'out';
@@ -640,6 +713,10 @@ export function ProductTransfersTable({
   };
 
   useEffect(() => () => cancelTuClose(), []);
+
+  useEffect(() => {
+    setTuBadgePopover(null);
+  }, [showSohByUnit]);
 
   useEffect(() => {
     if (!warehouseDetail) return;
@@ -815,12 +892,12 @@ export function ProductTransfersTable({
           </div>
           {showTuBreakdown && row.tuBreakdown != null && row.tuBreakdown.length > 0 ? (
             <div className="mt-2 flex w-full flex-wrap justify-end gap-1">
-              {row.tuBreakdown.map((item, idx) => (
+              {getTuBreakdownForDisplay(row, showSohByUnit).map((item, idx) => (
                 <TuBreakdownBadge
                   key={
                     item.kind === 'warehouse' && item.stockBoxId != null
                       ? `${row.id}-tu-${item.stockBoxId}`
-                      : `${row.id}-tu-${idx}`
+                      : `${row.id}-tu-${idx}-${item.kind}`
                   }
                   item={item}
                   rowId={row.id}
@@ -1143,7 +1220,9 @@ export function ProductTransfersTable({
       {tuBadgePopover != null
         ? (() => {
             const popRow = rows.find((r) => r.id === tuBadgePopover.rowId);
-            const popItem = popRow?.tuBreakdown?.[tuBadgePopover.index];
+            const displayBreakdown =
+              popRow?.tuBreakdown != null ? getTuBreakdownForDisplay(popRow, showSohByUnit) : [];
+            const popItem = displayBreakdown[tuBadgePopover.index];
             if (!popRow || !popItem) return null;
             const accent =
               popItem.kind === 'transfer' || popItem.kind === 'transfer-out' ? '#2EB8C2' : '#6864E6';
@@ -1266,13 +1345,20 @@ export function ProductTransfersTable({
                             stockOnHand:
                               popItem.kind === 'warehouse' && popItem.stockBoxId != null
                                 ? popItem.count
-                                : popRow.stock.from,
+                                : popItem.kind === 'warehouse'
+                                  ? popItem.count
+                                  : popRow.stock.from,
                             reasons:
                               popItem.kind === 'warehouse' && popItem.reasons
                                 ? popItem.reasons
                                 : [],
                             stockBoxId:
                               popItem.kind === 'warehouse' ? popItem.stockBoxId : undefined,
+                            stockCheckTotalStock:
+                              popItem.kind === 'warehouse' && popItem.stockBoxId != null
+                                ? { from: 1, to: 1 }
+                                : { from: popRow.stock.from, to: popRow.stock.to },
+                            forecastLine: `${popRow.forecastPerWeek.toFixed(2)} per week`,
                           });
                           setTuBadgePopover(null);
                         }}
@@ -1316,7 +1402,7 @@ export function ProductTransfersTable({
                       <span>Lulli Eshop</span>
                     </h2>
                     <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#6A7282]">
-                      Trip capacity (max 10,000)
+                      Trip capacity: 87 units (max 100)
                     </p>
                   </div>
                   <button
@@ -1374,11 +1460,6 @@ export function ProductTransfersTable({
                       value="4"
                     />
                     <TransferPopRow
-                      icon={<Package className="size-3.5" strokeWidth={2} aria-hidden />}
-                      label="Available to send"
-                      value="4"
-                    />
-                    <TransferPopRow
                       icon={<ArrowLeftRight className="size-3.5" strokeWidth={2} aria-hidden />}
                       label="Trip type"
                       value="Rebalancing"
@@ -1419,6 +1500,20 @@ export function ProductTransfersTable({
                   <RecommendedTransferProductVisibilityImpact
                     sendingLabel="Sending store: PR AC Lille"
                     receivingLabel="Receiving store: Lulli Eshop"
+                    sendingValue={
+                      <>
+                        <span>1/5</span>
+                        <TransitionArrowSeparator className="mx-0 shrink-0" />
+                        <span>0/5</span>
+                      </>
+                    }
+                    receivingValue={
+                      <>
+                        <span>3/5</span>
+                        <TransitionArrowSeparator className="mx-0 shrink-0" />
+                        <span>5/5</span>
+                      </>
+                    }
                   />
 
                   <p className={`${transferPopSection} mb-2 mt-4`}>Stock check</p>
@@ -1598,7 +1693,7 @@ export function ProductTransfersTable({
                           <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#6864E6]">
                             <Package className="size-[1em]" strokeWidth={2} aria-hidden />
                           </span>
-                          Lulli Eshop
+                          {warehouseDetail.rowName}
                         </p>
                         <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
                           <li className="flex items-center justify-between gap-2">
@@ -1606,7 +1701,10 @@ export function ProductTransfersTable({
                               Total stock
                             </span>
                             <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
-                              {formatStockArrow(1, 1)}
+                              {formatStockArrow(
+                                warehouseDetail.stockCheckTotalStock.from,
+                                warehouseDetail.stockCheckTotalStock.to
+                              )}
                             </span>
                           </li>
                           <li className="flex items-center justify-between gap-2">
@@ -1634,7 +1732,7 @@ export function ProductTransfersTable({
                               Forecast
                             </span>
                             <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
-                              0.77 per week
+                              {warehouseDetail.forecastLine}
                             </span>
                           </li>
                           <li className="flex items-center justify-between gap-2">

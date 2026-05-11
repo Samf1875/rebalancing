@@ -154,6 +154,7 @@ export function RebalancingPrototypeV1({
   const [statusTableFilter, setStatusTableFilter] = useState<StatusTableFilter>('all');
   const [tripType, setTripType] = useState<'rebalancing' | 'replenishment'>('rebalancing');
   const [includeZeroTransfers, setIncludeZeroTransfers] = useState(true);
+  const [showSohByUnit, setShowSohByUnit] = useState(false);
   const [sortMetric, setSortMetric] = useState<SortMetricId>('stock-after');
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [sortDescending, setSortDescending] = useState(false);
@@ -788,6 +789,27 @@ export function RebalancingPrototypeV1({
                   />
                 </button>
               </div>
+              <div className="hidden h-6 w-px shrink-0 bg-[#e9eaeb] sm:block" aria-hidden />
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-normal text-[#4b535c] whitespace-nowrap">
+                  Show SOH by unit
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={showSohByUnit}
+                  onClick={() => setShowSohByUnit((v) => !v)}
+                  className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                    showSohByUnit ? 'bg-[#0267FF]' : 'bg-[#e9eaeb]'
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                      showSohByUnit ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1008,6 +1030,7 @@ export function RebalancingPrototypeV1({
                   onBack={() => setProductTransfersDrillRowId(null)}
                   showBreadcrumb={false}
                   showTotalsRow
+                  showSohByUnit={showSohByUnit}
                 />
               ) : (
               <>
@@ -1271,6 +1294,7 @@ export function RebalancingPrototypeV1({
                 onBack={() => setProductTransfersDrillRowId(null)}
                 showBreadcrumb={false}
                 showTotalsRow
+                showSohByUnit={showSohByUnit}
               />
             ) : (
               <AssortmentTable
