@@ -15,7 +15,7 @@ export interface AssortmentRow {
   sales: { l7d: number; l30d: number; showPeriodLabels?: boolean };
   /** Revenue increase in whole EUR; Revenue increase column shows €XK (e.g. €211.7K). */
   revenueIncreaseEur: number;
-  /** Transfer counts in Transfers column (L7D primary line, L30D secondary). */
+  /** Transfer counts in Transfers column (shown as units / trips; sourced from L7D / L30D aggregates). */
   transfers: { l7d: number; l30d: number };
   /** Recommended transfers column: stacked counts + VIS/REV actions. */
   recommendedTransfers: { primary: number; secondary: number };

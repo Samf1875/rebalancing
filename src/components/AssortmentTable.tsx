@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, type DragEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
+import { useState, useEffect, useCallback, useMemo, type DragEvent, type ReactNode } from 'react';
 import {
   ChevronDown,
   ChevronLeft,
@@ -15,6 +14,10 @@ import { AutoneHeaderInfoTooltip } from './AutoneHeaderInfoTooltip';
 import { AssortmentCellKpiTrigger, type AssortmentCellKpiContent } from './AssortmentCellKpiTrigger';
 import { ProductDetailsPopover } from './ProductDetailsPopover';
 import { TransitionArrowSeparator } from './TransitionArrowSeparator';
+import {
+  ALL_TAB_AGGREGATED_STICKY_COL_PX,
+  ALL_TAB_AGG_SUB_COL_WIDTHS,
+} from '../lib/allTabAggregatedStickyLayout';
 
 /** Body cell primary label (titles, names) — Inter 14px semibold #101828 */
 const tableCellPrimary =
@@ -28,9 +31,16 @@ const tableCellNumeric =
 const tableCellSecondary =
   "font-['Inter',sans-serif] text-[12px] font-normal leading-normal text-[#6A7282]";
 
+/** Matches thead totals row primary / secondary numeric styling (export for All-tab aggregated header slot). */
+export const assortmentTotalsPrimaryClass = `${tableCellNumeric} tabular-nums !leading-[18px]`;
+export const assortmentTotalsSecondaryClass = `${tableCellSecondary} tabular-nums !leading-[16px]`;
+
 /** Grip in thead — compact handle (~12px), matches header row density. */
 const tableHeaderGripIcon =
   'h-3 w-3 shrink-0 text-[#6A7282]';
+
+/** Matches ProductTransfersTable / LocationProductsDrillView header label inset. */
+const theadHeaderCellPy = 'py-[10px]';
 
 /** Row cells stay white (no hover fill). */
 const tableRowHoverTd = '';
@@ -41,7 +51,8 @@ const tableRowHoverTd = '';
  * the same row always shows the same destination during demos. Mix of cities and
  * cluster categories to mirror the variety of values in `row.locationCluster.name`.
  */
-const DUMMY_TO_LOCATIONS: { name: string; count: number }[] = [
+/** Demo "to location" counts — exported so All-tab header totals match body rows. */
+export const AGGREGATED_DUMMY_TO_LOCATIONS: { name: string; count: number }[] = [
   { name: 'Paris', count: 5 },
   { name: 'Toulouse', count: 3 },
   { name: 'Strasbourg', count: 4 },
@@ -102,89 +113,18 @@ function kpiPopoverProduct(row: AssortmentRow): AssortmentCellKpiContent {
   };
 }
 
-/** KPI hover for Sales (L7D / L30D) column. */
-function kpiPopoverSales(row: AssortmentRow): AssortmentCellKpiContent {
-  const { l7d, l30d } = row.sales;
-  const wkFrom30 = l30d / 4;
-  const paceVs30 =
-    wkFrom30 > 0 ? Math.round(((l7d - wkFrom30) / wkFrom30) * 100) : 0;
-  return {
-    column: 'sales',
-    title: 'Sales',
-    rangeText: `${l7d.toLocaleString()} L7D`,
-    deltaText: `${l30d.toLocaleString()} L30D`,
-    summary: (
-      <>
-        Last 7 days vs last 30 days for this line. L7D is{' '}
-        <span className={`font-semibold ${paceVs30 >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
-          {paceVs30 >= 0 ? '+' : ''}
-          {paceVs30}%
-        </span>{' '}
-        vs a straight weekly slice of L30D.
-      </>
-    ),
-    drivers: [
-      { tone: 'positive', text: `L30D total ${l30d.toLocaleString()} units` },
-      {
-        tone: 'warning',
-        text: `Forecast ${row.forecastPerWeek.toFixed(2)} / wk vs L7D run rate`,
-      },
-      {
-        tone: 'negative',
-        text: `Target ${row.targetCoverageWeeks} wk cover vs current OH`,
-      },
-    ],
-    footerHighlight: formatRevenueIncreaseEurK(row.revenueIncreaseEur),
-    footerRest: ' planned revenue uplift tied to this line',
-  };
-}
-
-/** KPI hover for Forecast per week column. */
-function kpiPopoverForecast(row: AssortmentRow): AssortmentCellKpiContent {
-  const fw = row.forecastPerWeek.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-  return {
-    column: 'forecast',
-    title: 'Weekly forecast',
-    rangeText: `${fw} / wk`,
-    deltaText: `${row.targetCoverageWeeks} wk cover`,
-    summary: (
-      <>
-        Modelled demand for <span className="font-semibold text-[#101828]">{row.productCellDetail.title}</span>,
-        consistent with <span className="font-semibold text-[#101828]">{row.targetCoverageWeeks} week</span> target
-        coverage and assortment IA.
-      </>
-    ),
-    drivers: [
-      { tone: 'warning', text: `Store OH ${row.storeOh.toLocaleString()} units` },
-      { tone: 'positive', text: `L7D sales ${row.sales.l7d.toLocaleString()} units` },
-      {
-        tone: 'positive',
-        text: `WH ${row.whStock.value.toLocaleString()} units (${row.whStockPctForIa.toFixed(1)}% for IA)`,
-      },
-    ],
-    footerHighlight: `${row.recommendedTransfers.primary.toLocaleString()}`,
-    footerRest: ' transfers suggested to align inventory with forecast',
-  };
-}
-
 const theadCellBg = 'bg-white';
 
 /** Columns with grip handles — reorderable (IA after post–Stockouts block). */
 const BASE_GRIP_COLUMN_IDS = [
   'transfers',
+  'rebalTransfers',
+  'reorderTransfers',
+  'replenishTransfers',
   'sales',
   'scheduleStart',
-  'scheduleEnd',
-  'forecastPerWeek',
   'targetCoverage',
   'gripLocations',
-  'gripOverstocks',
-  'gripUnderstocks',
-  'gripDepth',
-  'gripWarehouseUnits',
 ] as const;
 
 const DRILL_GRIP_COLUMN_IDS = [
@@ -203,16 +143,20 @@ const DRILL_GRIP_ID_SET = new Set<string>(DRILL_GRIP_COLUMN_IDS);
 
 const GRIP_VISIBILITY_KEY: Partial<Record<GripColumnId, TableColumnVisibilityKey>> = {
   transfers: 'transfers',
-  scheduleEnd: 'sales',
-  forecastPerWeek: 'forecastPerWk',
   scheduleStart: 'recommendedTransfers',
   sales: 'revenueIncrease',
   targetCoverage: 'stockouts',
   gripLocations: 'locations',
-  gripOverstocks: 'overstocks',
-  gripUnderstocks: 'understocks',
-  gripDepth: 'depth',
-  gripWarehouseUnits: 'warehouseUnits',
+};
+
+/**
+ * Split sticky header for the All tab: thead has titles + primary totals + secondary totals.
+ * `controlsRow` renders as the first tbody row directly beneath thead (columns 1–2).
+ */
+export type ProductDetailsSplitHeaderSlots = {
+  titlesRow: ReactNode;
+  totalsRow: ReactNode;
+  controlsRow: ReactNode;
 };
 
 interface AssortmentTableProps {
@@ -241,8 +185,6 @@ interface AssortmentTableProps {
   hideKpiBadges?: boolean;
   /** When true, render a second header row containing column totals styled like a compact data row (used by V1). */
   showTotalsRow?: boolean;
-  /** When true, the Recommended transfers cell stacks `VIS` / `REV` to the LEFT of the numbers (used by V1). */
-  recTransfersButtonsLeft?: boolean;
   /**
    * When provided, replaces the "Product details" sticky column header text with
    * arbitrary content (e.g. aggregation dropdowns) and widens the sticky column to
@@ -250,15 +192,10 @@ interface AssortmentTableProps {
    */
   productDetailsHeaderSlot?: ReactNode;
   /**
-   * When true, hovering the VIS / REV buttons in the Recommended transfers cell
-   * reveals a "Recommendation reasons" popover explaining each tag (V1 only).
+   * When set with `showTotalsRow`, renders titles + primary totals + secondary totals in thead,
+   * and `controlsRow` in the first tbody row beneath thead (V1 All tab).
    */
-  recTransferActionPopover?: boolean;
-  /**
-   * When true, the VIS / REV chips use a purple (#6864E6) border + text on a
-   * white background (V1 only).
-   */
-  recTransferActionPurple?: boolean;
+  productDetailsSplitHeaderSlots?: ProductDetailsSplitHeaderSlots;
   /**
    * When true, the "Product details" sticky column body splits into three
    * sub-columns aligned with the V1 All-view aggregation dropdowns
@@ -288,10 +225,8 @@ export function AssortmentTable({
   onRowClick,
   hideKpiBadges = false,
   showTotalsRow = false,
-  recTransfersButtonsLeft = false,
   productDetailsHeaderSlot,
-  recTransferActionPopover = false,
-  recTransferActionPurple = false,
+  productDetailsSplitHeaderSlots,
   productDetailsAggregated = false,
 }: AssortmentTableProps) {
   const mergedColumnVisibility = {
@@ -300,6 +235,42 @@ export function AssortmentTable({
   };
 
   const showProductDetails = mergedColumnVisibility.productDetails;
+
+  const useSplitProductHeader = Boolean(
+    showProductDetails && showTotalsRow && productDetailsSplitHeaderSlots
+  );
+  const useMergedProductHeaderCell = Boolean(
+    showProductDetails && showTotalsRow && productDetailsHeaderSlot && !useSplitProductHeader
+  );
+  const wideStickyProductCol = Boolean(productDetailsHeaderSlot || productDetailsSplitHeaderSlots);
+
+  const aggregatedSplitStickyHeader =
+    productDetailsAggregated && useSplitProductHeader && productDetailsSplitHeaderSlots;
+  const stickyProductColWidthClass = aggregatedSplitStickyHeader
+    ? `w-[${ALL_TAB_AGGREGATED_STICKY_COL_PX}px] min-w-[${ALL_TAB_AGGREGATED_STICKY_COL_PX}px] max-w-[${ALL_TAB_AGGREGATED_STICKY_COL_PX}px]`
+    : wideStickyProductCol
+      ? 'w-[560px] min-w-[560px] max-w-[560px]'
+      : 'w-[280px] min-w-[280px] max-w-[280px]';
+
+  /** Split header: title band + two totals bands (checkbox rowspan); dropdowns render above thead. */
+  const splitHeaderTitleRowDims = 'h-[48px] min-h-[48px] max-h-[48px]';
+  const splitTotalsPrimaryRowDims = 'h-[20px] min-h-[20px] max-h-[20px]';
+  const splitTotalsSubRowDims = 'h-[20px] min-h-[20px] max-h-[20px]';
+  const splitHeaderCheckboxSpanDims = 'h-[88px] min-h-[88px] max-h-[88px]'; /* 48 + 20 + 20 */
+  const gripHeaderTitleMainJustify = 'justify-start';
+  const totalsOnlyTitleRow =
+    showTotalsRow && !useMergedProductHeaderCell && !useSplitProductHeader;
+  const gripHeaderRowDims =
+    useSplitProductHeader && showTotalsRow
+      ? splitHeaderTitleRowDims
+      : useMergedProductHeaderCell && showTotalsRow
+        ? 'h-[60px] min-h-[60px] max-h-[60px]'
+        : totalsOnlyTitleRow
+          ? 'h-[48px] min-h-[48px] max-h-[48px]'
+          : 'h-[62px] min-h-[62px] max-h-[62px]';
+  /** Split title row is fixed 48px tall — use top inset only so labels fit inside the band. */
+  const gripHeaderCellPy =
+    useSplitProductHeader && showTotalsRow ? 'pt-4 pb-0' : theadHeaderCellPy;
 
   /** Extra columns once any row has generated recommendations (data set on generate). */
   const showRecommendationColumns = rows.some(
@@ -311,15 +282,17 @@ export function AssortmentTable({
     ...BASE_GRIP_COLUMN_IDS,
   ]);
 
-  /** V1-only: anchor element for the "Recommendation reasons" popover. */
-  const [recReasonsAnchor, setRecReasonsAnchor] = useState<HTMLElement | null>(null);
-
-  /**
-   * V1-only ("All" tab) sub-column widths (px) used for both header dropdowns
-   * and body cell sub-divs. They sum to 430px + 32px gap-4 + 32px cell px-4 = 494px,
-   * fitting comfortably in the 540px sticky-col width.
-   */
-  const aggSubColWidths = { product: 200, locationGroup: 155, locationsTo: 145 } as const;
+  const tableMinWidthClass = productDrillDownActive
+    ? showRecommendationColumns
+      ? 'min-w-[2310px]'
+      : 'min-w-[2080px]'
+    : showRecommendationColumns
+      ? aggregatedSplitStickyHeader
+        ? `min-w-[${1810 + (ALL_TAB_AGGREGATED_STICKY_COL_PX - 560)}px]`
+        : 'min-w-[1810px]'
+      : aggregatedSplitStickyHeader
+        ? `min-w-[${1810 + (ALL_TAB_AGGREGATED_STICKY_COL_PX - 560)}px]`
+        : 'min-w-[1810px]';
 
   useEffect(() => {
     if (productDrillDownActive) {
@@ -392,8 +365,8 @@ export function AssortmentTable({
     switch (columnId) {
       case 'sales':
         return (
-          <th key={columnId} className={`min-w-[128px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+          <th key={columnId} className={`min-w-[128px] ${gripHeaderRowDims} box-border px-4 ${gripHeaderCellPy} text-right align-top ${theadCellBg}`} {...d}>
+            <div className={`flex h-full min-h-0 flex-col items-end ${gripHeaderTitleMainJustify}`}>
               <span className="inline-flex w-full items-center justify-end gap-2">
                 {gripDragHandle(columnId, 'Revenue increase')}
                 <AutoneHeaderInfoTooltip
@@ -408,8 +381,8 @@ export function AssortmentTable({
         );
       case 'transfers':
         return (
-          <th key={columnId} className={`min-w-[200px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+          <th key={columnId} className={`min-w-[200px] ${gripHeaderRowDims} box-border px-4 ${gripHeaderCellPy} text-right align-top ${theadCellBg}`} {...d}>
+            <div className={`flex h-full min-h-0 flex-col items-end ${gripHeaderTitleMainJustify}`}>
               <span className="inline-flex w-full items-center justify-end gap-2">
                 {gripDragHandle(columnId, 'Transfers')}
                 <AutoneHeaderInfoTooltip
@@ -421,10 +394,43 @@ export function AssortmentTable({
             </div>
           </th>
         );
+      case 'rebalTransfers':
+        return (
+          <th key={columnId} className={`min-w-[200px] ${gripHeaderRowDims} box-border px-4 ${gripHeaderCellPy} text-right align-top ${theadCellBg}`} {...d}>
+            <div className={`flex h-full min-h-0 flex-col items-end ${gripHeaderTitleMainJustify}`}>
+              <span className="inline-flex w-full items-center justify-end gap-2">
+                {gripDragHandle(columnId, 'Rebal transfers')}
+                <span>Rebal transfers</span>
+              </span>
+            </div>
+          </th>
+        );
+      case 'reorderTransfers':
+        return (
+          <th key={columnId} className={`min-w-[200px] ${gripHeaderRowDims} box-border px-4 ${gripHeaderCellPy} text-right align-top ${theadCellBg}`} {...d}>
+            <div className={`flex h-full min-h-0 flex-col items-end ${gripHeaderTitleMainJustify}`}>
+              <span className="inline-flex w-full items-center justify-end gap-2">
+                {gripDragHandle(columnId, 'Reorder transfers')}
+                <span>Reorder transfers</span>
+              </span>
+            </div>
+          </th>
+        );
+      case 'replenishTransfers':
+        return (
+          <th key={columnId} className={`min-w-[200px] ${gripHeaderRowDims} box-border px-4 ${gripHeaderCellPy} text-right align-top ${theadCellBg}`} {...d}>
+            <div className={`flex h-full min-h-0 flex-col items-end ${gripHeaderTitleMainJustify}`}>
+              <span className="inline-flex w-full items-center justify-end gap-2">
+                {gripDragHandle(columnId, 'Replenish transfers')}
+                <span>Replen transfers</span>
+              </span>
+            </div>
+          </th>
+        );
       case 'scheduleStart':
         return (
-          <th key={columnId} className={`min-w-[240px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+          <th key={columnId} className={`min-w-[240px] ${gripHeaderRowDims} box-border px-4 ${gripHeaderCellPy} text-right align-top ${theadCellBg}`} {...d}>
+            <div className={`flex h-full min-h-0 flex-col items-end ${gripHeaderTitleMainJustify}`}>
               <span className="inline-flex w-full items-center justify-end gap-2">
                 {gripDragHandle(columnId, 'Recommended transfers')}
                 <AutoneHeaderInfoTooltip
@@ -436,40 +442,10 @@ export function AssortmentTable({
             </div>
           </th>
         );
-      case 'scheduleEnd':
-        return (
-          <th key={columnId} className={`min-w-[168px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-end justify-center">
-              <span className="inline-flex w-full items-center justify-end gap-2">
-                {gripDragHandle(columnId, 'Sales')}
-                <AutoneHeaderInfoTooltip
-                  label="Sales (L7D / L30D)"
-                  content={ASSORTMENT_HEADER_RICH.salesL7dL30d.body}
-                  hoverWith={<span>Sales</span>}
-                />
-              </span>
-            </div>
-          </th>
-        );
-      case 'forecastPerWeek':
-        return (
-          <th key={columnId} className={`min-w-[128px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-end justify-center">
-              <span className="inline-flex w-full items-center justify-end gap-1.5">
-                {gripDragHandle(columnId, 'Forecast per wk.')}
-                <AutoneHeaderInfoTooltip
-                  label="Forecast per week"
-                  content={HEADER_INFO_TOOLTIPS.forecastPerWk}
-                  hoverWith={<span>Forecast per wk.</span>}
-                />
-              </span>
-            </div>
-          </th>
-        );
       case 'targetCoverage':
         return (
-          <th key={columnId} className={`min-w-[128px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+          <th key={columnId} className={`min-w-[128px] ${gripHeaderRowDims} box-border px-4 ${gripHeaderCellPy} text-right align-top ${theadCellBg}`} {...d}>
+            <div className={`flex h-full min-h-0 flex-col items-end ${gripHeaderTitleMainJustify}`}>
               <span className="inline-flex w-full items-center justify-end gap-2">
                 {gripDragHandle(columnId, 'Stockouts')}
                 <AutoneHeaderInfoTooltip
@@ -483,8 +459,8 @@ export function AssortmentTable({
         );
       case 'gripLocations':
         return (
-          <th key={columnId} className={`min-w-[120px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-end justify-center">
+          <th key={columnId} className={`min-w-[120px] ${gripHeaderRowDims} box-border px-4 ${gripHeaderCellPy} text-right align-top ${theadCellBg}`} {...d}>
+            <div className={`flex h-full min-h-0 flex-col items-end ${gripHeaderTitleMainJustify}`}>
               <span className="inline-flex w-full items-center justify-end gap-2">
                 {gripDragHandle(columnId, 'Locations')}
                 <AutoneHeaderInfoTooltip
@@ -496,71 +472,10 @@ export function AssortmentTable({
             </div>
           </th>
         );
-      case 'gripOverstocks':
-        return (
-          <th key={columnId} className={`min-w-[120px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-end justify-center">
-              <span className="inline-flex w-full items-center justify-end gap-1.5">
-                {gripDragHandle(columnId, 'Overstocks')}
-                <AutoneHeaderInfoTooltip
-                  label="Overstocks"
-                  content={HEADER_INFO_TOOLTIPS.overstocks}
-                  hoverWith={<span>Overstocks</span>}
-                />
-              </span>
-            </div>
-          </th>
-        );
-      case 'gripUnderstocks':
-        return (
-          <th key={columnId} className={`min-w-[120px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-end justify-center">
-              <span className="inline-flex w-full items-center justify-end gap-1.5">
-                {gripDragHandle(columnId, 'Understocks')}
-                <AutoneHeaderInfoTooltip
-                  label="Understocks"
-                  content={HEADER_INFO_TOOLTIPS.understocks}
-                  hoverWith={<span>Understocks</span>}
-                />
-              </span>
-            </div>
-          </th>
-        );
-      case 'gripDepth':
-        return (
-          <th key={columnId} className={`min-w-[100px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-end justify-center">
-              <span className="inline-flex w-full items-center justify-end gap-1.5">
-                {gripDragHandle(columnId, 'Depth')}
-                <AutoneHeaderInfoTooltip
-                  label="Depth"
-                  content={HEADER_INFO_TOOLTIPS.depth}
-                  hoverWith={<span>Depth</span>}
-                />
-              </span>
-            </div>
-          </th>
-        );
-      case 'gripWarehouseUnits':
-        return (
-          <th key={columnId} className={`min-w-[128px] h-[62px] min-h-[62px] max-h-[62px] box-border px-4 py-0 text-right align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-end justify-center">
-              <span className="inline-flex w-full items-center justify-end gap-1.5">
-                {gripDragHandle(columnId, 'Warehouse units in scope')}
-                <AutoneHeaderInfoTooltip
-                  label="Warehouse units in scope"
-                  side="left"
-                  content={HEADER_INFO_TOOLTIPS.warehouseUnits}
-                  hoverWith={<span>Warehouse units in scope</span>}
-                />
-              </span>
-            </div>
-          </th>
-        );
       case 'drillMinQty':
         return (
-          <th key={columnId} className={`h-[62px] min-h-[62px] max-h-[62px] box-border px-3 py-0 text-left align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col justify-center gap-2">
+          <th key={columnId} className={`${gripHeaderRowDims} box-border px-3 ${gripHeaderCellPy} text-left align-top ${theadCellBg}`} {...d}>
+            <div className={`flex h-full min-h-0 flex-col gap-2 ${gripHeaderTitleMainJustify}`}>
               <span className="inline-flex items-center gap-1.5">
                 {gripDragHandle(columnId, 'Min Qty')}
                 Min Qty
@@ -570,8 +485,8 @@ export function AssortmentTable({
         );
       case 'drillInventory':
         return (
-          <th key={columnId} className={`h-[62px] min-h-[62px] max-h-[62px] box-border px-3 py-0 text-right align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-end justify-center gap-2">
+          <th key={columnId} className={`${gripHeaderRowDims} box-border px-3 ${gripHeaderCellPy} text-right align-top ${theadCellBg}`} {...d}>
+            <div className={`flex h-full min-h-0 flex-col items-end gap-2 ${gripHeaderTitleMainJustify}`}>
               <span className="inline-flex w-full items-center justify-end gap-1.5">
                 {gripDragHandle(columnId, 'Inventory (drill)')}
                 Inventory
@@ -581,8 +496,8 @@ export function AssortmentTable({
         );
       case 'drillTarget':
         return (
-          <th key={columnId} className={`h-[62px] min-h-[62px] max-h-[62px] box-border px-3 py-0 text-right align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-end justify-center gap-2">
+          <th key={columnId} className={`${gripHeaderRowDims} box-border px-3 ${gripHeaderCellPy} text-right align-top ${theadCellBg}`} {...d}>
+            <div className={`flex h-full min-h-0 flex-col items-end gap-2 ${gripHeaderTitleMainJustify}`}>
               <span className="inline-flex w-full items-center justify-end gap-1.5">
                 {gripDragHandle(columnId, 'Target coverage (drill)')}
                 <span>Target coverage</span>
@@ -592,8 +507,8 @@ export function AssortmentTable({
         );
       case 'drillForecast':
         return (
-          <th key={columnId} className={`h-[62px] min-h-[62px] max-h-[62px] box-border px-3 py-0 text-right align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col items-end justify-center gap-2">
+          <th key={columnId} className={`${gripHeaderRowDims} box-border px-3 ${gripHeaderCellPy} text-right align-top ${theadCellBg}`} {...d}>
+            <div className={`flex h-full min-h-0 flex-col items-end gap-2 ${gripHeaderTitleMainJustify}`}>
               <span className="inline-flex w-full items-center justify-end gap-1.5">
                 {gripDragHandle(columnId, 'Forecast sales per week')}
                 <span>Forecast per week</span>
@@ -603,8 +518,8 @@ export function AssortmentTable({
         );
       case 'drillSkuLocs':
         return (
-          <th key={columnId} className={`min-w-[108px] h-[62px] min-h-[62px] max-h-[62px] box-border px-3 py-0 text-left align-middle ${theadCellBg}`} {...d}>
-            <div className="flex h-full min-h-0 flex-col justify-center gap-2">
+          <th key={columnId} className={`min-w-[108px] ${gripHeaderRowDims} box-border px-3 ${gripHeaderCellPy} text-left align-top ${theadCellBg}`} {...d}>
+            <div className={`flex h-full min-h-0 flex-col gap-2 ${gripHeaderTitleMainJustify}`}>
               <span className="inline-flex items-center gap-1.5">
                 {gripDragHandle(columnId, 'SKU locations')}
                 <span># SKU locations</span>
@@ -617,42 +532,172 @@ export function AssortmentTable({
     }
   };
 
-  const recommendedTransferActionBtn = recTransferActionPurple
-    ? 'rounded border border-[#6864E6] bg-white px-2 py-1 font-[\'Inter\',sans-serif] text-[11px] font-semibold leading-none text-[#6864E6] transition-colors hover:bg-slate-50'
-    : 'rounded border border-[#E3E8F0] bg-white px-2 py-1 font-[\'Inter\',sans-serif] text-[11px] font-semibold leading-none text-[#0267FF] transition-colors hover:bg-slate-50';
-
   /** Per-column aggregates for the totals row. From/to columns sum endpoints; depth uses average. */
   const columnTotals = useMemo(() => {
     const sum = (sel: (r: AssortmentRow) => number) => rows.reduce((s, r) => s + sel(r), 0);
-    const avg = (sel: (r: AssortmentRow) => number) =>
-      rows.length === 0 ? 0 : sum(sel) / rows.length;
     return {
       transfersL7d: sum((r) => r.transfers.l7d),
       transfersL30d: sum((r) => r.transfers.l30d),
       revenueIncreaseEur: sum((r) => r.revenueIncreaseEur),
       recommendedTransfersPrimary: sum((r) => r.recommendedTransfers.primary),
       recommendedTransfersSecondary: sum((r) => r.recommendedTransfers.secondary),
-      salesL7d: sum((r) => r.sales.l7d),
-      salesL30d: sum((r) => r.sales.l30d),
-      forecastPerWeek: sum((r) => r.forecastPerWeek),
       stockoutsFrom: sum((r) => r.stockouts.from),
       stockoutsTo: sum((r) => r.stockouts.to),
       locationsFrom: sum((r) => r.locationsTransition.from),
       locationsTo: sum((r) => r.locationsTransition.to),
-      overstocksFrom: sum((r) => r.overstocksTransition.from),
-      overstocksTo: sum((r) => r.overstocksTransition.to),
-      understocksFrom: sum((r) => r.understocksTransition.from),
-      understocksTo: sum((r) => r.understocksTransition.to),
-      depthFrom: avg((r) => r.depthTransition.from),
-      depthTo: avg((r) => r.depthTransition.to),
     };
   }, [rows]);
 
-  /** Totals-cell typography — mirrors data-row `tableCellNumeric` / `tableCellSecondary` exactly so the row reads as a continuation. */
-  const totalsCellPrimary = `${tableCellNumeric} tabular-nums`;
-  const totalsCellSecondary = `${tableCellSecondary} tabular-nums`;
-  const totalsThClassRight = `h-[40px] min-h-[40px] max-h-[40px] box-border px-4 pt-0 pb-2 text-right align-top ${theadCellBg}`;
-  const totalsThClassLeft = `h-[40px] min-h-[40px] max-h-[40px] box-border px-3 pt-0 pb-2 text-left align-top ${theadCellBg}`;
+  /** No divider between secondary totals band and aggregation dropdown row (split header). */
+  const totalsRowNoBottomBorder =
+    useSplitProductHeader && showTotalsRow && productDetailsSplitHeaderSlots ? '!border-b-0' : '';
+  const totalsThClassRight = `h-[40px] min-h-[40px] max-h-[40px] box-border px-4 pt-0 pb-2 text-right align-top ${theadCellBg} ${totalsRowNoBottomBorder}`;
+  const totalsThClassLeft = `h-[40px] min-h-[40px] max-h-[40px] box-border px-3 pt-0 pb-2 text-left align-top ${theadCellBg} ${totalsRowNoBottomBorder}`;
+
+  const totalsSubLinePlaceholder = (
+    <span className={`${assortmentTotalsSecondaryClass} invisible select-none`} aria-hidden>
+      {'\u00A0'}
+    </span>
+  );
+
+  const splitTotalsPrimaryThRight = `${splitTotalsPrimaryRowDims} box-border px-4 py-0 text-right align-bottom ${theadCellBg}`;
+  const splitTotalsSubThRight = `${splitTotalsSubRowDims} box-border px-4 py-0 text-right align-top ${theadCellBg} ${totalsRowNoBottomBorder}`;
+  const splitTotalsPrimaryThLeft = `${splitTotalsPrimaryRowDims} box-border px-3 py-0 text-left align-bottom ${theadCellBg}`;
+  const splitTotalsSubThLeft = `${splitTotalsSubRowDims} box-border px-3 py-0 text-left align-top ${theadCellBg} ${totalsRowNoBottomBorder}`;
+
+  /** Split header row 2: primary totals only (shared baseline across grip columns). */
+  const renderGripColumnTotalsPrimarySplit = (columnId: GripColumnId): ReactNode => {
+    switch (columnId) {
+      case 'transfers':
+        return (
+          <th key={`tot-p-${columnId}`} className={`min-w-[200px] ${splitTotalsPrimaryThRight}`} aria-label="Transfers totals primary">
+            <div className="flex min-h-0 w-full flex-col justify-end">
+              <div className={assortmentTotalsPrimaryClass}>{columnTotals.transfersL7d.toLocaleString()} units</div>
+            </div>
+          </th>
+        );
+      case 'rebalTransfers':
+      case 'reorderTransfers':
+      case 'replenishTransfers':
+        return (
+          <th key={`tot-p-${columnId}`} className={`min-w-[200px] ${splitTotalsPrimaryThRight}`} aria-label={`${columnId} totals primary`}>
+            <div className="flex min-h-0 w-full flex-col justify-end">
+              <div className={assortmentTotalsPrimaryClass}>0 units</div>
+            </div>
+          </th>
+        );
+      case 'sales':
+        return (
+          <th key={`tot-p-${columnId}`} className={`min-w-[128px] ${splitTotalsPrimaryThRight}`} aria-label="Revenue increase total primary">
+            <div className="flex min-h-0 w-full flex-col justify-end">
+              <div className={assortmentTotalsPrimaryClass}>{formatRevenueIncreaseEurK(columnTotals.revenueIncreaseEur)}</div>
+            </div>
+          </th>
+        );
+      case 'scheduleStart':
+        return (
+          <th key={`tot-p-${columnId}`} className={`min-w-[240px] ${splitTotalsPrimaryThRight}`} aria-label="Recommended transfers totals primary">
+            <div className="flex min-h-0 w-full flex-col justify-end">
+              <div className={assortmentTotalsPrimaryClass}>{columnTotals.recommendedTransfersPrimary.toLocaleString()}</div>
+            </div>
+          </th>
+        );
+      case 'targetCoverage':
+        return (
+          <th key={`tot-p-${columnId}`} className={`min-w-[128px] ${splitTotalsPrimaryThRight}`} aria-label="Stockouts total primary">
+            <div className="flex min-h-0 w-full flex-col justify-end">
+              <div className={assortmentTotalsPrimaryClass}>
+                {columnTotals.stockoutsFrom.toLocaleString()}
+                <TransitionArrowSeparator />
+                {columnTotals.stockoutsTo.toLocaleString()}
+              </div>
+            </div>
+          </th>
+        );
+      case 'gripLocations':
+        return (
+          <th key={`tot-p-${columnId}`} className={`min-w-[120px] ${splitTotalsPrimaryThRight}`} aria-label="Locations total primary">
+            <div className="flex min-h-0 w-full flex-col justify-end">
+              <div className={assortmentTotalsPrimaryClass}>
+                {columnTotals.locationsFrom.toLocaleString()}
+                <TransitionArrowSeparator />
+                {columnTotals.locationsTo.toLocaleString()}
+              </div>
+            </div>
+          </th>
+        );
+      case 'drillMinQty':
+      case 'drillInventory':
+      case 'drillTarget':
+      case 'drillForecast':
+      case 'drillSkuLocs':
+        return (
+          <th key={`tot-p-${columnId}`} className={columnId === 'drillSkuLocs' ? `min-w-[108px] ${splitTotalsPrimaryThLeft}` : splitTotalsPrimaryThLeft} aria-hidden />
+        );
+      default:
+        return null;
+    }
+  };
+
+  /** Split header row 3: secondary totals or invisible placeholder (constant band height). */
+  const renderGripColumnTotalsSubSplit = (columnId: GripColumnId): ReactNode => {
+    switch (columnId) {
+      case 'transfers':
+        return (
+          <th key={`tot-s-${columnId}`} className={`min-w-[200px] ${splitTotalsSubThRight}`} aria-label="Transfers totals secondary">
+            <div className="flex min-h-0 w-full flex-col justify-start">
+              <div className={assortmentTotalsSecondaryClass}>{columnTotals.transfersL30d.toLocaleString()} trips</div>
+            </div>
+          </th>
+        );
+      case 'rebalTransfers':
+      case 'reorderTransfers':
+      case 'replenishTransfers':
+        return (
+          <th key={`tot-s-${columnId}`} className={`min-w-[200px] ${splitTotalsSubThRight}`} aria-label={`${columnId} totals secondary`}>
+            <div className="flex min-h-0 w-full flex-col justify-start">
+              <div className={assortmentTotalsSecondaryClass}>0 trips</div>
+            </div>
+          </th>
+        );
+      case 'sales':
+        return (
+          <th key={`tot-s-${columnId}`} className={`min-w-[128px] ${splitTotalsSubThRight}`}>
+            <div className="flex min-h-0 w-full flex-col justify-start">{totalsSubLinePlaceholder}</div>
+          </th>
+        );
+      case 'scheduleStart':
+        return (
+          <th key={`tot-s-${columnId}`} className={`min-w-[240px] ${splitTotalsSubThRight}`} aria-label="Recommended transfers totals secondary">
+            <div className="flex min-h-0 w-full flex-col justify-start">
+              <div className={assortmentTotalsSecondaryClass}>{columnTotals.recommendedTransfersSecondary.toLocaleString()}</div>
+            </div>
+          </th>
+        );
+      case 'targetCoverage':
+        return (
+          <th key={`tot-s-${columnId}`} className={`min-w-[128px] ${splitTotalsSubThRight}`}>
+            <div className="flex min-h-0 w-full flex-col justify-start">{totalsSubLinePlaceholder}</div>
+          </th>
+        );
+      case 'gripLocations':
+        return (
+          <th key={`tot-s-${columnId}`} className={`min-w-[120px] ${splitTotalsSubThRight}`}>
+            <div className="flex min-h-0 w-full flex-col justify-start">{totalsSubLinePlaceholder}</div>
+          </th>
+        );
+      case 'drillMinQty':
+      case 'drillInventory':
+      case 'drillTarget':
+      case 'drillForecast':
+      case 'drillSkuLocs':
+        return (
+          <th key={`tot-s-${columnId}`} className={columnId === 'drillSkuLocs' ? `min-w-[108px] ${splitTotalsSubThLeft}` : splitTotalsSubThLeft} aria-hidden />
+        );
+      default:
+        return null;
+    }
+  };
 
   /** Renders one `<th>` of the totals row for a given grip column. Mirrors body cell layout/alignment. */
   const renderGripColumnTotalsCell = (columnId: GripColumnId): ReactNode => {
@@ -661,50 +706,41 @@ export function AssortmentTable({
         return (
           <th key={columnId} className={totalsThClassRight} aria-label="Transfers totals">
             <div className="flex min-w-0 flex-col items-end gap-1">
-              <div className={totalsCellPrimary}>{columnTotals.transfersL7d.toLocaleString()} L7D</div>
-              <div className={totalsCellSecondary}>{columnTotals.transfersL30d.toLocaleString()} L30D</div>
+              <div className={assortmentTotalsPrimaryClass}>{columnTotals.transfersL7d.toLocaleString()} units</div>
+              <div className={assortmentTotalsSecondaryClass}>{columnTotals.transfersL30d.toLocaleString()} trips</div>
+            </div>
+          </th>
+        );
+      case 'rebalTransfers':
+      case 'reorderTransfers':
+      case 'replenishTransfers':
+        return (
+          <th key={columnId} className={totalsThClassRight} aria-label={`${columnId} totals`}>
+            <div className="flex min-w-0 flex-col items-end gap-1">
+              <div className={assortmentTotalsPrimaryClass}>0 units</div>
+              <div className={assortmentTotalsSecondaryClass}>0 trips</div>
             </div>
           </th>
         );
       case 'sales':
         return (
           <th key={columnId} className={totalsThClassRight} aria-label="Revenue increase total">
-            <div className={totalsCellPrimary}>{formatRevenueIncreaseEurK(columnTotals.revenueIncreaseEur)}</div>
+            <div className={assortmentTotalsPrimaryClass}>{formatRevenueIncreaseEurK(columnTotals.revenueIncreaseEur)}</div>
           </th>
         );
       case 'scheduleStart':
         return (
           <th key={columnId} className={totalsThClassRight} aria-label="Recommended transfers totals">
             <div className="flex min-w-0 flex-col items-end gap-1">
-              <div className={totalsCellPrimary}>{columnTotals.recommendedTransfersPrimary.toLocaleString()}</div>
-              <div className={totalsCellSecondary}>{columnTotals.recommendedTransfersSecondary.toLocaleString()}</div>
-            </div>
-          </th>
-        );
-      case 'scheduleEnd':
-        return (
-          <th key={columnId} className={totalsThClassRight} aria-label="Sales totals">
-            <div className="flex min-w-0 flex-col items-end gap-1">
-              <div className={totalsCellPrimary}>{columnTotals.salesL7d.toLocaleString()} L7D</div>
-              <div className={totalsCellSecondary}>{columnTotals.salesL30d.toLocaleString()} L30D</div>
-            </div>
-          </th>
-        );
-      case 'forecastPerWeek':
-        return (
-          <th key={columnId} className={totalsThClassRight} aria-label="Forecast per week total">
-            <div className={totalsCellPrimary}>
-              {columnTotals.forecastPerWeek.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
+              <div className={assortmentTotalsPrimaryClass}>{columnTotals.recommendedTransfersPrimary.toLocaleString()}</div>
+              <div className={assortmentTotalsSecondaryClass}>{columnTotals.recommendedTransfersSecondary.toLocaleString()}</div>
             </div>
           </th>
         );
       case 'targetCoverage':
         return (
           <th key={columnId} className={totalsThClassRight} aria-label="Stockouts total">
-            <div className={totalsCellPrimary}>
+            <div className={assortmentTotalsPrimaryClass}>
               {columnTotals.stockoutsFrom.toLocaleString()}
               <TransitionArrowSeparator />
               {columnTotals.stockoutsTo.toLocaleString()}
@@ -714,46 +750,13 @@ export function AssortmentTable({
       case 'gripLocations':
         return (
           <th key={columnId} className={totalsThClassRight} aria-label="Locations total">
-            <div className={totalsCellPrimary}>
+            <div className={assortmentTotalsPrimaryClass}>
               {columnTotals.locationsFrom.toLocaleString()}
               <TransitionArrowSeparator />
               {columnTotals.locationsTo.toLocaleString()}
             </div>
           </th>
         );
-      case 'gripOverstocks':
-        return (
-          <th key={columnId} className={totalsThClassRight} aria-label="Overstocks total">
-            <div className={totalsCellPrimary}>
-              {columnTotals.overstocksFrom.toLocaleString()}
-              <TransitionArrowSeparator />
-              {columnTotals.overstocksTo.toLocaleString()}
-            </div>
-          </th>
-        );
-      case 'gripUnderstocks':
-        return (
-          <th key={columnId} className={totalsThClassRight} aria-label="Understocks total">
-            <div className={totalsCellPrimary}>
-              {columnTotals.understocksFrom.toLocaleString()}
-              <TransitionArrowSeparator />
-              {columnTotals.understocksTo.toLocaleString()}
-            </div>
-          </th>
-        );
-      case 'gripDepth':
-        return (
-          <th key={columnId} className={totalsThClassRight} aria-label="Depth total">
-            <div className={totalsCellPrimary}>
-              {columnTotals.depthFrom.toFixed(1)}
-              <TransitionArrowSeparator />
-              {columnTotals.depthTo.toFixed(1)}
-            </div>
-          </th>
-        );
-      case 'gripWarehouseUnits':
-        // Per design: warehouse units totals deliberately blank in the totals row.
-        return <th key={columnId} className={totalsThClassRight} aria-hidden />;
       case 'drillMinQty':
       case 'drillInventory':
       case 'drillTarget':
@@ -791,114 +794,42 @@ export function AssortmentTable({
           <td key={columnId} className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}>
             <div className="flex min-w-0 flex-col items-end gap-1">
               <div className={`${tableCellNumeric} tabular-nums`}>
-                {row.transfers.l7d.toLocaleString()} L7D
+                {row.transfers.l7d.toLocaleString()} units
               </div>
               <div className={`${tableCellSecondary} tabular-nums`}>
-                {row.transfers.l30d.toLocaleString()} L30D
+                {row.transfers.l30d.toLocaleString()} trips
               </div>
             </div>
           </td>
         );
-      case 'scheduleStart': {
-        const recTransferHoverProps = recTransferActionPopover
-          ? {
-              onMouseEnter: (e: ReactMouseEvent<HTMLDivElement>) =>
-                setRecReasonsAnchor(e.currentTarget),
-              onMouseLeave: () => setRecReasonsAnchor(null),
-            }
-          : {};
-        const recTransferActions = (
-          <div className="flex shrink-0 items-center gap-1" {...recTransferHoverProps}>
-            <button
-              type="button"
-              className={recommendedTransferActionBtn}
-              aria-label="Visible"
-              onClick={(e) => e.stopPropagation()}
-            >
-              VIS
-            </button>
-            <button
-              type="button"
-              className={recommendedTransferActionBtn}
-              aria-label="Review"
-              onClick={(e) => e.stopPropagation()}
-            >
-              REV
-            </button>
-          </div>
-        );
-        const recTransferNumbers = (
-          <div className="flex min-w-0 flex-col items-end text-right">
-            <div className={`${tableCellNumeric} tabular-nums`}>
-              {row.recommendedTransfers.primary.toLocaleString()}
-            </div>
-            <div className={`${tableCellSecondary} tabular-nums`}>
-              {row.recommendedTransfers.secondary.toLocaleString()}
-            </div>
-          </div>
-        );
+      case 'rebalTransfers':
+      case 'reorderTransfers':
+      case 'replenishTransfers':
         return (
-          <td
-            key={columnId}
-            className={`min-h-[86px] min-w-[240px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
-          >
-            {recTransfersButtonsLeft ? (
-              <div className="flex min-w-0 items-center justify-end gap-3">
-                {recTransferActions}
-                {recTransferNumbers}
+          <td key={columnId} className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}>
+            <div className="flex min-w-0 flex-col items-end gap-1">
+              <div className={`${tableCellNumeric} tabular-nums`}>
+                0 units
               </div>
-            ) : (
-              <div className="flex min-w-0 flex-col items-end gap-2 text-right">
-                {recTransferNumbers}
-                {recTransferActions}
+              <div className={`${tableCellSecondary} tabular-nums`}>
+                0 trips
               </div>
-            )}
+            </div>
           </td>
         );
-      }
-      case 'scheduleEnd': {
-        const { l7d, l30d, showPeriodLabels } = row.sales;
+      case 'scheduleStart':
         return (
           <td
             key={columnId}
-            className={`min-h-[86px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
+            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
           >
             <div className="flex min-w-0 flex-col items-end gap-1">
               <div className={`${tableCellNumeric} tabular-nums`}>
-                {l7d.toLocaleString()}
-                {showPeriodLabels ? ' L7D' : ''}
+                {row.recommendedTransfers.primary.toLocaleString()}
               </div>
               <div className={`${tableCellSecondary} tabular-nums`}>
-                {l30d.toLocaleString()}
-                {showPeriodLabels ? ' L30D' : ''}
+                {row.recommendedTransfers.secondary.toLocaleString()}
               </div>
-              {row.showKpiBadge && !hideKpiBadges ? (
-                <div className="pointer-events-auto mt-1">
-                  <AssortmentCellKpiTrigger align="end" {...kpiPopoverSales(row)} />
-                </div>
-              ) : null}
-            </div>
-          </td>
-        );
-      }
-      case 'forecastPerWeek':
-        return (
-          <td
-            key={columnId}
-            className={`min-h-[86px] py-3 px-4 text-right align-middle ${tableRowHoverTd}`}
-          >
-            <div className="flex min-w-0 flex-col items-end">
-              <span className={`${tableCellNumeric} tabular-nums`}>
-                {row.forecastPerWeek.toLocaleString('en-US', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </span>
-              {row.showKpiBadge && !hideKpiBadges ? (
-                <div className="pointer-events-auto mt-1">
-                  <AssortmentCellKpiTrigger align="end" {...kpiPopoverForecast(row)} />
-                </div>
-              ) : null}
             </div>
           </td>
         );
@@ -922,50 +853,6 @@ export function AssortmentTable({
             {row.locationsTransition.from.toLocaleString()}
             <TransitionArrowSeparator />
             {row.locationsTransition.to.toLocaleString()}
-          </td>
-        );
-      case 'gripOverstocks':
-        return (
-          <td
-            key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
-          >
-            {row.overstocksTransition.from.toLocaleString()}
-            <TransitionArrowSeparator />
-            {row.overstocksTransition.to.toLocaleString()}
-          </td>
-        );
-      case 'gripUnderstocks':
-        return (
-          <td
-            key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
-          >
-            {row.understocksTransition.from.toLocaleString()}
-            <TransitionArrowSeparator />
-            {row.understocksTransition.to.toLocaleString()}
-          </td>
-        );
-      case 'gripDepth':
-        return (
-          <td
-            key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
-          >
-            {row.depthTransition.from.toFixed(1)}
-            <TransitionArrowSeparator />
-            {row.depthTransition.to.toFixed(1)}
-          </td>
-        );
-      case 'gripWarehouseUnits':
-        return (
-          <td
-            key={columnId}
-            className={`h-[86px] min-h-[86px] py-3 px-4 text-right align-middle tabular-nums ${tableCellNumeric} ${tableRowHoverTd}`}
-          >
-            {row.warehouseUnitsTransition.from.toLocaleString()}
-            <TransitionArrowSeparator />
-            {row.warehouseUnitsTransition.to.toLocaleString()}
           </td>
         );
       case 'drillMinQty':
@@ -1012,6 +899,35 @@ export function AssortmentTable({
     }
   };
 
+  /** Empty grip cells on aggregation-controls tbody row — widths match header grip columns. */
+  const renderGripColumnAggregationToolbarPad = (columnId: GripColumnId): ReactNode => {
+    const shell = `box-border bg-white py-2 align-middle ${tableRowHoverTd}`;
+    switch (columnId) {
+      case 'sales':
+        return <td key={`agg-toolbar-${columnId}`} className={`min-w-[128px] px-4 ${shell}`} aria-hidden />;
+      case 'transfers':
+      case 'rebalTransfers':
+      case 'reorderTransfers':
+      case 'replenishTransfers':
+        return <td key={`agg-toolbar-${columnId}`} className={`min-w-[200px] px-4 ${shell}`} aria-hidden />;
+      case 'scheduleStart':
+        return <td key={`agg-toolbar-${columnId}`} className={`min-w-[240px] px-4 ${shell}`} aria-hidden />;
+      case 'targetCoverage':
+        return <td key={`agg-toolbar-${columnId}`} className={`min-w-[128px] px-4 ${shell}`} aria-hidden />;
+      case 'gripLocations':
+        return <td key={`agg-toolbar-${columnId}`} className={`min-w-[120px] px-4 ${shell}`} aria-hidden />;
+      case 'drillMinQty':
+      case 'drillInventory':
+      case 'drillTarget':
+      case 'drillForecast':
+        return <td key={`agg-toolbar-${columnId}`} className={`px-3 ${shell}`} aria-hidden />;
+      case 'drillSkuLocs':
+        return <td key={`agg-toolbar-${columnId}`} className={`min-w-[108px] px-3 ${shell}`} aria-hidden />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div
       className="rounded-lg overflow-hidden bg-white border-[0.5px] border-solid border-[#E3E8F0]"
@@ -1019,42 +935,66 @@ export function AssortmentTable({
       data-node-id="14764:268974"
     >
       <div className="overflow-x-auto">
-        <table
-          className={`w-full border-collapse ${
-            productDrillDownActive
-              ? showRecommendationColumns
-                ? 'min-w-[2470px]'
-                : 'min-w-[2240px]'
-              : showRecommendationColumns
-                ? 'min-w-[1970px]'
-                : 'min-w-[1760px]'
-          }`}
-        >
+        <table className={`w-full border-collapse ${tableMinWidthClass}`}>
           <thead
             className="[&_th]:border-t-0 [&_th]:border-b-[0.5px] [&_th]:border-solid [&_th]:border-[#E3E8F0] [&_th]:font-['Inter',sans-serif]"
           >
             <tr
               className={`font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828] [&_th]:whitespace-nowrap${
-                productDetailsHeaderSlot && showTotalsRow
-                  ? ' h-[60px] [&_th]:!pb-0 [&>th:not([rowspan="2"])]:!border-b-0'
+                (useMergedProductHeaderCell || useSplitProductHeader) && showTotalsRow
+                  ? ` ${useSplitProductHeader ? 'h-[48px]' : 'h-[60px]'} [&_th]:!pb-0 ${
+                      useSplitProductHeader
+                        ? '[&>th:not([rowspan="3"])]:!border-b-0'
+                        : '[&>th:not([rowspan="2"])]:!border-b-0'
+                    }`
                   : showTotalsRow
-                    ? ' h-[40px] [&_th]:!h-[40px] [&_th]:!min-h-[40px] [&_th]:!max-h-[40px] [&_th]:!pb-0 [&_th]:!border-b-0'
+                    ? ' h-[48px] [&_th]:!h-[48px] [&_th]:!min-h-[48px] [&_th]:!max-h-[48px] [&_th]:!pb-0 [&_th]:!border-b-0'
                     : ' h-[62px]'
               }`}
             >
               <th
-                rowSpan={productDetailsHeaderSlot && showTotalsRow ? 2 : 1}
+                rowSpan={useSplitProductHeader ? 3 : useMergedProductHeaderCell ? 2 : 1}
                 className={`sticky left-0 z-30 ${
-                  productDetailsHeaderSlot && showTotalsRow
-                    ? 'h-[100px] min-h-[100px] max-h-[100px]'
-                    : productDetailsHeaderSlot
-                      ? 'h-[60px] min-h-[60px] max-h-[60px]'
-                      : 'h-[62px] min-h-[62px] max-h-[62px]'
-                } w-14 min-w-14 max-w-14 box-border ${theadCellBg} px-4 py-0 text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
+                  useSplitProductHeader
+                    ? splitHeaderCheckboxSpanDims
+                    : useMergedProductHeaderCell
+                      ? 'h-[100px] min-h-[100px] max-h-[100px]'
+                      : productDetailsHeaderSlot
+                        ? 'h-[60px] min-h-[60px] max-h-[60px]'
+                        : totalsOnlyTitleRow
+                          ? 'h-[48px] min-h-[48px] max-h-[48px]'
+                          : 'h-[62px] min-h-[62px] max-h-[62px]'
+                } w-14 min-w-14 max-w-14 box-border ${theadCellBg} px-4 ${useSplitProductHeader ? 'py-0' : theadHeaderCellPy} text-left ${useSplitProductHeader ? 'align-top' : 'align-middle'} ${useSplitProductHeader ? '!border-b-0' : ''} shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
                 scope="col"
                 aria-label="Selection"
               >
-                {productDetailsHeaderSlot ? (
+                {useSplitProductHeader || useMergedProductHeaderCell ? (
+                  showTotalsRow ? (
+                    <div className="flex h-full min-h-0 flex-col">
+                      <div
+                        className={`flex shrink-0 ${useSplitProductHeader ? 'h-[48px] items-center justify-center px-0 pt-[10px] pb-0' : 'h-[60px] items-center px-0 py-[10px]'}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={rows.length > 0 && rows.every((r) => r.selected)}
+                          onChange={(e) => _onSelectAll(e.target.checked)}
+                          className="w-4 h-4 rounded border-2 border-[#e9eaeb] bg-white text-sky-600 focus:ring-sky-500"
+                          aria-label="Select all rows"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex h-full items-center">
+                      <input
+                        type="checkbox"
+                        checked={rows.length > 0 && rows.every((r) => r.selected)}
+                        onChange={(e) => _onSelectAll(e.target.checked)}
+                        className="w-4 h-4 rounded border-2 border-[#e9eaeb] bg-white text-sky-600 focus:ring-sky-500"
+                        aria-label="Select all rows"
+                      />
+                    </div>
+                  )
+                ) : productDetailsHeaderSlot ? (
                   <div className="flex h-full items-center">
                     <input
                       type="checkbox"
@@ -1066,57 +1006,138 @@ export function AssortmentTable({
                   </div>
                 ) : null}
               </th>
-              {showProductDetails && (
+              {showProductDetails && useSplitProductHeader && productDetailsSplitHeaderSlots ? (
                 <th
-                  rowSpan={productDetailsHeaderSlot && showTotalsRow ? 2 : 1}
+                  className={`sticky left-14 z-20 ${splitHeaderTitleRowDims} ${stickyProductColWidthClass} box-border ${theadCellBg} px-4 ${gripHeaderCellPy} text-left align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
+                  scope="col"
+                >
+                  <div className="flex h-full min-h-0 w-full flex-col justify-start">
+                    {productDetailsSplitHeaderSlots.titlesRow}
+                  </div>
+                </th>
+              ) : null}
+              {showProductDetails && !useSplitProductHeader ? (
+                <th
+                  rowSpan={useMergedProductHeaderCell ? 2 : 1}
                   className={`sticky left-14 z-20 ${
-                    productDetailsHeaderSlot && showTotalsRow
+                    useMergedProductHeaderCell
                       ? 'h-[100px] min-h-[100px] max-h-[100px] w-[560px] min-w-[560px] max-w-[560px]'
                       : productDetailsHeaderSlot
                         ? 'h-[60px] min-h-[60px] max-h-[60px] w-[560px] min-w-[560px] max-w-[560px]'
-                        : 'h-[62px] min-h-[62px] max-h-[62px] w-[280px] min-w-[280px] max-w-[280px]'
-                  } box-border ${theadCellBg} px-4 py-0 text-left align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
+                        : totalsOnlyTitleRow
+                          ? 'h-[48px] min-h-[48px] max-h-[48px] w-[280px] min-w-[280px] max-w-[280px]'
+                          : 'h-[62px] min-h-[62px] max-h-[62px] w-[280px] min-w-[280px] max-w-[280px]'
+                  } box-border ${theadCellBg} px-4 ${theadHeaderCellPy} text-left align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
                   scope="col"
                 >
                   {productDetailsHeaderSlot ? (
-                    <div className="flex h-full min-h-0 items-center">
-                      {productDetailsHeaderSlot}
-                    </div>
+                    showTotalsRow ? (
+                      <div className="flex h-full min-h-0 flex-col">{productDetailsHeaderSlot}</div>
+                    ) : (
+                      <div className="flex h-full min-h-0 items-center">
+                        {productDetailsHeaderSlot}
+                      </div>
+                    )
                   ) : (
-                    <div className="flex h-full min-h-0 flex-col justify-center gap-2">
+                    <div className="flex h-full min-h-0 flex-col justify-start gap-2">
                       <span>Product details</span>
                     </div>
                   )}
                 </th>
-              )}
+              ) : null}
               {!designOnly &&
                 filteredGripColumnOrder.map((columnId) => renderGripColumnHeader(columnId))}
               </tr>
-            {showTotalsRow && (
-              <tr
-                className="h-[40px] font-['Inter',sans-serif] [&_th]:whitespace-nowrap"
-                aria-label="Column totals"
-              >
-                {!productDetailsHeaderSlot && (
-                  <>
-                    <th
-                      className={`sticky left-0 z-30 h-[40px] min-h-[40px] max-h-[40px] w-14 min-w-14 max-w-14 box-border ${theadCellBg} px-4 py-0 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
-                      aria-hidden
-                    />
-                    {showProductDetails && (
+            {showTotalsRow &&
+              (useSplitProductHeader && productDetailsSplitHeaderSlots && showProductDetails ? (
+                <>
+                  <tr
+                    className="font-['Inter',sans-serif] [&_th]:whitespace-nowrap [&_th]:!border-b-0"
+                    aria-label="Column totals primary"
+                  >
+                    {showProductDetails ? (
                       <th
-                        className={`sticky left-14 z-20 h-[40px] min-h-[40px] max-h-[40px] w-[280px] min-w-[280px] max-w-[280px] box-border ${theadCellBg} px-4 py-0 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
+                        className={`sticky left-14 z-20 ${splitTotalsPrimaryRowDims} ${stickyProductColWidthClass} box-border ${theadCellBg} px-4 py-0 text-left align-bottom shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
+                        scope="col"
+                      >
+                        <div className="flex min-h-0 w-full flex-col justify-end">
+                          {productDetailsSplitHeaderSlots.totalsRow}
+                        </div>
+                      </th>
+                    ) : null}
+                    {!designOnly &&
+                      filteredGripColumnOrder.map((columnId) =>
+                        renderGripColumnTotalsPrimarySplit(columnId)
+                      )}
+                  </tr>
+                  <tr
+                    className="font-['Inter',sans-serif] [&_th]:whitespace-nowrap [&_th]:!border-b-0"
+                    aria-label="Column totals secondary"
+                  >
+                    {showProductDetails ? (
+                      <th
+                        className={`sticky left-14 z-20 ${splitTotalsSubRowDims} ${stickyProductColWidthClass} box-border ${theadCellBg} px-4 py-0 text-left align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${totalsRowNoBottomBorder}`}
+                        scope="col"
+                        aria-hidden
+                      >
+                        <div className="flex min-h-0 w-full flex-col justify-start">{totalsSubLinePlaceholder}</div>
+                      </th>
+                    ) : null}
+                    {!designOnly &&
+                      filteredGripColumnOrder.map((columnId) =>
+                        renderGripColumnTotalsSubSplit(columnId)
+                      )}
+                  </tr>
+                </>
+              ) : (
+                <tr
+                  className="h-[40px] font-['Inter',sans-serif] [&_th]:whitespace-nowrap"
+                  aria-label="Column totals"
+                >
+                  {!useMergedProductHeaderCell && !useSplitProductHeader && (
+                    <>
+                      <th
+                        className={`sticky left-0 z-30 h-[40px] min-h-[40px] max-h-[40px] w-14 min-w-14 max-w-14 box-border ${theadCellBg} px-4 py-0 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
                         aria-hidden
                       />
-                    )}
-                  </>
-                )}
-                {!designOnly &&
-                  filteredGripColumnOrder.map((columnId) => renderGripColumnTotalsCell(columnId))}
-              </tr>
-            )}
+                      {showProductDetails && (
+                        <th
+                          className={`sticky left-14 z-20 h-[40px] min-h-[40px] max-h-[40px] w-[280px] min-w-[280px] max-w-[280px] box-border ${theadCellBg} px-4 py-0 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]`}
+                          aria-hidden
+                        />
+                      )}
+                    </>
+                  )}
+                  {!designOnly &&
+                    filteredGripColumnOrder.map((columnId) => renderGripColumnTotalsCell(columnId))}
+                </tr>
+              ))}
           </thead>
           <tbody className="[&_td]:border-t-0 [&_td]:border-b-[0.5px] [&_td]:border-solid [&_td]:border-[#E3E8F0]">
+            {showTotalsRow &&
+            useSplitProductHeader &&
+            productDetailsSplitHeaderSlots?.controlsRow &&
+            showProductDetails ? (
+              <tr
+                key="__aggregation_controls__"
+                className="bg-white [&_td]:!border-t-[0.5px] [&_td]:border-solid [&_td]:border-[#E3E8F0]"
+                aria-label="Aggregation controls"
+              >
+                <td
+                  className={`sticky left-0 z-30 w-14 min-w-14 max-w-14 box-border bg-white px-4 py-2 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
+                  aria-hidden
+                />
+                <td
+                  className={`sticky left-14 z-20 ${stickyProductColWidthClass} box-border bg-white px-4 py-2 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
+                >
+                  {productDetailsSplitHeaderSlots.controlsRow}
+                </td>
+                {!designOnly &&
+                  filteredGripColumnOrder.map((columnId) =>
+                    renderGripColumnAggregationToolbarPad(columnId)
+                  )}
+              </tr>
+            ) : null}
             {rows.map((row, rowIndex) => {
               const drillM = productDrillDownActive
                 ? row.productDrillMetrics ?? {
@@ -1156,17 +1177,13 @@ export function AssortmentTable({
                 </td>
                 {showProductDetails && (
                   <td
-                    className={`sticky left-14 z-20 min-h-[86px] ${
-                      productDetailsHeaderSlot
-                        ? 'w-[560px] min-w-[560px] max-w-[560px]'
-                        : 'w-[280px] min-w-[280px] max-w-[280px]'
-                    } box-border bg-white py-3 px-4 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
+                    className={`sticky left-14 z-20 min-h-[86px] ${stickyProductColWidthClass} box-border bg-white py-3 px-4 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
                   >
                     {productDetailsAggregated ? (
                       <div className="flex min-w-0 items-start gap-4">
                         <div
                           className="flex min-w-0 shrink-0 gap-2"
-                          style={{ width: aggSubColWidths.product }}
+                          style={{ width: ALL_TAB_AGG_SUB_COL_WIDTHS.product }}
                         >
                           <div
                             className="relative h-[48px] w-[48px] shrink-0 overflow-hidden rounded bg-[#f5f5f5]"
@@ -1200,7 +1217,7 @@ export function AssortmentTable({
                         </div>
                         <div
                           className="flex min-w-0 shrink-0 flex-col"
-                          style={{ width: aggSubColWidths.locationGroup }}
+                          style={{ width: ALL_TAB_AGG_SUB_COL_WIDTHS.locationGroup }}
                         >
                           <div className={`min-w-0 truncate ${tableCellPrimary}`}>
                             {row.locationCluster.name}
@@ -1212,11 +1229,13 @@ export function AssortmentTable({
                         </div>
                         {(() => {
                           const toLoc =
-                            DUMMY_TO_LOCATIONS[rowIndex % DUMMY_TO_LOCATIONS.length];
+                            AGGREGATED_DUMMY_TO_LOCATIONS[
+                              rowIndex % AGGREGATED_DUMMY_TO_LOCATIONS.length
+                            ];
                           return (
                             <div
                               className="flex min-w-0 shrink-0 flex-col"
-                              style={{ width: aggSubColWidths.locationsTo }}
+                              style={{ width: ALL_TAB_AGG_SUB_COL_WIDTHS.locationsTo }}
                             >
                               <div className={`min-w-0 truncate ${tableCellPrimary}`}>
                                 {toLoc.name}
@@ -1292,39 +1311,6 @@ export function AssortmentTable({
           </button>
         </div>
       </div>
-      {recTransferActionPopover && recReasonsAnchor
-        ? createPortal(
-            <div
-              role="tooltip"
-              style={{
-                position: 'fixed',
-                top: recReasonsAnchor.getBoundingClientRect().top - 8,
-                left: recReasonsAnchor.getBoundingClientRect().right + 8,
-              }}
-              className="pointer-events-none z-[60] w-[360px] max-w-[calc(100vw-32px)] rounded-lg border border-[#E3E8F0] bg-white p-3 shadow-[0_12px_32px_-4px_rgba(15,23,42,0.16),0_4px_12px_-4px_rgba(15,23,42,0.08)]"
-            >
-              <h3 className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
-                Recommendation reasons
-              </h3>
-              <div className="my-2 h-px w-full bg-[#E3E8F0]" aria-hidden />
-              <ul className="flex flex-col gap-2">
-                <li className="flex items-center gap-2">
-                  <span className={`${recommendedTransferActionBtn} shrink-0`}>VIS</span>
-                  <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#101828]">
-                    Original recommendation will increase visibility at destination
-                  </span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className={`${recommendedTransferActionBtn} shrink-0`}>REV</span>
-                  <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#101828]">
-                    Original recommendation will lead to increasing revenue
-                  </span>
-                </li>
-              </ul>
-            </div>,
-            document.body
-          )
-        : null}
     </div>
   );
 }

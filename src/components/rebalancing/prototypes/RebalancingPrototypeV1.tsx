@@ -9,8 +9,14 @@ import {
   ArrowDownWideNarrow,
   ChevronDown,
   Check,
+  GripVertical,
 } from 'lucide-react';
-import { AssortmentTable } from '../../AssortmentTable';
+import {
+  AssortmentTable,
+  AGGREGATED_DUMMY_TO_LOCATIONS,
+  assortmentTotalsPrimaryClass,
+  type ProductDetailsSplitHeaderSlots,
+} from '../../AssortmentTable';
 import { ProductTransfersBreadcrumb, ProductTransfersTable } from '../../ProductTransfersTable';
 import { LocationsTable } from '../../LocationsTable';
 import { LocationProductsDrillView } from '../../LocationProductsDrillView';
@@ -27,15 +33,27 @@ import {
 import { mockRows } from '../../../data/mockAssortment';
 import type { LocationTableRow } from '../../../data/mockLocations';
 import type { AssortmentRow } from '../../../types';
+import { HEADER_INFO_TOOLTIPS } from '../../../data/headerInfoTooltips';
 import { drillDropdownMenuItemHover } from '../../../lib/dropdownMenuClasses';
+import { AutoneHeaderInfoTooltip } from '../../AutoneHeaderInfoTooltip';
 import {
   defaultTableColumnVisibility,
   type TableColumnVisibilityKey,
 } from '../../../tableColumnCustomise';
 import { ColumnCustomiseDrawer } from '../../ColumnCustomiseDrawer';
-import { KpisPanel } from '../KpisPanel';
-import { RebalancingWorkspaceSummaryBanner } from '../RebalancingWorkspaceSummaryBanner';
 import type { PrototypeVersionId } from '../../../lib/prototypeVersion';
+import {
+  ALL_TAB_AGG_SUB_COL_WIDTHS,
+  ALL_TAB_FROM_TO_LOCATION_DROPDOWN_PX,
+  ALL_TAB_PRODUCT_GROUP_DROPDOWN_PX,
+} from '../../../lib/allTabAggregatedStickyLayout';
+import {
+  PinnedFiltersBar,
+  SavedFiltersMenuPanel,
+  SavedFiltersToolbarTrigger,
+  togglePinnedSavedFilter,
+  type PinnableSavedFilterId,
+} from '../SavedFiltersToolbar';
 
 type FocusView = 'all' | 'products' | 'locations' | 'trips';
 
@@ -50,14 +68,14 @@ function filterRowsByFocusView(rows: AssortmentRow[], _view: FocusView): Assortm
  * to control how rows roll up in the aggregate review table.
  */
 const PRODUCT_AGGREGATION_OPTIONS = [
-  { id: 'sku', label: 'SKU' },
   { id: 'product', label: 'Product' },
+  { id: 'product-group', label: 'Product group' },
   { id: 'department', label: 'Department' },
-  { id: 'sub-department', label: 'Sub Department' },
-  { id: 'size', label: 'Size' },
-  { id: 'style', label: 'Style' },
+  { id: 'sub-dept', label: 'Sub dept' },
   { id: 'season', label: 'Season' },
+  { id: 'event', label: 'Event' },
   { id: 'gender', label: 'Gender' },
+  { id: 'all', label: 'All' },
 ] as const;
 
 type ProductAggregationId = (typeof PRODUCT_AGGREGATION_OPTIONS)[number]['id'];
@@ -66,10 +84,8 @@ type ProductAggregationId = (typeof PRODUCT_AGGREGATION_OPTIONS)[number]['id'];
 const LOCATION_AGGREGATION_OPTIONS = [
   { id: 'location', label: 'Location' },
   { id: 'country', label: 'Country' },
-  { id: 'location-type', label: 'Location Type' },
   { id: 'region', label: 'Region' },
-  { id: 'location-group', label: 'Location Group' },
-  { id: 'location-cluster', label: 'Location Cluster' },
+  { id: 'location-group', label: 'Location group' },
 ] as const;
 
 type LocationAggregationId = (typeof LOCATION_AGGREGATION_OPTIONS)[number]['id'];
@@ -90,8 +106,11 @@ const FILTERS_MENU_ITEMS = [
  */
 const SORT_BY_OPTIONS = [
   { id: 'forecast', label: 'Forecast' },
-  { id: 'l30d-sales', label: 'L30D sales' },
-  { id: 'l7d-sales', label: 'L7D sales' },
+  { id: 'revenue-increase', label: 'Revenue increase' },
+  { id: 'trip-type-rebalancing', label: 'Trip type rebal' },
+  { id: 'trip-type-replenishment', label: 'Trip type replen' },
+  { id: 'l30d-sales', label: 'L30d sales' },
+  { id: 'l7d-sales', label: 'L7d sales' },
   { id: 'locations', label: 'Locations' },
   { id: 'stock-after', label: 'Stock after' },
   { id: 'stock-before', label: 'Stock before' },
@@ -138,21 +157,15 @@ export function RebalancingPrototypeV1({
   const [focusView, setFocusView] = useState<FocusView>('all');
   const [productAggregation, setProductAggregation] = useState<ProductAggregationId>('product');
   const [locationAggregation, setLocationAggregation] = useState<LocationAggregationId>('location-group');
-  const [locationsToAggregation, setLocationsToAggregation] = useState<LocationAggregationId>('location');
   const [productAggMenuOpen, setProductAggMenuOpen] = useState(false);
   const [locationAggMenuOpen, setLocationAggMenuOpen] = useState(false);
-  const [locationsToMenuOpen, setLocationsToMenuOpen] = useState(false);
   const productAggMenuRef = useRef<HTMLDivElement>(null);
   const locationAggMenuRef = useRef<HTMLDivElement>(null);
-  const locationsToMenuRef = useRef<HTMLDivElement>(null);
   const productAggButtonRef = useRef<HTMLButtonElement>(null);
   const locationAggButtonRef = useRef<HTMLButtonElement>(null);
-  const locationsToButtonRef = useRef<HTMLButtonElement>(null);
   const productAggMenuId = useId();
   const locationAggMenuId = useId();
-  const locationsToMenuId = useId();
   const [statusTableFilter, setStatusTableFilter] = useState<StatusTableFilter>('all');
-  const [tripType, setTripType] = useState<'rebalancing' | 'replenishment'>('rebalancing');
   const [includeZeroTransfers, setIncludeZeroTransfers] = useState(true);
   const [showSohByUnit, setShowSohByUnit] = useState(false);
   const [sortMetric, setSortMetric] = useState<SortMetricId>('stock-after');
@@ -168,8 +181,13 @@ export function RebalancingPrototypeV1({
   const [generateRecModalOpen, setGenerateRecModalOpen] = useState(false);
   const [filtersMenuOpen, setFiltersMenuOpen] = useState(false);
   const [filtersSearchQuery, setFiltersSearchQuery] = useState('');
+  const [savedFiltersMenuOpen, setSavedFiltersMenuOpen] = useState(false);
+  const [pinnedSavedFiltersOrder, setPinnedSavedFiltersOrder] = useState<PinnableSavedFilterId[]>([]);
   const filtersMenuRef = useRef<HTMLDivElement>(null);
   const filtersMenuId = useId();
+  const savedFiltersMenuRef = useRef<HTMLDivElement>(null);
+  const savedFiltersMenuId = useId();
+  const savedFiltersTriggerId = `${savedFiltersMenuId}-trigger`;
   /** Toolbar search (left of Stock after): icon collapses / expands to text field. */
   const [workspaceSearchExpanded, setWorkspaceSearchExpanded] = useState(false);
   const [workspaceSearchQuery, setWorkspaceSearchQuery] = useState('');
@@ -177,7 +195,6 @@ export function RebalancingPrototypeV1({
   const workspaceSearchInputRef = useRef<HTMLInputElement>(null);
   const [columnCustomiseOpen, setColumnCustomiseOpen] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState(defaultTableColumnVisibility);
-  const [kpisPanelOpen, setKpisPanelOpen] = useState(false);
   /** Products tab: row drill-down to per-location transfers for one assortment row */
   const [productTransfersDrillRowId, setProductTransfersDrillRowId] = useState<string | null>(null);
   /** Locations tab: row drill-down to per-location product list */
@@ -237,6 +254,28 @@ export function RebalancingPrototypeV1({
   }, [filtersMenuOpen]);
 
   useEffect(() => {
+    if (!savedFiltersMenuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSavedFiltersMenuOpen(false);
+    };
+    const onPointerDown = (e: MouseEvent) => {
+      if (savedFiltersMenuRef.current?.contains(e.target as Node)) return;
+      setSavedFiltersMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('mousedown', onPointerDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('mousedown', onPointerDown);
+    };
+  }, [savedFiltersMenuOpen]);
+
+  const pinnedSavedFiltersSet = useMemo(
+    () => new Set<string>(pinnedSavedFiltersOrder),
+    [pinnedSavedFiltersOrder]
+  );
+
+  useEffect(() => {
     if (!sortMenuOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setSortMenuOpen(false);
@@ -290,25 +329,6 @@ export function RebalancingPrototypeV1({
       document.removeEventListener('mousedown', onPointerDown);
     };
   }, [locationAggMenuOpen]);
-
-  useEffect(() => {
-    if (!locationsToMenuOpen) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setLocationsToMenuOpen(false);
-    };
-    const onPointerDown = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (locationsToMenuRef.current?.contains(target)) return;
-      if (locationsToButtonRef.current?.contains(target)) return;
-      setLocationsToMenuOpen(false);
-    };
-    document.addEventListener('keydown', onKeyDown);
-    document.addEventListener('mousedown', onPointerDown);
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      document.removeEventListener('mousedown', onPointerDown);
-    };
-  }, [locationsToMenuOpen]);
 
   useLayoutEffect(() => {
     if (workspaceSearchExpanded) workspaceSearchInputRef.current?.focus();
@@ -439,6 +459,137 @@ export function RebalancingPrototypeV1({
     return f;
   }, [rows, focusView, statusTableFilter, workspaceSearchQuery]);
   const tableRows = filteredRows;
+
+  const allTabAggregatedHeaderTotals = useMemo(() => {
+    const dummy = AGGREGATED_DUMMY_TO_LOCATIONS;
+    const products = tableRows.length;
+    const fromLocations = tableRows.reduce((s, r) => s + r.locationCluster.locationCount, 0);
+    const toLocations = tableRows.reduce((s, _, i) => s + dummy[i % dummy.length].count, 0);
+    return { products, fromLocations, toLocations };
+  }, [tableRows]);
+
+  const allTabSplitHeaderSlots = useMemo<ProductDetailsSplitHeaderSlots>(
+    () => ({
+      titlesRow: (
+        <div className="flex h-full min-h-0 shrink-0 gap-4">
+          <div
+            className="flex shrink-0 min-h-0 flex-col justify-start"
+            style={{ width: ALL_TAB_AGG_SUB_COL_WIDTHS.product }}
+          >
+            <span className="inline-flex items-center justify-start gap-2">
+              <span className="inline-flex shrink-0 touch-none" aria-hidden>
+                <GripVertical className="h-3 w-3 shrink-0 text-[#6A7282]" />
+              </span>
+              <AutoneHeaderInfoTooltip
+                label="Products"
+                content={HEADER_INFO_TOOLTIPS.allTabProductsColumn}
+                hoverWith={<span>Products</span>}
+              />
+            </span>
+          </div>
+          <div className="flex w-[155px] shrink-0 min-h-0 flex-col justify-start">
+            <span className="inline-flex items-center justify-start gap-2">
+              <span className="inline-flex shrink-0 touch-none" aria-hidden>
+                <GripVertical className="h-3 w-3 shrink-0 text-[#6A7282]" />
+              </span>
+              <AutoneHeaderInfoTooltip
+                label="From location"
+                content={HEADER_INFO_TOOLTIPS.allTabFromLocationColumn}
+                hoverWith={<span>From location</span>}
+              />
+            </span>
+          </div>
+          <div className="flex w-[145px] shrink-0 min-h-0 flex-col justify-start">
+            <span className="inline-flex items-center justify-start gap-2">
+              <span className="inline-flex shrink-0 touch-none" aria-hidden>
+                <GripVertical className="h-3 w-3 shrink-0 text-[#6A7282]" />
+              </span>
+              <AutoneHeaderInfoTooltip
+                label="To location"
+                content={HEADER_INFO_TOOLTIPS.allTabToLocationColumn}
+                hoverWith={<span>To location</span>}
+              />
+            </span>
+          </div>
+        </div>
+      ),
+      totalsRow: (
+        <div className="flex h-full min-h-0 w-full gap-4 pt-0 pb-0 items-start">
+          <div className="shrink-0" style={{ width: ALL_TAB_AGG_SUB_COL_WIDTHS.product }}>
+            <span className={assortmentTotalsPrimaryClass} aria-label="Product groups total">
+              {allTabAggregatedHeaderTotals.products.toLocaleString()}
+            </span>
+          </div>
+          <div className="w-[155px] shrink-0">
+            <span className={assortmentTotalsPrimaryClass} aria-label="From locations total">
+              {allTabAggregatedHeaderTotals.fromLocations.toLocaleString()}
+            </span>
+          </div>
+          <div className="w-[145px] shrink-0">
+            <span className={assortmentTotalsPrimaryClass} aria-label="To locations total">
+              {allTabAggregatedHeaderTotals.toLocations.toLocaleString()}
+            </span>
+          </div>
+        </div>
+      ),
+      controlsRow: (
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-4">
+          <div
+            className="flex shrink-0 justify-start"
+            style={{ width: ALL_TAB_AGG_SUB_COL_WIDTHS.product }}
+          >
+            <div className="shrink-0" style={{ width: ALL_TAB_PRODUCT_GROUP_DROPDOWN_PX }}>
+              <button
+                ref={productAggButtonRef}
+                type="button"
+                id={`${productAggMenuId}-trigger`}
+                aria-expanded={productAggMenuOpen}
+                aria-haspopup="listbox"
+                aria-controls={productAggMenuId}
+                onClick={() => {
+                  setProductAggMenuOpen((o) => !o);
+                  setLocationAggMenuOpen(false);
+                }}
+                className="flex h-8 min-h-8 w-full shrink-0 items-center justify-between gap-2 rounded border border-[#e9eaeb] bg-white px-3 text-left font-['Inter',sans-serif] text-sm font-semibold text-[#101828] outline-none transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0"
+              >
+                <span className="min-w-0 truncate">Product group</span>
+                <ChevronDown
+                  size={16}
+                  strokeWidth={2}
+                  className={`shrink-0 text-[#101828] transition-transform ${productAggMenuOpen ? 'rotate-180' : ''}`}
+                  aria-hidden
+                />
+              </button>
+            </div>
+          </div>
+          <div className="shrink-0" style={{ width: ALL_TAB_FROM_TO_LOCATION_DROPDOWN_PX }}>
+            <button
+              ref={locationAggButtonRef}
+              type="button"
+              id={`${locationAggMenuId}-trigger`}
+              aria-expanded={locationAggMenuOpen}
+              aria-haspopup="listbox"
+              aria-controls={locationAggMenuId}
+              onClick={() => {
+                setLocationAggMenuOpen((o) => !o);
+                setProductAggMenuOpen(false);
+              }}
+              className="flex h-8 min-h-8 w-full shrink-0 items-center justify-between gap-2 rounded border border-[#e9eaeb] bg-white px-3 text-left font-['Inter',sans-serif] text-sm font-semibold text-[#101828] outline-none transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0"
+            >
+              <span className="min-w-0 truncate">From/to location</span>
+              <ChevronDown
+                size={16}
+                strokeWidth={2}
+                className={`shrink-0 text-[#101828] transition-transform ${locationAggMenuOpen ? 'rotate-180' : ''}`}
+                aria-hidden
+              />
+            </button>
+          </div>
+        </div>
+      ),
+    }),
+    [allTabAggregatedHeaderTotals, productAggMenuId, productAggMenuOpen, locationAggMenuId, locationAggMenuOpen]
+  );
 
   const productTransfersParentRow = useMemo(
     () =>
@@ -680,8 +831,6 @@ export function RebalancingPrototypeV1({
         className="flex min-h-0 min-w-0 w-full flex-1 flex-col gap-3 overflow-y-auto bg-white px-6 pt-4 pb-12"
         data-walkthrough-root
       >
-        <KpisPanel open={kpisPanelOpen} onClose={() => setKpisPanelOpen(false)} />
-
         {/* Top bar: tabs + trip controls; second row: search, sort, filter, settings */}
         <div
           className="flex w-full min-w-0 flex-col gap-3"
@@ -732,39 +881,26 @@ export function RebalancingPrototypeV1({
                 );
               })}
             </div>
-            <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="font-['Inter',sans-serif] text-xs font-semibold leading-normal text-[#101828]">
-                  Trip type:
-                </span>
-                <div
-                  className="inline-flex items-center gap-3"
-                  role="group"
-                  aria-label="Trip type"
-                >
+            {productTransfersParentRow ? (
+              <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-normal text-[#4b535c] whitespace-nowrap">
+                    Include zero transfers
+                  </span>
                   <button
                     type="button"
-                    aria-pressed={tripType === 'rebalancing'}
-                    onClick={() => setTripType('rebalancing')}
-                    className={`font-['Inter',sans-serif] text-xs leading-normal transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#0267FF] ${
-                      tripType === 'rebalancing'
-                        ? 'rounded border border-[#E5E7EB] bg-[#F3F4F6] px-2.5 py-1.5 font-bold text-[#0F172A]'
-                        : 'rounded border border-transparent bg-transparent px-2.5 py-1.5 font-normal text-[#6B7280] hover:text-[#374151]'
+                    role="switch"
+                    aria-checked={includeZeroTransfers}
+                    onClick={() => setIncludeZeroTransfers((v) => !v)}
+                    className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                      includeZeroTransfers ? 'bg-[#0267FF]' : 'bg-[#e9eaeb]'
                     }`}
                   >
-                    Rebalancing
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={tripType === 'replenishment'}
-                    onClick={() => setTripType('replenishment')}
-                    className={`font-['Inter',sans-serif] text-xs leading-normal transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#0267FF] ${
-                      tripType === 'replenishment'
-                        ? 'rounded border border-[#E5E7EB] bg-[#F3F4F6] px-2.5 py-1.5 font-bold text-[#0F172A]'
-                        : 'rounded border border-transparent bg-transparent px-2.5 py-1.5 font-normal text-[#6B7280] hover:text-[#374151]'
-                    }`}
-                  >
-                    Replenishment
+                    <span
+                      className={`absolute top-0.5 left-0.5 block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                        includeZeroTransfers ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
                   </button>
                 </div>
               </div>
@@ -813,8 +949,6 @@ export function RebalancingPrototypeV1({
             </div>
           </div>
 
-          <RebalancingWorkspaceSummaryBanner onOpenKpis={() => setKpisPanelOpen(true)} />
-
           <div
             className={`flex w-full min-w-0 flex-wrap items-center gap-2 ${productTransfersParentRow ? 'justify-between' : 'justify-end'}`}
           >
@@ -824,6 +958,12 @@ export function RebalancingPrototypeV1({
                 onBack={() => setProductTransfersDrillRowId(null)}
               />
             ) : null}
+            <PinnedFiltersBar
+              pinnedOrder={pinnedSavedFiltersOrder}
+              onRemove={(id) =>
+                setPinnedSavedFiltersOrder((prev) => prev.filter((x) => x !== id))
+              }
+            />
             <div
               className={`flex min-w-0 flex-wrap items-center gap-2 ${productTransfersParentRow ? 'shrink-0 justify-end' : 'flex-1 justify-end'}`}
             >
@@ -909,7 +1049,7 @@ export function RebalancingPrototypeV1({
                   id={sortMenuId}
                   role="listbox"
                   aria-labelledby={`${sortMenuId}-trigger`}
-                  className="absolute left-0 top-[36px] z-50 flex max-h-[min(70vh,420px)] w-[min(100vw-2rem,320px)] min-w-[min(100%,280px)] flex-col gap-1 overflow-y-auto rounded-lg border border-[#e9eaeb] bg-white p-2 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.12),0_4px_8px_-4px_rgba(15,23,42,0.08)]"
+                  className="absolute left-0 top-[36px] z-50 flex w-[min(100vw-2rem,320px)] min-w-[min(100%,280px)] flex-col gap-0 overflow-visible rounded-lg border border-[#e9eaeb] bg-white p-1 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.12),0_4px_8px_-4px_rgba(15,23,42,0.08)]"
                 >
                   {SORT_BY_OPTIONS.map((opt) => {
                     const selected = sortMetric === opt.id;
@@ -923,13 +1063,13 @@ export function RebalancingPrototypeV1({
                           setSortMetric(opt.id);
                           setSortMenuOpen(false);
                         }}
-                        className={`flex h-9 w-full shrink-0 cursor-pointer items-center justify-between gap-2 rounded-md bg-white px-3 py-0 text-left font-['Inter',sans-serif] text-[12px] font-medium capitalize leading-normal text-[#00050a] transition-colors ${drillDropdownMenuItemHover}`}
+                        className={`flex h-7 w-full shrink-0 cursor-pointer items-center justify-between gap-1.5 rounded px-2 py-0 text-left font-['Inter',sans-serif] text-[11px] font-medium leading-tight text-[#00050a] transition-colors ${drillDropdownMenuItemHover}`}
                       >
                         <span className="min-w-0 truncate">{opt.label}</span>
                         {selected ? (
-                          <Check size={16} strokeWidth={2} className="shrink-0 text-[#6B7280]" aria-hidden />
+                          <Check size={14} strokeWidth={2} className="shrink-0 text-[#6B7280]" aria-hidden />
                         ) : (
-                          <span className="inline-block h-4 w-4 shrink-0" aria-hidden />
+                          <span className="inline-block h-3.5 w-3.5 shrink-0" aria-hidden />
                         )}
                       </button>
                     );
@@ -945,18 +1085,17 @@ export function RebalancingPrototypeV1({
                 aria-haspopup="dialog"
                 aria-controls={filtersMenuId}
                 onClick={() => {
+                  setSavedFiltersMenuOpen(false);
                   setFiltersMenuOpen((o) => {
                     const next = !o;
                     if (next) setFiltersSearchQuery('');
                     return next;
                   });
                 }}
-                className="flex h-8 shrink-0 items-center gap-2 rounded border border-[#e9eaeb] bg-white px-3 text-[#101828] transition-colors hover:bg-slate-50"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-[#e9eaeb] bg-white text-[#101828] transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0"
+                aria-label="Filters"
               >
                 <Filter size={16} strokeWidth={2} className="shrink-0" aria-hidden />
-                <span className="font-['Inter',sans-serif] text-sm font-normal leading-none">
-                  Filters
-                </span>
               </button>
               {filtersMenuOpen && (
                 <div
@@ -1008,6 +1147,28 @@ export function RebalancingPrototypeV1({
                 </div>
               )}
             </div>
+            <div className="relative shrink-0" ref={savedFiltersMenuRef}>
+              <SavedFiltersToolbarTrigger
+                open={savedFiltersMenuOpen}
+                triggerId={savedFiltersTriggerId}
+                menuId={savedFiltersMenuId}
+                onClick={() => {
+                  setFiltersMenuOpen(false);
+                  setSavedFiltersMenuOpen((o) => !o);
+                }}
+              />
+              {savedFiltersMenuOpen && (
+                <SavedFiltersMenuPanel
+                  menuId={savedFiltersMenuId}
+                  triggerId={savedFiltersTriggerId}
+                  pinnedIds={pinnedSavedFiltersSet}
+                  onTogglePin={(id) =>
+                    setPinnedSavedFiltersOrder((prev) => togglePinnedSavedFilter(prev, id))
+                  }
+                  onPickView={() => {}}
+                />
+              )}
+            </div>
             <button
               type="button"
               onClick={() => setColumnCustomiseOpen(true)}
@@ -1039,85 +1200,8 @@ export function RebalancingPrototypeV1({
                   columnVisibility={columnVisibility}
                   hideKpiBadges
                   showTotalsRow
-                  recTransfersButtonsLeft
-                  recTransferActionPopover
-                  recTransferActionPurple
                   productDetailsAggregated
-                  productDetailsHeaderSlot={
-                    <div className="flex items-center gap-4">
-                      <div className="shrink-0" style={{ width: 200 }}>
-                        <button
-                          ref={productAggButtonRef}
-                          type="button"
-                          id={`${productAggMenuId}-trigger`}
-                          aria-expanded={productAggMenuOpen}
-                          aria-haspopup="listbox"
-                          aria-controls={productAggMenuId}
-                          onClick={() => {
-                            setProductAggMenuOpen((o) => !o);
-                            setLocationAggMenuOpen(false);
-                            setLocationsToMenuOpen(false);
-                          }}
-                          style={{ width: 155 }}
-                          className="flex h-8 min-h-8 shrink-0 items-center justify-between gap-2 rounded border border-[#e9eaeb] bg-white px-3 text-left font-['Inter',sans-serif] text-sm font-semibold text-[#101828] outline-none transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0"
-                        >
-                          <span className="min-w-0 truncate">Product group</span>
-                          <ChevronDown
-                            size={16}
-                            strokeWidth={2}
-                            className={`shrink-0 text-[#101828] transition-transform ${productAggMenuOpen ? 'rotate-180' : ''}`}
-                            aria-hidden
-                          />
-                        </button>
-                      </div>
-                      <button
-                        ref={locationAggButtonRef}
-                        type="button"
-                        id={`${locationAggMenuId}-trigger`}
-                        aria-expanded={locationAggMenuOpen}
-                        aria-haspopup="listbox"
-                        aria-controls={locationAggMenuId}
-                        onClick={() => {
-                          setLocationAggMenuOpen((o) => !o);
-                          setProductAggMenuOpen(false);
-                          setLocationsToMenuOpen(false);
-                        }}
-                        style={{ width: 155 }}
-                        className="flex h-8 min-h-8 shrink-0 items-center justify-between gap-2 rounded border border-[#e9eaeb] bg-white px-3 text-left font-['Inter',sans-serif] text-sm font-semibold text-[#101828] outline-none transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0"
-                      >
-                        <span className="min-w-0 truncate">From location</span>
-                        <ChevronDown
-                          size={16}
-                          strokeWidth={2}
-                          className={`shrink-0 text-[#101828] transition-transform ${locationAggMenuOpen ? 'rotate-180' : ''}`}
-                          aria-hidden
-                        />
-                      </button>
-                      <button
-                        ref={locationsToButtonRef}
-                        type="button"
-                        id={`${locationsToMenuId}-trigger`}
-                        aria-expanded={locationsToMenuOpen}
-                        aria-haspopup="listbox"
-                        aria-controls={locationsToMenuId}
-                        onClick={() => {
-                          setLocationsToMenuOpen((o) => !o);
-                          setProductAggMenuOpen(false);
-                          setLocationAggMenuOpen(false);
-                        }}
-                        style={{ width: 145 }}
-                        className="flex h-8 min-h-8 shrink-0 items-center justify-between gap-2 rounded border border-[#e9eaeb] bg-white px-3 text-left font-['Inter',sans-serif] text-sm font-semibold text-[#101828] outline-none transition-colors hover:bg-slate-50 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-[#0267FF] focus-visible:ring-offset-0"
-                      >
-                        <span className="min-w-0 truncate">To location</span>
-                        <ChevronDown
-                          size={16}
-                          strokeWidth={2}
-                          className={`shrink-0 text-[#101828] transition-transform ${locationsToMenuOpen ? 'rotate-180' : ''}`}
-                          aria-hidden
-                        />
-                      </button>
-                    </div>
-                  }
+                  productDetailsSplitHeaderSlots={allTabSplitHeaderSlots}
                   onSelectRow={onSelectRow}
                   onSelectAll={onSelectAll}
                   onAssort={onAssort}
@@ -1202,7 +1286,7 @@ export function RebalancingPrototypeV1({
                           position: 'fixed',
                           top: locationAggButtonRef.current.getBoundingClientRect().bottom + 4,
                           left: locationAggButtonRef.current.getBoundingClientRect().left,
-                          width: 200,
+                          width: ALL_TAB_FROM_TO_LOCATION_DROPDOWN_PX,
                         }}
                         className="z-50 flex flex-col gap-0.5 rounded-lg border border-[#e9eaeb] bg-white p-1.5 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.12),0_4px_8px_-4px_rgba(15,23,42,0.08)]"
                       >
@@ -1217,48 +1301,6 @@ export function RebalancingPrototypeV1({
                               onClick={() => {
                                 setLocationAggregation(opt.id);
                                 setLocationAggMenuOpen(false);
-                              }}
-                              className={`flex h-8 w-full shrink-0 cursor-pointer items-center justify-between gap-2 rounded-md bg-white px-3 py-0 text-left font-['Inter',sans-serif] text-[12px] font-medium leading-normal text-[#00050a] transition-colors ${drillDropdownMenuItemHover}`}
-                            >
-                              <span className="min-w-0 truncate">{opt.label}</span>
-                              {selected ? (
-                                <Check size={14} strokeWidth={2} className="shrink-0 text-[#6B7280]" aria-hidden />
-                              ) : (
-                                <span className="inline-block h-3.5 w-3.5 shrink-0" aria-hidden />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>,
-                      document.body
-                    )
-                  : null}
-                {locationsToMenuOpen && locationsToButtonRef.current
-                  ? createPortal(
-                      <div
-                        ref={locationsToMenuRef}
-                        id={locationsToMenuId}
-                        role="listbox"
-                        aria-labelledby={`${locationsToMenuId}-trigger`}
-                        style={{
-                          position: 'fixed',
-                          top: locationsToButtonRef.current.getBoundingClientRect().bottom + 4,
-                          left: locationsToButtonRef.current.getBoundingClientRect().left,
-                          width: 200,
-                        }}
-                        className="z-50 flex flex-col gap-0.5 rounded-lg border border-[#e9eaeb] bg-white p-1.5 shadow-[0_8px_24px_-4px_rgba(15,23,42,0.12),0_4px_8px_-4px_rgba(15,23,42,0.08)]"
-                      >
-                        {LOCATION_AGGREGATION_OPTIONS.map((opt) => {
-                          const selected = locationsToAggregation === opt.id;
-                          return (
-                            <button
-                              key={opt.id}
-                              type="button"
-                              role="option"
-                              aria-selected={selected}
-                              onClick={() => {
-                                setLocationsToAggregation(opt.id);
-                                setLocationsToMenuOpen(false);
                               }}
                               className={`flex h-8 w-full shrink-0 cursor-pointer items-center justify-between gap-2 rounded-md bg-white px-3 py-0 text-left font-['Inter',sans-serif] text-[12px] font-medium leading-normal text-[#00050a] transition-colors ${drillDropdownMenuItemHover}`}
                             >
@@ -1302,9 +1344,6 @@ export function RebalancingPrototypeV1({
                 columnVisibility={columnVisibility}
                 hideKpiBadges
                 showTotalsRow
-                recTransfersButtonsLeft
-                recTransferActionPopover
-                recTransferActionPurple
                 onSelectRow={onSelectRow}
                 onSelectAll={onSelectAll}
                 onAssort={onAssort}
