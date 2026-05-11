@@ -287,7 +287,7 @@ const LULLI_STOCK_BOX_SKU_A_REJECTED_ROUTES: { store: string; reason: string; sc
   },
   {
     store: 'BENOA PORTO VECCHIO',
-    reason: 'Trip full — no capacity for this transfer',
+    reason: 'Trip full',
     scope: 'Trip constraint',
   },
   {
@@ -302,7 +302,7 @@ const LULLI_STOCK_BOX_SKU_A_REJECTED_ROUTES: { store: string; reason: string; sc
   },
   {
     store: 'BENOA AJACCIO',
-    reason: 'Trip full — no capacity for this transfer',
+    reason: 'Trip full',
     scope: 'Trip constraint',
   },
   {
@@ -1332,6 +1332,17 @@ export function ProductTransfersTable({
                           {weeksCoverageText}
                         </span>
                       </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <CalendarDays className="size-3.5 shrink-0 text-[#101828]" strokeWidth={2} aria-hidden />
+                          <span className="whitespace-nowrap font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#101828]">
+                            Forecast (per week)
+                          </span>
+                        </div>
+                        <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
+                          {forecast.toFixed(2)}
+                        </span>
+                      </div>
                     </div>
                     {popItem.kind === 'warehouse' ? (
                       <button
@@ -1818,11 +1829,6 @@ export function ProductTransfersTable({
                               Receiving store: PR PP Nancy
                             </p>
                             <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
-                              <TransferPopRow
-                                icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
-                                label="Transfer units"
-                                value="1"
-                              />
                               <div className="flex items-start gap-2">
                                 <span
                                   aria-hidden
@@ -1844,11 +1850,6 @@ export function ProductTransfersTable({
                               Receiving store: GL PP Biarritz
                             </p>
                             <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
-                              <TransferPopRow
-                                icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
-                                label="Transfer units"
-                                value="2"
-                              />
                               <div className="flex items-start gap-2">
                                 <span
                                   aria-hidden
@@ -1870,11 +1871,6 @@ export function ProductTransfersTable({
                               Receiving store: PR AC Toulon
                             </p>
                             <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
-                              <TransferPopRow
-                                icon={<Truck className="size-3.5" strokeWidth={2} aria-hidden />}
-                                label="Transfer units"
-                                value="1"
-                              />
                               <div className="flex items-start gap-2">
                                 <span
                                   aria-hidden
