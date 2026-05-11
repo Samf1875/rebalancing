@@ -402,7 +402,7 @@ function TransferBadgePopoverContent({
         <TransitionArrowSeparator className="mx-0 shrink-0" />
         <span>{popRow.name}</span>
       </p>
-      <p className={`${transferPopSection} mt-1`}>Maximum units per trip: 100</p>
+      <p className={`${transferPopSection} mt-1`}>Trip capacity: 87 / 100 units</p>
       <div className="my-1.5 border-t border-[#E3E8F0]" />
 
       <p className={`${transferPopSection} mb-1.5`}>Transfer info</p>
