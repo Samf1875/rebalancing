@@ -222,6 +222,10 @@ const transferPopPill =
 const transferPopSection =
   "font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]";
 
+/** Placeholder per-store forecast in transfer TU hovers; wire to row data later. */
+const MOCK_TRANSFER_POPOVER_FORECAST_SENDING = '0.77';
+const MOCK_TRANSFER_POPOVER_FORECAST_RECEIVING = '1.24';
+
 /** Recommendations considered — rejected routes for Lulli Eshop stock-on-hand chip stockBox_SKU_A only */
 const LULLI_STOCK_BOX_SKU_A_REJECTED_ROUTES: { store: string; reason: string; scope: string }[] = [
   {
@@ -293,6 +297,32 @@ function TransferPopReason({ label }: { label: ReactNode }) {
       </span>
       <span className={transferPopRowText}>{label}</span>
     </div>
+  );
+}
+
+function TransferPopoverForecastPerWeekSection({
+  sendingStoreName,
+  receivingStoreName,
+}: {
+  sendingStoreName: string;
+  receivingStoreName: string;
+}) {
+  return (
+    <>
+      <p className={`${transferPopSection} mt-2 mb-1.5`}>Forecast (per week)</p>
+      <div className="flex flex-col gap-1.5">
+        <TransferPopRow
+          icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
+          label={sendingStoreName}
+          value={MOCK_TRANSFER_POPOVER_FORECAST_SENDING}
+        />
+        <TransferPopRow
+          icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
+          label={receivingStoreName}
+          value={MOCK_TRANSFER_POPOVER_FORECAST_RECEIVING}
+        />
+      </div>
+    </>
   );
 }
 
@@ -424,6 +454,11 @@ function TransferBadgePopoverContent({
         <TransferPopReason label={`Increase revenue by ${formatCurrencyEur(popItem.revenueIncrease)}`} />
       </div>
 
+      <TransferPopoverForecastPerWeekSection
+        sendingStoreName={sourceName}
+        receivingStoreName={popRow.name}
+      />
+
       {onMoreDetail ? (
         <button
           type="button"
@@ -482,6 +517,11 @@ function TransferOutBadgePopoverContent({
           label={`Increase revenue by ${formatCurrencyEur(popItem.revenueIncrease ?? 0)}`}
         />
       </div>
+
+      <TransferPopoverForecastPerWeekSection
+        sendingStoreName={popRow.name}
+        receivingStoreName={destinationName}
+      />
 
       {onMoreDetail ? (
         <button
