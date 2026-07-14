@@ -1989,9 +1989,19 @@ export function ProductTransfersTable({
                       id="transfer-detail-title"
                       className="flex flex-wrap items-center gap-1 font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
                     >
-                      <span>{transferDetail.sourceName}</span>
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span className="min-w-0 truncate">{transferDetail.sourceName}</span>
+                        {transferDetail.source?.warehouseRole === 'selling' ? (
+                          <SellingRoleBadge />
+                        ) : null}
+                      </span>
                       <TransitionArrowSeparator className="mx-0 shrink-0" />
-                      <span>{transferDetail.destinationName}</span>
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span className="min-w-0 truncate">{transferDetail.destinationName}</span>
+                        {transferDetail.destination?.warehouseRole === 'selling' ? (
+                          <SellingRoleBadge />
+                        ) : null}
+                      </span>
                     </h2>
                     <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#6A7282]">
                       Trip capacity (max 10,000)
@@ -2085,8 +2095,22 @@ export function ProductTransfersTable({
                   ) : null}
 
                   <RecommendedTransferProductVisibilityImpact
-                    sendingLabel={`Sending store: ${transferDetail.sourceName}`}
-                    receivingLabel={`Receiving store: ${transferDetail.destinationName}`}
+                    sendingLabel={
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span>Sending store: {transferDetail.sourceName}</span>
+                        {transferDetail.source?.warehouseRole === 'selling' ? (
+                          <SellingRoleBadge />
+                        ) : null}
+                      </span>
+                    }
+                    receivingLabel={
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span>Receiving store: {transferDetail.destinationName}</span>
+                        {transferDetail.destination?.warehouseRole === 'selling' ? (
+                          <SellingRoleBadge />
+                        ) : null}
+                      </span>
+                    }
                   />
 
                   <div className="mt-5 border-t border-[#E3E8F0] pt-4">
@@ -2103,8 +2127,11 @@ export function ProductTransfersTable({
                             <span className="font-['Inter',sans-serif] text-[11px] font-medium leading-snug text-[#6A7282]">
                               Sending store
                             </span>
-                            <span className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
-                              {transferDetail.sourceName}
+                            <span className="inline-flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                              <span className="min-w-0 truncate">{transferDetail.sourceName}</span>
+                              {transferDetail.source?.warehouseRole === 'selling' ? (
+                                <SellingRoleBadge />
+                              ) : null}
                             </span>
                           </div>
                           <ul className="ml-5 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
@@ -2155,8 +2182,11 @@ export function ProductTransfersTable({
                             <span className="font-['Inter',sans-serif] text-[11px] font-medium leading-snug text-[#6A7282]">
                               Receiving store
                             </span>
-                            <span className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
-                              {transferDetail.destinationName}
+                            <span className="inline-flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                              <span className="min-w-0 truncate">{transferDetail.destinationName}</span>
+                              {transferDetail.destination?.warehouseRole === 'selling' ? (
+                                <SellingRoleBadge />
+                              ) : null}
                             </span>
                           </div>
                           <ul className="ml-5 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
@@ -2218,7 +2248,14 @@ export function ProductTransfersTable({
                       {transferDetail.source ? (
                         <TransferPopRow
                           icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-                          label={transferDetail.sourceName}
+                          label={
+                            <span className="inline-flex min-w-0 items-center gap-1.5">
+                              <span className="min-w-0 truncate">{transferDetail.sourceName}</span>
+                              {transferDetail.source.warehouseRole === 'selling' ? (
+                                <SellingRoleBadge />
+                              ) : null}
+                            </span>
+                          }
                           value={formatWeeksCoverageArrow(
                             transferDetail.source.stock,
                             transferDetail.source.forecastPerWeek,
@@ -2229,7 +2266,14 @@ export function ProductTransfersTable({
                       {transferDetail.destination ? (
                         <TransferPopRow
                           icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-                          label={transferDetail.destinationName}
+                          label={
+                            <span className="inline-flex min-w-0 items-center gap-1.5">
+                              <span className="min-w-0 truncate">{transferDetail.destinationName}</span>
+                              {transferDetail.destination.warehouseRole === 'selling' ? (
+                                <SellingRoleBadge />
+                              ) : null}
+                            </span>
+                          }
                           value={formatWeeksCoverageArrow(
                             transferDetail.destination.stock,
                             transferDetail.destination.forecastPerWeek,
