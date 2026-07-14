@@ -2,6 +2,7 @@ export type LocationTableRow = {
   id: string;
   name: string;
   code: string;
+  warehouseRole?: 'fulfilment' | 'selling' | null;
   transfersIn: { units: number; trips: number; max: number };
   transfersOut: { units: number; trips: number; max: number };
   revenueEur: number;
@@ -21,6 +22,7 @@ export const MOCK_LOCATION_ROWS: LocationTableRow[] = [
     id: 'loc-1',
     name: 'Pr ac toulon',
     code: '660',
+    warehouseRole: 'selling',
     transfersIn: { units: 57, trips: 2, max: 15 },
     transfersOut: { units: 13, trips: 2, max: 2 },
     revenueEur: 2660,

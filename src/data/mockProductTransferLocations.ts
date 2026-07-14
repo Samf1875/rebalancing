@@ -67,6 +67,7 @@ export type ProductTransferLocationRow = {
   id: string;
   name: string;
   code: string;
+  warehouseRole?: 'fulfilment' | 'selling' | null;
   /** Show small “hub” glyph next to the location name */
   transferHub?: boolean;
   /** Funnel icon next to the name (e.g. filtered / drill-down state) */
@@ -199,6 +200,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     id: 'loc-660',
     name: 'PR AC Toulon',
     code: '660',
+    warehouseRole: 'selling',
     transferHub: true,
     stock: { from: 1, to: 2 },
     warehouseUnits: { from: 15, to: 18 },
@@ -255,6 +257,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     id: 'loc-693',
     name: 'PR AC Lille',
     code: '693',
+    warehouseRole: 'selling',
     transferHub: true,
     stock: { from: 4, to: 0 },
     warehouseUnits: { from: 64, to: 58 },

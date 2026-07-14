@@ -4,8 +4,10 @@ export type TripTableRow = {
   id: string;
   sendingName: string;
   sendingId: string;
+  sendingWarehouseRole?: 'fulfilment' | 'selling' | null;
   receivingName: string;
   receivingId: string;
+  receivingWarehouseRole?: 'fulfilment' | 'selling' | null;
   transfers: number;
   transfersMax: number;
   revenueEur: number;
@@ -22,6 +24,7 @@ export const MOCK_TRIP_ROWS: TripTableRow[] = [
     id: '1',
     sendingName: 'Pr ac lille',
     sendingId: '693',
+    sendingWarehouseRole: 'selling',
     receivingName: 'Pr ac toulon',
     receivingId: '660',
     transfers: 9,
@@ -69,6 +72,7 @@ export const MOCK_TRIP_ROWS: TripTableRow[] = [
     sendingId: '612',
     receivingName: 'Pr ac lille',
     receivingId: '693',
+    receivingWarehouseRole: 'selling',
     transfers: 6,
     transfersMax: 10_000,
     revenueEur: 420,
@@ -82,6 +86,7 @@ export const MOCK_TRIP_ROWS: TripTableRow[] = [
     id: '5',
     sendingName: 'Pr ac toulon',
     sendingId: '660',
+    sendingWarehouseRole: 'selling',
     receivingName: 'Pr ac marseille tdp',
     receivingId: '696',
     transfers: 13,
