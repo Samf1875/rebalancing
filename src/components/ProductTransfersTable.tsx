@@ -1907,6 +1907,7 @@ export function ProductTransfersTable({
                                 <span className="inline-flex min-w-0 items-center gap-1.5">
                                   <span>Receiving store: {card.store}</span>
                                   {card.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+                                  <LocationBadge>{priorityDisplayLabel(card.priority)}</LocationBadge>
                                 </span>
                               </p>
                               <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
@@ -1937,6 +1938,7 @@ export function ProductTransfersTable({
                                 <span className="inline-flex min-w-0 items-center gap-1.5">
                                   <span>Receiving store: {card.store}</span>
                                   {card.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+                                  <LocationBadge>{priorityDisplayLabel(card.priority)}</LocationBadge>
                                 </span>
                               </p>
                               <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
@@ -1962,6 +1964,9 @@ export function ProductTransfersTable({
                               </span>
                               <span className="inline-flex min-w-0 items-center gap-1.5">
                                 <span>Receiving store: PR PP Nancy</span>
+                                <LocationBadge>
+                                  {priorityDisplayLabel(FALLBACK_REJECTED_ROUTE_PRIORITY['PR PP Nancy'])}
+                                </LocationBadge>
                               </span>
                             </p>
                             <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
@@ -1985,6 +1990,9 @@ export function ProductTransfersTable({
                               </span>
                               <span className="inline-flex min-w-0 items-center gap-1.5">
                                 <span>Receiving store: GL PP Biarritz</span>
+                                <LocationBadge>
+                                  {priorityDisplayLabel(FALLBACK_REJECTED_ROUTE_PRIORITY['GL PP Biarritz'])}
+                                </LocationBadge>
                               </span>
                             </p>
                             <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
@@ -2009,6 +2017,9 @@ export function ProductTransfersTable({
                               <span className="inline-flex min-w-0 items-center gap-1.5">
                                 <span>Receiving store: PR AC Toulon</span>
                                 <LocationBadge>Selling</LocationBadge>
+                                <LocationBadge>
+                                  {priorityDisplayLabel(FALLBACK_REJECTED_ROUTE_PRIORITY['PR AC Toulon'])}
+                                </LocationBadge>
                               </span>
                             </p>
                             <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
