@@ -720,6 +720,7 @@ export function ProductTransfersTable({
   const [warehouseDetail, setWarehouseDetail] = useState<{
     rowName: string;
     warehouseRole?: 'fulfilment' | 'selling' | null;
+    priority?: 'standard' | 'high' | 'very_high';
     count: number;
     weeksCoverage: string;
     stockOnHand: number;
@@ -1411,6 +1412,7 @@ export function ProductTransfersTable({
                           setWarehouseDetail({
                             rowName: popRow.name,
                             warehouseRole: popRow.warehouseRole,
+                            priority: popRow.priority,
                             count: popItem.count,
                             weeksCoverage: weeksCoverageText,
                             stockOnHand:
@@ -1835,6 +1837,14 @@ export function ProductTransfersTable({
                           </span>
                         </p>
                         <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
+                          <li className="flex items-center justify-between gap-2">
+                            <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                              Priority
+                            </span>
+                            <LocationBadge variant="strong">
+                              {priorityDisplayLabel(warehouseDetail.priority)}
+                            </LocationBadge>
+                          </li>
                           <li className="flex items-center justify-between gap-2">
                             <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
                               Total stock
