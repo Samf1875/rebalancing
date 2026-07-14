@@ -26,6 +26,7 @@ import {
   type TuBreakdownItem,
 } from '../data/mockProductTransferLocations';
 import { TransitionArrowSeparator } from './TransitionArrowSeparator';
+import { SellingRoleBadge } from './rebalancing/SellingRoleBadge';
 
 function storageCapacityPill(phase: ProductTransferStorageCapacity) {
   if (phase === 'saturated') {
@@ -855,12 +856,15 @@ export function ProductTransfersTable({
       </td>
       <td
         className={`sticky left-14 z-20 min-h-[86px] box-border ${rowBgClass} px-4 py-3 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd} ${
-          showTotalsRow ? 'w-[200px] min-w-[200px] max-w-[200px]' : 'min-w-min max-w-max'
+          showTotalsRow ? 'w-[280px] min-w-[280px] max-w-[280px]' : 'min-w-min max-w-max'
         }`}
       >
         <div className="min-w-0">
           <div className="flex w-full min-w-0 flex-nowrap items-center gap-1.5 leading-none">
-            <span className={`min-w-0 truncate ${tableCellPrimary}`}>{row.name}</span>
+            <div className="flex min-w-0 flex-nowrap items-center gap-1.5">
+              <div className={`min-w-0 truncate ${tableCellPrimary}`}>{row.name}</div>
+              {row.warehouseRole === 'selling' ? <SellingRoleBadge /> : null}
+            </div>
             <span className="ml-auto flex shrink-0 items-center gap-1.5 pl-3">
               <RowFilterButton rowName={row.name} />
               {row.transferHub ? (
@@ -971,7 +975,7 @@ export function ProductTransfersTable({
                 <th
                   className={`sticky left-14 z-20 bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${
                     showTotalsRow
-                      ? 'w-[200px] min-w-[200px] max-w-[200px]'
+                      ? 'w-[280px] min-w-[280px] max-w-[280px]'
                       : 'min-w-min max-w-max'
                   }`}
                   scope="col"
@@ -1148,7 +1152,7 @@ export function ProductTransfersTable({
                     aria-hidden
                   />
                   <th
-                    className="sticky left-14 z-20 h-[40px] min-h-[40px] max-h-[40px] w-[200px] min-w-[200px] max-w-[200px] bg-white px-4 py-0 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                    className="sticky left-14 z-20 h-[40px] min-h-[40px] max-h-[40px] w-[280px] min-w-[280px] max-w-[280px] bg-white px-4 py-0 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                     aria-hidden
                   />
                   <th className="h-[40px] min-h-[40px] max-h-[40px] min-w-[96px] bg-white px-4 pt-0 pb-2 text-right align-top">
