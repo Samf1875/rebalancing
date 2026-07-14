@@ -26,6 +26,7 @@ import {
   type TuBreakdownItem,
 } from '../data/mockProductTransferLocations';
 import { TransitionArrowSeparator } from './TransitionArrowSeparator';
+import { LocationBadge } from './rebalancing/LocationBadge';
 
 function storageCapacityPill(phase: ProductTransferStorageCapacity) {
   if (phase === 'saturated') {
@@ -279,7 +280,13 @@ const MOCK_TRANSFER_POPOVER_FORECAST_SENDING = '0.77';
 const MOCK_TRANSFER_POPOVER_FORECAST_RECEIVING = '1.24';
 
 /** Recommendations considered — rejected routes for Lulli Eshop stock-on-hand chip stockBox_SKU_A only */
-const LULLI_STOCK_BOX_SKU_A_REJECTED_ROUTES: { store: string; reason: string; scope: string }[] = [
+const LULLI_STOCK_BOX_SKU_A_REJECTED_ROUTES: {
+  store: string;
+  reason: string;
+  scope: string;
+  warehouseRole?: 'fulfilment' | 'selling' | null;
+  priority?: 'standard' | 'high' | 'very_high';
+}[] = [
   {
     store: 'BENOA SAINT FLORENT',
     reason: 'Receiving store had no capacity',
@@ -313,13 +320,61 @@ const LULLI_STOCK_BOX_SKU_A_REJECTED_ROUTES: { store: string; reason: string; sc
 ];
 
 /** Recommendations considered — rejected routes for Lulli Eshop stock-on-hand chip stockBox_SKU_B only */
-const LULLI_STOCK_BOX_SKU_B_REJECTED_ROUTES: { store: string; reason: string; scope: string }[] = [
+const LULLI_STOCK_BOX_SKU_B_REJECTED_ROUTES: {
+  store: string;
+  reason: string;
+  scope: string;
+  warehouseRole?: 'fulfilment' | 'selling' | null;
+  priority?: 'standard' | 'high' | 'very_high';
+}[] = [
   {
     store: 'BENOA ILE ROUSSE',
     reason: 'Higher-value SKUs took priority on this route',
     scope: 'Trip constraint',
   },
 ];
+
+/** Hardcoded endpoints for the green-truck "Recommended transfer" detail drawer. */
+const GREEN_TRUCK_RECOMMENDED_TRANSFER: {
+  sending: {
+    name: string;
+    warehouseRole?: 'fulfilment' | 'selling' | null;
+    priority?: 'standard' | 'high' | 'very_high';
+  };
+  receiving: {
+    name: string;
+    warehouseRole?: 'fulfilment' | 'selling' | null;
+    priority?: 'standard' | 'high' | 'very_high';
+  };
+} = {
+  sending: {
+    name: 'PR AC Lille',
+    warehouseRole: 'selling',
+    priority: 'very_high',
+  },
+  receiving: {
+    name: 'Lulli Eshop',
+    priority: 'standard',
+  },
+};
+
+/** Priority for stock-on-hand fallback "Recommendations considered" cards (decoupled from mock rows). */
+const FALLBACK_REJECTED_ROUTE_PRIORITY: Record<string, 'standard' | 'high' | 'very_high'> = {
+  'PR PP Nancy': 'high',
+  'GL PP Biarritz': 'standard',
+  'PR AC Toulon': 'high',
+};
+
+const priorityDisplayLabel = (p?: 'standard' | 'high' | 'very_high') => {
+  switch (p) {
+    case 'high':
+      return 'High';
+    case 'very_high':
+      return 'Very high';
+    default:
+      return 'Standard';
+  }
+};
 
 function TransferPopRow({
   icon,
@@ -426,8 +481,8 @@ function RecommendedTransferProductVisibilityImpact({
   sendingValue,
   receivingValue,
 }: {
-  sendingLabel: string;
-  receivingLabel: string;
+  sendingLabel: ReactNode;
+  receivingLabel: ReactNode;
   sendingValue?: ReactNode;
   receivingValue?: ReactNode;
 }) {
@@ -664,6 +719,8 @@ export function ProductTransfersTable({
   const [tuPopoverStyle, setTuPopoverStyle] = useState<CSSProperties>({});
   const [warehouseDetail, setWarehouseDetail] = useState<{
     rowName: string;
+    warehouseRole?: 'fulfilment' | 'selling' | null;
+    priority?: 'standard' | 'high' | 'very_high';
     count: number;
     weeksCoverage: string;
     stockOnHand: number;
@@ -855,12 +912,15 @@ export function ProductTransfersTable({
       </td>
       <td
         className={`sticky left-14 z-20 min-h-[86px] box-border ${rowBgClass} px-4 py-3 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd} ${
-          showTotalsRow ? 'w-[200px] min-w-[200px] max-w-[200px]' : 'min-w-min max-w-max'
+          showTotalsRow ? 'w-[280px] min-w-[280px] max-w-[280px]' : 'min-w-min max-w-max'
         }`}
       >
         <div className="min-w-0">
           <div className="flex w-full min-w-0 flex-nowrap items-center gap-1.5 leading-none">
-            <span className={`min-w-0 truncate ${tableCellPrimary}`}>{row.name}</span>
+            <div className="flex min-w-0 flex-nowrap items-center gap-1.5">
+              <div className={`min-w-0 truncate ${tableCellPrimary}`}>{row.name}</div>
+              {row.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+            </div>
             <span className="ml-auto flex shrink-0 items-center gap-1.5 pl-3">
               <RowFilterButton rowName={row.name} />
               {row.transferHub ? (
@@ -971,7 +1031,7 @@ export function ProductTransfersTable({
                 <th
                   className={`sticky left-14 z-20 bg-white px-4 py-[10px] text-left shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${
                     showTotalsRow
-                      ? 'w-[200px] min-w-[200px] max-w-[200px]'
+                      ? 'w-[280px] min-w-[280px] max-w-[280px]'
                       : 'min-w-min max-w-max'
                   }`}
                   scope="col"
@@ -1148,7 +1208,7 @@ export function ProductTransfersTable({
                     aria-hidden
                   />
                   <th
-                    className="sticky left-14 z-20 h-[40px] min-h-[40px] max-h-[40px] w-[200px] min-w-[200px] max-w-[200px] bg-white px-4 py-0 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                    className="sticky left-14 z-20 h-[40px] min-h-[40px] max-h-[40px] w-[280px] min-w-[280px] max-w-[280px] bg-white px-4 py-0 align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                     aria-hidden
                   />
                   <th className="h-[40px] min-h-[40px] max-h-[40px] min-w-[96px] bg-white px-4 pt-0 pb-2 text-right align-top">
@@ -1351,6 +1411,8 @@ export function ProductTransfersTable({
                           cancelTuClose();
                           setWarehouseDetail({
                             rowName: popRow.name,
+                            warehouseRole: popRow.warehouseRole,
+                            priority: popRow.priority,
                             count: popItem.count,
                             weeksCoverage: weeksCoverageText,
                             stockOnHand:
@@ -1408,9 +1470,23 @@ export function ProductTransfersTable({
                       id="green-truck-transfer-drawer-title"
                       className="flex flex-wrap items-center gap-1 font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
                     >
-                      <span>PR AC Lille</span>
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span className="min-w-0 truncate">
+                          {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.name}
+                        </span>
+                        {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.warehouseRole === 'selling' ? (
+                          <LocationBadge>Selling</LocationBadge>
+                        ) : null}
+                      </span>
                       <TransitionArrowSeparator className="mx-0 shrink-0" />
-                      <span>Lulli Eshop</span>
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span className="min-w-0 truncate">
+                          {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.name}
+                        </span>
+                        {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.warehouseRole === 'selling' ? (
+                          <LocationBadge>Selling</LocationBadge>
+                        ) : null}
+                      </span>
                     </h2>
                     <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#6A7282]">
                       Trip capacity: 87 units (max 100)
@@ -1509,8 +1585,26 @@ export function ProductTransfersTable({
                   </div>
 
                   <RecommendedTransferProductVisibilityImpact
-                    sendingLabel="Sending store: PR AC Lille"
-                    receivingLabel="Receiving store: Lulli Eshop"
+                    sendingLabel={
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span>
+                          Sending store: {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.name}
+                        </span>
+                        {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.warehouseRole === 'selling' ? (
+                          <LocationBadge>Selling</LocationBadge>
+                        ) : null}
+                      </span>
+                    }
+                    receivingLabel={
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span>
+                          Receiving store: {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.name}
+                        </span>
+                        {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.warehouseRole === 'selling' ? (
+                          <LocationBadge>Selling</LocationBadge>
+                        ) : null}
+                      </span>
+                    }
                     sendingValue={
                       <>
                         <span>1/5</span>
@@ -1530,13 +1624,28 @@ export function ProductTransfersTable({
                   <p className={`${transferPopSection} mb-2 mt-4`}>Stock check</p>
                   <div className="flex flex-col gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
                     <div className="flex flex-col gap-1.5">
-                      <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                      <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                         <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
                           <AutoneReceivingLocationIcon direction="out" />
                         </span>
-                        Sending store: PR AC Lille
+                        <span className="inline-flex min-w-0 items-center gap-1.5">
+                          <span>
+                            Sending store: {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.name}
+                          </span>
+                          {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.warehouseRole === 'selling' ? (
+                            <LocationBadge>Selling</LocationBadge>
+                          ) : null}
+                        </span>
                       </p>
                       <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Priority
+                          </span>
+                          <LocationBadge variant="strong">
+                            {priorityDisplayLabel(GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.priority)}
+                          </LocationBadge>
+                        </li>
                         <li className="flex items-center justify-between gap-2">
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
                             Total stock
@@ -1574,13 +1683,28 @@ export function ProductTransfersTable({
                       </ul>
                     </div>
                     <div className="flex flex-col gap-1.5 border-t border-[#E3E8F0] pt-3">
-                      <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                      <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                         <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
                           <AutoneReceivingLocationIcon direction="in" />
                         </span>
-                        Receiving store: Lulli Eshop
+                        <span className="inline-flex min-w-0 items-center gap-1.5">
+                          <span>
+                            Receiving store: {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.name}
+                          </span>
+                          {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.warehouseRole === 'selling' ? (
+                            <LocationBadge>Selling</LocationBadge>
+                          ) : null}
+                        </span>
                       </p>
                       <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Priority
+                          </span>
+                          <LocationBadge variant="strong">
+                            {priorityDisplayLabel(GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.priority)}
+                          </LocationBadge>
+                        </li>
                         <li className="flex items-center justify-between gap-2">
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
                             Total stock
@@ -1667,7 +1791,10 @@ export function ProductTransfersTable({
                       id="warehouse-detail-title"
                       className="font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
                     >
-                      {warehouseDetail.rowName}
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span className="min-w-0 truncate">{warehouseDetail.rowName}</span>
+                        {warehouseDetail.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+                      </span>
                     </h2>
                   </div>
                   <button
@@ -1700,13 +1827,24 @@ export function ProductTransfersTable({
                     <p className={`${transferPopSection} mb-2`}>Stock check</p>
                     <div className="flex flex-col gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
                       <div className="flex flex-col gap-1.5">
-                        <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                        <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                           <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#6864E6]">
                             <Package className="size-[1em]" strokeWidth={2} aria-hidden />
                           </span>
-                          {warehouseDetail.rowName}
+                          <span className="inline-flex min-w-0 items-center gap-1.5">
+                            <span className="min-w-0 truncate">{warehouseDetail.rowName}</span>
+                            {warehouseDetail.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+                          </span>
                         </p>
                         <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
+                          <li className="flex items-center justify-between gap-2">
+                            <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                              Priority
+                            </span>
+                            <LocationBadge variant="strong">
+                              {priorityDisplayLabel(warehouseDetail.priority)}
+                            </LocationBadge>
+                          </li>
                           <li className="flex items-center justify-between gap-2">
                             <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
                               Total stock
@@ -1772,11 +1910,15 @@ export function ProductTransfersTable({
                               key={`${card.store}-${card.reason}-${idx}`}
                               className="flex flex-col gap-2 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3"
                             >
-                              <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                              <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                                 <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
                                   <Home className="size-[1em]" strokeWidth={2} aria-hidden />
                                 </span>
-                                Receiving store: {card.store}
+                                <span className="inline-flex min-w-0 items-center gap-1.5">
+                                  <span>Receiving store: {card.store}</span>
+                                  {card.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+                                  <LocationBadge>{priorityDisplayLabel(card.priority)}</LocationBadge>
+                                </span>
                               </p>
                               <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
                                 {card.reason}
@@ -1799,11 +1941,15 @@ export function ProductTransfersTable({
                               key={`${card.store}-${card.reason}-${idx}`}
                               className="flex flex-col gap-2 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3"
                             >
-                              <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                              <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                                 <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
                                   <Home className="size-[1em]" strokeWidth={2} aria-hidden />
                                 </span>
-                                Receiving store: {card.store}
+                                <span className="inline-flex min-w-0 items-center gap-1.5">
+                                  <span>Receiving store: {card.store}</span>
+                                  {card.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+                                  <LocationBadge>{priorityDisplayLabel(card.priority)}</LocationBadge>
+                                </span>
                               </p>
                               <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
                                 {card.reason}
@@ -1822,11 +1968,16 @@ export function ProductTransfersTable({
                         </p>
                         <div className="flex flex-col gap-3">
                           <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
-                            <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                            <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                               <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
                                 <AutoneReceivingLocationIcon direction="in" />
                               </span>
-                              Receiving store: PR PP Nancy
+                              <span className="inline-flex min-w-0 items-center gap-1.5">
+                                <span>Receiving store: PR PP Nancy</span>
+                                <LocationBadge>
+                                  {priorityDisplayLabel(FALLBACK_REJECTED_ROUTE_PRIORITY['PR PP Nancy'])}
+                                </LocationBadge>
+                              </span>
                             </p>
                             <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
                               <div className="flex items-start gap-2">
@@ -1843,11 +1994,16 @@ export function ProductTransfersTable({
                             </div>
                           </div>
                           <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
-                            <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                            <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                               <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
                                 <AutoneReceivingLocationIcon direction="in" />
                               </span>
-                              Receiving store: GL PP Biarritz
+                              <span className="inline-flex min-w-0 items-center gap-1.5">
+                                <span>Receiving store: GL PP Biarritz</span>
+                                <LocationBadge>
+                                  {priorityDisplayLabel(FALLBACK_REJECTED_ROUTE_PRIORITY['GL PP Biarritz'])}
+                                </LocationBadge>
+                              </span>
                             </p>
                             <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
                               <div className="flex items-start gap-2">
@@ -1864,11 +2020,17 @@ export function ProductTransfersTable({
                             </div>
                           </div>
                           <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
-                            <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                            <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                               <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
                                 <AutoneReceivingLocationIcon direction="in" />
                               </span>
-                              Receiving store: PR AC Toulon
+                              <span className="inline-flex min-w-0 items-center gap-1.5">
+                                <span>Receiving store: PR AC Toulon</span>
+                                <LocationBadge>Selling</LocationBadge>
+                                <LocationBadge>
+                                  {priorityDisplayLabel(FALLBACK_REJECTED_ROUTE_PRIORITY['PR AC Toulon'])}
+                                </LocationBadge>
+                              </span>
                             </p>
                             <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
                               <div className="flex items-start gap-2">
@@ -1925,9 +2087,19 @@ export function ProductTransfersTable({
                       id="transfer-detail-title"
                       className="flex flex-wrap items-center gap-1 font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
                     >
-                      <span>{transferDetail.sourceName}</span>
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span className="min-w-0 truncate">{transferDetail.sourceName}</span>
+                        {transferDetail.source?.warehouseRole === 'selling' ? (
+                          <LocationBadge>Selling</LocationBadge>
+                        ) : null}
+                      </span>
                       <TransitionArrowSeparator className="mx-0 shrink-0" />
-                      <span>{transferDetail.destinationName}</span>
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span className="min-w-0 truncate">{transferDetail.destinationName}</span>
+                        {transferDetail.destination?.warehouseRole === 'selling' ? (
+                          <LocationBadge>Selling</LocationBadge>
+                        ) : null}
+                      </span>
                     </h2>
                     <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#6A7282]">
                       Trip capacity (max 10,000)
@@ -2021,8 +2193,22 @@ export function ProductTransfersTable({
                   ) : null}
 
                   <RecommendedTransferProductVisibilityImpact
-                    sendingLabel={`Sending store: ${transferDetail.sourceName}`}
-                    receivingLabel={`Receiving store: ${transferDetail.destinationName}`}
+                    sendingLabel={
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span>Sending store: {transferDetail.sourceName}</span>
+                        {transferDetail.source?.warehouseRole === 'selling' ? (
+                          <LocationBadge>Selling</LocationBadge>
+                        ) : null}
+                      </span>
+                    }
+                    receivingLabel={
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span>Receiving store: {transferDetail.destinationName}</span>
+                        {transferDetail.destination?.warehouseRole === 'selling' ? (
+                          <LocationBadge>Selling</LocationBadge>
+                        ) : null}
+                      </span>
+                    }
                   />
 
                   <div className="mt-5 border-t border-[#E3E8F0] pt-4">
@@ -2039,11 +2225,22 @@ export function ProductTransfersTable({
                             <span className="font-['Inter',sans-serif] text-[11px] font-medium leading-snug text-[#6A7282]">
                               Sending store
                             </span>
-                            <span className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
-                              {transferDetail.sourceName}
+                            <span className="inline-flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                              <span className="min-w-0 truncate">{transferDetail.sourceName}</span>
+                              {transferDetail.source?.warehouseRole === 'selling' ? (
+                                <LocationBadge>Selling</LocationBadge>
+                              ) : null}
                             </span>
                           </div>
                           <ul className="ml-5 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
+                            <li className="flex items-center justify-between gap-2">
+                              <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                                Priority
+                              </span>
+                              <LocationBadge variant="strong">
+                                {priorityDisplayLabel(transferDetail.source?.priority)}
+                              </LocationBadge>
+                            </li>
                             <li className="flex items-center justify-between gap-2">
                               <span className="inline-flex flex-wrap items-center gap-x-0.5 font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
                                 <span>Total stock before</span>
@@ -2091,11 +2288,22 @@ export function ProductTransfersTable({
                             <span className="font-['Inter',sans-serif] text-[11px] font-medium leading-snug text-[#6A7282]">
                               Receiving store
                             </span>
-                            <span className="font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
-                              {transferDetail.destinationName}
+                            <span className="inline-flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                              <span className="min-w-0 truncate">{transferDetail.destinationName}</span>
+                              {transferDetail.destination?.warehouseRole === 'selling' ? (
+                                <LocationBadge>Selling</LocationBadge>
+                              ) : null}
                             </span>
                           </div>
                           <ul className="ml-5 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
+                            <li className="flex items-center justify-between gap-2">
+                              <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                                Priority
+                              </span>
+                              <LocationBadge variant="strong">
+                                {priorityDisplayLabel(transferDetail.destination?.priority)}
+                              </LocationBadge>
+                            </li>
                             <li className="flex items-center justify-between gap-2">
                               <span className="inline-flex flex-wrap items-center gap-x-0.5 font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
                                 <span>Total stock before</span>
@@ -2154,7 +2362,14 @@ export function ProductTransfersTable({
                       {transferDetail.source ? (
                         <TransferPopRow
                           icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-                          label={transferDetail.sourceName}
+                          label={
+                            <span className="inline-flex min-w-0 items-center gap-1.5">
+                              <span className="min-w-0 truncate">{transferDetail.sourceName}</span>
+                              {transferDetail.source.warehouseRole === 'selling' ? (
+                                <LocationBadge>Selling</LocationBadge>
+                              ) : null}
+                            </span>
+                          }
                           value={formatWeeksCoverageArrow(
                             transferDetail.source.stock,
                             transferDetail.source.forecastPerWeek,
@@ -2165,7 +2380,14 @@ export function ProductTransfersTable({
                       {transferDetail.destination ? (
                         <TransferPopRow
                           icon={<CalendarDays className="size-3.5" strokeWidth={2} aria-hidden />}
-                          label={transferDetail.destinationName}
+                          label={
+                            <span className="inline-flex min-w-0 items-center gap-1.5">
+                              <span className="min-w-0 truncate">{transferDetail.destinationName}</span>
+                              {transferDetail.destination.warehouseRole === 'selling' ? (
+                                <LocationBadge>Selling</LocationBadge>
+                              ) : null}
+                            </span>
+                          }
                           value={formatWeeksCoverageArrow(
                             transferDetail.destination.stock,
                             transferDetail.destination.forecastPerWeek,

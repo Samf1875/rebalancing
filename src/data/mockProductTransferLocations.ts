@@ -67,6 +67,8 @@ export type ProductTransferLocationRow = {
   id: string;
   name: string;
   code: string;
+  warehouseRole?: 'fulfilment' | 'selling' | null;
+  priority?: 'standard' | 'high' | 'very_high';
   /** Show small “hub” glyph next to the location name */
   transferHub?: boolean;
   /** Funnel icon next to the name (e.g. filtered / drill-down state) */
@@ -106,6 +108,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     id: 'loc-610',
     name: 'Lulli Eshop',
     code: '610',
+    priority: 'standard',
     stock: { from: 9, to: 9 },
     warehouseUnits: { from: 120, to: 118 },
     tu: { from: 2, to: 2 },
@@ -133,6 +136,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     id: 'loc-645',
     name: 'PR PP Nancy',
     code: '645',
+    priority: 'high',
     transferHub: true,
     locationFilter: true,
     stock: { from: 2, to: 5 },
@@ -199,6 +203,8 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     id: 'loc-660',
     name: 'PR AC Toulon',
     code: '660',
+    warehouseRole: 'selling',
+    priority: 'high',
     transferHub: true,
     stock: { from: 1, to: 2 },
     warehouseUnits: { from: 15, to: 18 },
@@ -231,6 +237,7 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     id: 'loc-003',
     name: 'SU PP Vieille du templ...',
     code: '003',
+    priority: 'very_high',
     stock: { from: 0, to: 0 },
     warehouseUnits: { from: 8, to: 10 },
     tu: { from: 1, to: 2 },
@@ -255,6 +262,8 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     id: 'loc-693',
     name: 'PR AC Lille',
     code: '693',
+    warehouseRole: 'selling',
+    priority: 'very_high',
     transferHub: true,
     stock: { from: 4, to: 0 },
     warehouseUnits: { from: 64, to: 58 },
