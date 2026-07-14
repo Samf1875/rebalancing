@@ -365,6 +365,17 @@ const FALLBACK_REJECTED_ROUTE_PRIORITY: Record<string, 'standard' | 'high' | 've
   'PR AC Toulon': 'high',
 };
 
+const priorityDisplayLabel = (p?: 'standard' | 'high' | 'very_high') => {
+  switch (p) {
+    case 'high':
+      return 'High';
+    case 'very_high':
+      return 'Very high';
+    default:
+      return 'Standard';
+  }
+};
+
 function TransferPopRow({
   icon,
   label,
@@ -1627,6 +1638,14 @@ export function ProductTransfersTable({
                       <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
                         <li className="flex items-center justify-between gap-2">
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Priority
+                          </span>
+                          <LocationBadge variant="strong">
+                            {priorityDisplayLabel(GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.priority)}
+                          </LocationBadge>
+                        </li>
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
                             Total stock
                           </span>
                           <span className="shrink-0 rounded-[2px] bg-[#F2F4F7] px-1.5 py-0.5 font-['Inter',sans-serif] text-[11px] font-medium tabular-nums text-[#101828]">
@@ -1676,6 +1695,14 @@ export function ProductTransfersTable({
                         </span>
                       </p>
                       <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
+                        <li className="flex items-center justify-between gap-2">
+                          <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                            Priority
+                          </span>
+                          <LocationBadge variant="strong">
+                            {priorityDisplayLabel(GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.priority)}
+                          </LocationBadge>
+                        </li>
                         <li className="flex items-center justify-between gap-2">
                           <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
                             Total stock
@@ -2186,6 +2213,14 @@ export function ProductTransfersTable({
                           </div>
                           <ul className="ml-5 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
                             <li className="flex items-center justify-between gap-2">
+                              <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                                Priority
+                              </span>
+                              <LocationBadge variant="strong">
+                                {priorityDisplayLabel(transferDetail.source?.priority)}
+                              </LocationBadge>
+                            </li>
+                            <li className="flex items-center justify-between gap-2">
                               <span className="inline-flex flex-wrap items-center gap-x-0.5 font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
                                 <span>Total stock before</span>
                                 <TransitionArrowSeparator className="mx-0 shrink-0" />
@@ -2240,6 +2275,14 @@ export function ProductTransfersTable({
                             </span>
                           </div>
                           <ul className="ml-5 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
+                            <li className="flex items-center justify-between gap-2">
+                              <span className="font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
+                                Priority
+                              </span>
+                              <LocationBadge variant="strong">
+                                {priorityDisplayLabel(transferDetail.destination?.priority)}
+                              </LocationBadge>
+                            </li>
                             <li className="flex items-center justify-between gap-2">
                               <span className="inline-flex flex-wrap items-center gap-x-0.5 font-['Inter',sans-serif] text-[11px] font-normal leading-snug text-[#6A7282]">
                                 <span>Total stock before</span>
