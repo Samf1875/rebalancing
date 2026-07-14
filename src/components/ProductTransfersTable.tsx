@@ -280,7 +280,12 @@ const MOCK_TRANSFER_POPOVER_FORECAST_SENDING = '0.77';
 const MOCK_TRANSFER_POPOVER_FORECAST_RECEIVING = '1.24';
 
 /** Recommendations considered — rejected routes for Lulli Eshop stock-on-hand chip stockBox_SKU_A only */
-const LULLI_STOCK_BOX_SKU_A_REJECTED_ROUTES: { store: string; reason: string; scope: string }[] = [
+const LULLI_STOCK_BOX_SKU_A_REJECTED_ROUTES: {
+  store: string;
+  reason: string;
+  scope: string;
+  warehouseRole?: 'fulfilment' | 'selling' | null;
+}[] = [
   {
     store: 'BENOA SAINT FLORENT',
     reason: 'Receiving store had no capacity',
@@ -314,7 +319,12 @@ const LULLI_STOCK_BOX_SKU_A_REJECTED_ROUTES: { store: string; reason: string; sc
 ];
 
 /** Recommendations considered — rejected routes for Lulli Eshop stock-on-hand chip stockBox_SKU_B only */
-const LULLI_STOCK_BOX_SKU_B_REJECTED_ROUTES: { store: string; reason: string; scope: string }[] = [
+const LULLI_STOCK_BOX_SKU_B_REJECTED_ROUTES: {
+  store: string;
+  reason: string;
+  scope: string;
+  warehouseRole?: 'fulfilment' | 'selling' | null;
+}[] = [
   {
     store: 'BENOA ILE ROUSSE',
     reason: 'Higher-value SKUs took priority on this route',
@@ -679,6 +689,7 @@ export function ProductTransfersTable({
   const [tuPopoverStyle, setTuPopoverStyle] = useState<CSSProperties>({});
   const [warehouseDetail, setWarehouseDetail] = useState<{
     rowName: string;
+    warehouseRole?: 'fulfilment' | 'selling' | null;
     count: number;
     weeksCoverage: string;
     stockOnHand: number;
@@ -1369,6 +1380,7 @@ export function ProductTransfersTable({
                           cancelTuClose();
                           setWarehouseDetail({
                             rowName: popRow.name,
+                            warehouseRole: popRow.warehouseRole,
                             count: popItem.count,
                             weeksCoverage: weeksCoverageText,
                             stockOnHand:
@@ -1731,7 +1743,10 @@ export function ProductTransfersTable({
                       id="warehouse-detail-title"
                       className="font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
                     >
-                      {warehouseDetail.rowName}
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span className="min-w-0 truncate">{warehouseDetail.rowName}</span>
+                        {warehouseDetail.warehouseRole === 'selling' ? <SellingRoleBadge /> : null}
+                      </span>
                     </h2>
                   </div>
                   <button
@@ -1764,11 +1779,14 @@ export function ProductTransfersTable({
                     <p className={`${transferPopSection} mb-2`}>Stock check</p>
                     <div className="flex flex-col gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
                       <div className="flex flex-col gap-1.5">
-                        <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                        <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                           <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#6864E6]">
                             <Package className="size-[1em]" strokeWidth={2} aria-hidden />
                           </span>
-                          {warehouseDetail.rowName}
+                          <span className="inline-flex min-w-0 items-center gap-1.5">
+                            <span className="min-w-0 truncate">{warehouseDetail.rowName}</span>
+                            {warehouseDetail.warehouseRole === 'selling' ? <SellingRoleBadge /> : null}
+                          </span>
                         </p>
                         <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
                           <li className="flex items-center justify-between gap-2">
@@ -1836,11 +1854,14 @@ export function ProductTransfersTable({
                               key={`${card.store}-${card.reason}-${idx}`}
                               className="flex flex-col gap-2 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3"
                             >
-                              <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                              <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                                 <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
                                   <Home className="size-[1em]" strokeWidth={2} aria-hidden />
                                 </span>
-                                Receiving store: {card.store}
+                                <span className="inline-flex min-w-0 items-center gap-1.5">
+                                  <span>Receiving store: {card.store}</span>
+                                  {card.warehouseRole === 'selling' ? <SellingRoleBadge /> : null}
+                                </span>
                               </p>
                               <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
                                 {card.reason}
@@ -1863,11 +1884,14 @@ export function ProductTransfersTable({
                               key={`${card.store}-${card.reason}-${idx}`}
                               className="flex flex-col gap-2 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3"
                             >
-                              <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                              <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                                 <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
                                   <Home className="size-[1em]" strokeWidth={2} aria-hidden />
                                 </span>
-                                Receiving store: {card.store}
+                                <span className="inline-flex min-w-0 items-center gap-1.5">
+                                  <span>Receiving store: {card.store}</span>
+                                  {card.warehouseRole === 'selling' ? <SellingRoleBadge /> : null}
+                                </span>
                               </p>
                               <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
                                 {card.reason}
@@ -1886,11 +1910,13 @@ export function ProductTransfersTable({
                         </p>
                         <div className="flex flex-col gap-3">
                           <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
-                            <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                            <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                               <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
                                 <AutoneReceivingLocationIcon direction="in" />
                               </span>
-                              Receiving store: PR PP Nancy
+                              <span className="inline-flex min-w-0 items-center gap-1.5">
+                                <span>Receiving store: PR PP Nancy</span>
+                              </span>
                             </p>
                             <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
                               <div className="flex items-start gap-2">
@@ -1907,11 +1933,13 @@ export function ProductTransfersTable({
                             </div>
                           </div>
                           <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
-                            <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                            <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                               <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
                                 <AutoneReceivingLocationIcon direction="in" />
                               </span>
-                              Receiving store: GL PP Biarritz
+                              <span className="inline-flex min-w-0 items-center gap-1.5">
+                                <span>Receiving store: GL PP Biarritz</span>
+                              </span>
                             </p>
                             <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
                               <div className="flex items-start gap-2">
@@ -1928,11 +1956,14 @@ export function ProductTransfersTable({
                             </div>
                           </div>
                           <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
-                            <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                            <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                               <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
                                 <AutoneReceivingLocationIcon direction="in" />
                               </span>
-                              Receiving store: PR AC Toulon
+                              <span className="inline-flex min-w-0 items-center gap-1.5">
+                                <span>Receiving store: PR AC Toulon</span>
+                                <SellingRoleBadge />
+                              </span>
                             </p>
                             <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
                               <div className="flex items-start gap-2">
