@@ -322,6 +322,20 @@ const LULLI_STOCK_BOX_SKU_B_REJECTED_ROUTES: { store: string; reason: string; sc
   },
 ];
 
+/** Hardcoded endpoints for the green-truck "Recommended transfer" detail drawer. */
+const GREEN_TRUCK_RECOMMENDED_TRANSFER: {
+  sending: { name: string; warehouseRole?: 'fulfilment' | 'selling' | null };
+  receiving: { name: string; warehouseRole?: 'fulfilment' | 'selling' | null };
+} = {
+  sending: {
+    name: 'PR AC Lille',
+    warehouseRole: 'selling',
+  },
+  receiving: {
+    name: 'Lulli Eshop',
+  },
+};
+
 function TransferPopRow({
   icon,
   label,
@@ -427,8 +441,8 @@ function RecommendedTransferProductVisibilityImpact({
   sendingValue,
   receivingValue,
 }: {
-  sendingLabel: string;
-  receivingLabel: string;
+  sendingLabel: ReactNode;
+  receivingLabel: ReactNode;
   sendingValue?: ReactNode;
   receivingValue?: ReactNode;
 }) {
@@ -1412,9 +1426,23 @@ export function ProductTransfersTable({
                       id="green-truck-transfer-drawer-title"
                       className="flex flex-wrap items-center gap-1 font-['Inter',sans-serif] text-[16px] font-semibold leading-snug text-[#101828]"
                     >
-                      <span>PR AC Lille</span>
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span className="min-w-0 truncate">
+                          {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.name}
+                        </span>
+                        {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.warehouseRole === 'selling' ? (
+                          <SellingRoleBadge />
+                        ) : null}
+                      </span>
                       <TransitionArrowSeparator className="mx-0 shrink-0" />
-                      <span>Lulli Eshop</span>
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span className="min-w-0 truncate">
+                          {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.name}
+                        </span>
+                        {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.warehouseRole === 'selling' ? (
+                          <SellingRoleBadge />
+                        ) : null}
+                      </span>
                     </h2>
                     <p className="font-['Inter',sans-serif] text-[12px] font-normal leading-snug text-[#6A7282]">
                       Trip capacity: 87 units (max 100)
@@ -1513,8 +1541,26 @@ export function ProductTransfersTable({
                   </div>
 
                   <RecommendedTransferProductVisibilityImpact
-                    sendingLabel="Sending store: PR AC Lille"
-                    receivingLabel="Receiving store: Lulli Eshop"
+                    sendingLabel={
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span>
+                          Sending store: {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.name}
+                        </span>
+                        {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.warehouseRole === 'selling' ? (
+                          <SellingRoleBadge />
+                        ) : null}
+                      </span>
+                    }
+                    receivingLabel={
+                      <span className="inline-flex min-w-0 items-center gap-1.5">
+                        <span>
+                          Receiving store: {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.name}
+                        </span>
+                        {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.warehouseRole === 'selling' ? (
+                          <SellingRoleBadge />
+                        ) : null}
+                      </span>
+                    }
                     sendingValue={
                       <>
                         <span>1/5</span>
@@ -1534,11 +1580,18 @@ export function ProductTransfersTable({
                   <p className={`${transferPopSection} mb-2 mt-4`}>Stock check</p>
                   <div className="flex flex-col gap-3 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
                     <div className="flex flex-col gap-1.5">
-                      <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                      <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                         <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
                           <AutoneReceivingLocationIcon direction="out" />
                         </span>
-                        Sending store: PR AC Lille
+                        <span className="inline-flex min-w-0 items-center gap-1.5">
+                          <span>
+                            Sending store: {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.name}
+                          </span>
+                          {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.warehouseRole === 'selling' ? (
+                            <SellingRoleBadge />
+                          ) : null}
+                        </span>
                       </p>
                       <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
                         <li className="flex items-center justify-between gap-2">
@@ -1578,11 +1631,18 @@ export function ProductTransfersTable({
                       </ul>
                     </div>
                     <div className="flex flex-col gap-1.5 border-t border-[#E3E8F0] pt-3">
-                      <p className="flex items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                      <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
                         <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
                           <AutoneReceivingLocationIcon direction="in" />
                         </span>
-                        Receiving store: Lulli Eshop
+                        <span className="inline-flex min-w-0 items-center gap-1.5">
+                          <span>
+                            Receiving store: {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.name}
+                          </span>
+                          {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.warehouseRole === 'selling' ? (
+                            <SellingRoleBadge />
+                          ) : null}
+                        </span>
                       </p>
                       <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
                         <li className="flex items-center justify-between gap-2">
