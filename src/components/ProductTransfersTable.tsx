@@ -285,6 +285,7 @@ const LULLI_STOCK_BOX_SKU_A_REJECTED_ROUTES: {
   reason: string;
   scope: string;
   warehouseRole?: 'fulfilment' | 'selling' | null;
+  priority?: 'standard' | 'high' | 'very_high';
 }[] = [
   {
     store: 'BENOA SAINT FLORENT',
@@ -324,6 +325,7 @@ const LULLI_STOCK_BOX_SKU_B_REJECTED_ROUTES: {
   reason: string;
   scope: string;
   warehouseRole?: 'fulfilment' | 'selling' | null;
+  priority?: 'standard' | 'high' | 'very_high';
 }[] = [
   {
     store: 'BENOA ILE ROUSSE',
@@ -334,16 +336,33 @@ const LULLI_STOCK_BOX_SKU_B_REJECTED_ROUTES: {
 
 /** Hardcoded endpoints for the green-truck "Recommended transfer" detail drawer. */
 const GREEN_TRUCK_RECOMMENDED_TRANSFER: {
-  sending: { name: string; warehouseRole?: 'fulfilment' | 'selling' | null };
-  receiving: { name: string; warehouseRole?: 'fulfilment' | 'selling' | null };
+  sending: {
+    name: string;
+    warehouseRole?: 'fulfilment' | 'selling' | null;
+    priority?: 'standard' | 'high' | 'very_high';
+  };
+  receiving: {
+    name: string;
+    warehouseRole?: 'fulfilment' | 'selling' | null;
+    priority?: 'standard' | 'high' | 'very_high';
+  };
 } = {
   sending: {
     name: 'PR AC Lille',
     warehouseRole: 'selling',
+    priority: 'very_high',
   },
   receiving: {
     name: 'Lulli Eshop',
+    priority: 'standard',
   },
+};
+
+/** Priority for stock-on-hand fallback "Recommendations considered" cards (decoupled from mock rows). */
+const FALLBACK_REJECTED_ROUTE_PRIORITY: Record<string, 'standard' | 'high' | 'very_high'> = {
+  'PR PP Nancy': 'high',
+  'GL PP Biarritz': 'standard',
+  'PR AC Toulon': 'high',
 };
 
 function TransferPopRow({
