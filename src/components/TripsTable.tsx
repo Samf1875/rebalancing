@@ -4,7 +4,7 @@ import { HEADER_INFO_TOOLTIPS } from '../data/headerInfoTooltips';
 import { MOCK_TRIP_ROWS, type TripBadge, type TripTableRow } from '../data/mockTrips';
 import { AutoneArrowDownIcon } from './AutoneArrowDownIcon';
 import { AutoneHeaderInfoTooltip } from './AutoneHeaderInfoTooltip';
-import { SellingRoleBadge } from './rebalancing/SellingRoleBadge';
+import { LocationBadge } from './rebalancing/LocationBadge';
 
 const tableCellPrimary =
   "font-['Inter',sans-serif] text-[14px] font-medium leading-normal text-[#101828]";
@@ -132,7 +132,7 @@ export function TripsTable() {
         <div className="flex w-full flex-col items-start gap-0.5">
           <div className="flex min-w-0 flex-nowrap items-center gap-1.5">
             <div className={`min-w-0 truncate ${tableCellLocationName}`}>{row.sendingName}</div>
-            {row.sendingWarehouseRole === 'selling' ? <SellingRoleBadge /> : null}
+            {row.sendingWarehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
           </div>
           <div className={tableCellSecondary}>{row.sendingId}</div>
         </div>
@@ -141,7 +141,7 @@ export function TripsTable() {
         <div className="flex w-full flex-col items-start gap-0.5">
           <div className="flex min-w-0 flex-nowrap items-center gap-1.5">
             <div className={`min-w-0 truncate ${tableCellLocationName}`}>{row.receivingName}</div>
-            {row.receivingWarehouseRole === 'selling' ? <SellingRoleBadge /> : null}
+            {row.receivingWarehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
           </div>
           <div className={tableCellSecondary}>{row.receivingId}</div>
         </div>

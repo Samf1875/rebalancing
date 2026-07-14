@@ -5,7 +5,7 @@ import { MOCK_LOCATION_ROWS, type LocationTableRow } from '../data/mockLocations
 import { AutoneHeaderInfoTooltip } from './AutoneHeaderInfoTooltip';
 import { TransitionArrowSeparator } from './TransitionArrowSeparator';
 import { AutoneArrowDownIcon } from './AutoneArrowDownIcon';
-import { SellingRoleBadge } from './rebalancing/SellingRoleBadge';
+import { LocationBadge } from './rebalancing/LocationBadge';
 
 const tableCellPrimary =
   "font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
@@ -173,7 +173,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
           <div>
             <div className="flex min-w-0 flex-nowrap items-center gap-1.5">
               <div className={`min-w-0 truncate ${tableCellPrimary}`}>{row.name}</div>
-              {row.warehouseRole === 'selling' ? <SellingRoleBadge /> : null}
+              {row.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
             </div>
             <div className={`mt-0.5 ${tableCellSecondary}`}>{row.code}</div>
           </div>
