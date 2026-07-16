@@ -86,7 +86,6 @@ export const MOCK_TRIP_ROWS: TripTableRow[] = [
     id: '5',
     sendingName: 'Pr ac toulon',
     sendingId: '660',
-    sendingWarehouseRole: 'selling',
     receivingName: 'Pr ac marseille tdp',
     receivingId: '696',
     transfers: 13,

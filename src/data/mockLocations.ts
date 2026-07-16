@@ -22,7 +22,6 @@ export const MOCK_LOCATION_ROWS: LocationTableRow[] = [
     id: 'loc-1',
     name: 'Pr ac toulon',
     code: '660',
-    warehouseRole: 'selling',
     transfersIn: { units: 57, trips: 2, max: 15 },
     transfersOut: { units: 13, trips: 2, max: 2 },
     revenueEur: 2660,

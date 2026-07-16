@@ -203,7 +203,6 @@ export const MOCK_PRODUCT_TRANSFER_LOCATIONS: ProductTransferLocationRow[] = [
     id: 'loc-660',
     name: 'PR AC Toulon',
     code: '660',
-    warehouseRole: 'selling',
     priority: 'high',
     transferHub: true,
     stock: { from: 1, to: 2 },

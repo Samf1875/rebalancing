@@ -2049,7 +2049,6 @@ export function ProductTransfersTable({
                               </span>
                               <span className="inline-flex min-w-0 items-center gap-1.5">
                                 <span>Receiving store: PR AC Toulon</span>
-                                <LocationBadge>Selling</LocationBadge>
                                 <LocationBadge>
                                   {priorityDisplayLabel(FALLBACK_REJECTED_ROUTE_PRIORITY['PR AC Toulon'])}
                                 </LocationBadge>
