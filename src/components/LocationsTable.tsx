@@ -167,7 +167,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
         />
       </td>
       <td
-        className={`sticky left-14 z-20 h-[86px] min-h-[86px] w-[180px] min-w-[180px] max-w-[180px] box-border bg-white px-4 py-3 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
+        className={`sticky left-14 z-20 h-[86px] min-h-[86px] w-[280px] min-w-[280px] max-w-[280px] box-border bg-white px-4 py-3 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
       >
         <CellGripInset align="left">
           <div>
@@ -309,7 +309,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
                 </div>
               </th>
               <th
-                className="sticky left-14 z-20 min-h-[72px] w-[180px] min-w-[180px] max-w-[180px] box-border bg-white px-4 py-2 text-left align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                className="sticky left-14 z-20 min-h-[72px] w-[280px] min-w-[280px] max-w-[280px] box-border bg-white px-4 py-2 text-left align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                 scope="col"
               >
                 <span className="inline-flex items-center gap-2 whitespace-nowrap">

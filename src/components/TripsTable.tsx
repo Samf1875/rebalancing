@@ -27,11 +27,11 @@ const tripThRowH = 'min-h-[72px]';
 const tripThCell = `${tripThRowH} box-border py-2 align-middle`;
 /** After checkbox (`left-14` = 3.5rem). */
 const tripLocCol =
-  'w-[200px] min-w-[200px] max-w-[200px] box-border';
+  'w-[280px] min-w-[280px] max-w-[280px] box-border';
 const stickySendingTh = `sticky left-14 z-20 ${tripLocCol} ${theadBg} text-left ${tripThCell} ${stickyColShadow}`;
 const stickySendingTd = `sticky left-14 z-20 ${tripLocCol} bg-white ${stickyColShadow}`;
-const stickyReceivingTh = `sticky left-[calc(3.5rem+200px)] z-[15] ${tripLocCol} ${theadBg} text-left ${tripThCell} ${stickyColShadow}`;
-const stickyReceivingTd = `sticky left-[calc(3.5rem+200px)] z-[15] ${tripLocCol} bg-white ${stickyColShadow}`;
+const stickyReceivingTh = `sticky left-[calc(3.5rem+280px)] z-[15] ${tripLocCol} ${theadBg} text-left ${tripThCell} ${stickyColShadow}`;
+const stickyReceivingTd = `sticky left-[calc(3.5rem+280px)] z-[15] ${tripLocCol} bg-white ${stickyColShadow}`;
 /** Label row typography — grip wrapper uses the same so `1lh` matches the text span. */
 const tripThLabelRowEnd =
   "inline-flex items-center justify-end gap-2 font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
