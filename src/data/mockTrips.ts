@@ -21,22 +21,6 @@ export type TripTableRow = {
 
 export const MOCK_TRIP_ROWS: TripTableRow[] = [
   {
-    id: '1',
-    sendingName: 'Log01 entrepot logtex',
-    sendingId: 'LOG01',
-    sendingWarehouseRole: 'selling',
-    receivingName: 'Pr ac toulon',
-    receivingId: '660',
-    transfers: 9,
-    transfersMax: 10_000,
-    revenueEur: 1670,
-    revenueMinEur: 500,
-    recommended: 9,
-    recommendedMax: 10_000,
-    badges: ['rev', 'vis'],
-    productCount: null,
-  },
-  {
     id: '2',
     sendingName: 'Pr ac marseille tdp',
     sendingId: '696',
