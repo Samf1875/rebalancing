@@ -348,7 +348,7 @@ const GREEN_TRUCK_RECOMMENDED_TRANSFER: {
   };
 } = {
   sending: {
-    name: 'PR AC Lille',
+    name: 'Log01 entrepot logtex',
     warehouseRole: 'selling',
     priority: 'very_high',
   },
@@ -1579,7 +1579,7 @@ export function ProductTransfersTable({
                         <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
                       </span>
                       <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
-                        SKU unassorted in PR AC Lille
+                        SKU unassorted in Log01 entrepot logtex
                       </p>
                     </div>
                   </div>
