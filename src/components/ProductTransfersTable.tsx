@@ -288,6 +288,13 @@ const LULLI_STOCK_BOX_SKU_A_REJECTED_ROUTES: {
   priority?: 'standard' | 'high' | 'very_high';
 }[] = [
   {
+    store: 'Log01 entrepot logtex',
+    warehouseRole: 'selling',
+    priority: 'very_high',
+    reason: 'Stock retained for ecom fulfilment',
+    scope: 'Sending store constraint',
+  },
+  {
     store: 'BENOA SAINT FLORENT',
     reason: 'Receiving store had no capacity',
     scope: 'Receiving store constraint',
@@ -363,6 +370,7 @@ const FALLBACK_REJECTED_ROUTE_PRIORITY: Record<string, 'standard' | 'high' | 've
   'PR PP Nancy': 'high',
   'GL PP Biarritz': 'standard',
   'PR AC Toulon': 'high',
+  'Log01 entrepot logtex': 'very_high',
 };
 
 const priorityDisplayLabel = (p?: 'standard' | 'high' | 'very_high') => {
@@ -1939,6 +1947,14 @@ export function ProductTransfersTable({
                                   <span>Receiving store: {card.store}</span>
                                   {card.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
                                   {card.warehouseRole === 'fulfilment' ? <LocationBadge>Warehouse</LocationBadge> : null}
+                                  {card.warehouseRole === 'selling' || card.warehouseRole === 'fulfilment' ? (
+                                    <span
+                                      className="shrink-0 font-['Inter',sans-serif] text-[11px] font-normal leading-none text-[#6A7282]"
+                                      aria-hidden
+                                    >
+                                      ·
+                                    </span>
+                                  ) : null}
                                   <LocationBadge>{priorityDisplayLabel(card.priority)}</LocationBadge>
                                 </span>
                               </p>
@@ -1971,6 +1987,14 @@ export function ProductTransfersTable({
                                   <span>Receiving store: {card.store}</span>
                                   {card.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
                                   {card.warehouseRole === 'fulfilment' ? <LocationBadge>Warehouse</LocationBadge> : null}
+                                  {card.warehouseRole === 'selling' || card.warehouseRole === 'fulfilment' ? (
+                                    <span
+                                      className="shrink-0 font-['Inter',sans-serif] text-[11px] font-normal leading-none text-[#6A7282]"
+                                      aria-hidden
+                                    >
+                                      ·
+                                    </span>
+                                  ) : null}
                                   <LocationBadge>{priorityDisplayLabel(card.priority)}</LocationBadge>
                                 </span>
                               </p>
@@ -2064,6 +2088,41 @@ export function ProductTransfersTable({
                                 </span>
                                 <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
                                   Unassorted location chosen
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-1.5 rounded-[6px] border border-[#E3E8F0] bg-[#FAFBFC] p-3">
+                            <p className="flex min-w-0 items-center gap-1.5 font-['Inter',sans-serif] text-[12px] font-semibold leading-snug text-[#101828]">
+                              <span className="inline-flex shrink-0 items-center justify-center text-[20px] leading-none text-[#101828]">
+                                <AutoneReceivingLocationIcon direction="in" />
+                              </span>
+                              <span className="inline-flex min-w-0 items-center gap-1.5">
+                                <span>Receiving store: Log01 entrepot logtex</span>
+                                <LocationBadge>Selling</LocationBadge>
+                                <span
+                                  className="shrink-0 font-['Inter',sans-serif] text-[11px] font-normal leading-none text-[#6A7282]"
+                                  aria-hidden
+                                >
+                                  ·
+                                </span>
+                                <LocationBadge>
+                                  {priorityDisplayLabel(
+                                    FALLBACK_REJECTED_ROUTE_PRIORITY['Log01 entrepot logtex']
+                                  )}
+                                </LocationBadge>
+                              </span>
+                            </p>
+                            <div className="ml-1 flex flex-col gap-1.5 border-l border-[#E3E8F0] pl-2.5">
+                              <div className="flex items-start gap-2">
+                                <span
+                                  aria-hidden
+                                  className="mt-[2px] inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[#2EB8C2]/10 text-[#2EB8C2]"
+                                >
+                                  <Lightbulb className="size-3" strokeWidth={2} aria-hidden />
+                                </span>
+                                <p className="pt-0.5 font-['Inter',sans-serif] text-[12px] font-normal leading-relaxed text-[#101828]">
+                                  Stock retained for ecom fulfilment
                                 </p>
                               </div>
                             </div>

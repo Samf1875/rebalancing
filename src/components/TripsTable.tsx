@@ -67,6 +67,12 @@ function formatEurMin(eur: number): string {
   return `€${eur.toLocaleString('en-US')}`;
 }
 
+/** Warehouse → Selling split on the same location code (virtual internal allocation). */
+const isInternalAllocation = (t: TripTableRow) =>
+  t.sendingId === t.receivingId &&
+  t.sendingWarehouseRole === 'fulfilment' &&
+  t.receivingWarehouseRole === 'selling';
+
 export function TripsTable() {
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const selectAllRef = useRef<HTMLInputElement>(null);
@@ -74,9 +80,13 @@ export function TripsTable() {
   const rows = MOCK_TRIP_ROWS;
 
   const tripHeaderTotals = useMemo(() => {
-    const transfersSum = rows.reduce((s, r) => s + r.transfers, 0);
+    const transfersSum = rows
+      .filter((r) => !isInternalAllocation(r))
+      .reduce((s, r) => s + r.transfers, 0);
     const revenueSumEur = rows.reduce((s, r) => s + r.revenueEur, 0);
-    const recommendedSum = rows.reduce((s, r) => s + r.recommended, 0);
+    const recommendedSum = rows
+      .filter((r) => !isInternalAllocation(r))
+      .reduce((s, r) => s + r.recommended, 0);
     const productsSummable = rows.length > 0 && rows.every((r) => r.productCount != null);
     const productsTotal = productsSummable
       ? rows.reduce((s, r) => s + (r.productCount as number), 0)
