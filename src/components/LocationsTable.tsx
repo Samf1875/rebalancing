@@ -123,25 +123,27 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
     setSelected((prev) => ({ ...prev, [id]: checked }));
   };
 
-  const summary = useMemo(
-    () => ({
-      transfersInUnits: 797,
-      transfersInTrips: 30,
-      transfersOutUnits: 797,
-      transfersOutTrips: 23,
-      revenueEur: 24_100,
-      recommendedIn: 797,
-      recommendedOut: 797,
-      salesL7d: 76,
-      salesL30d: 231,
-      forecastPerWk: 53.24,
-      stockouts: { from: 387, to: 314 },
-      overstocks: { from: 1031, to: 302 },
-      understocks: { from: 534, to: 34 },
-      depth: { from: 2.1, to: 1.9 },
-    }),
-    []
-  );
+  const summary = useMemo(() => {
+    const agg = rows.filter((r) => r.warehouseRole !== 'selling');
+    const sum = (fn: (r: LocationTableRow) => number) =>
+      agg.reduce((s, r) => s + fn(r), 0);
+    return {
+      transfersInUnits: sum((r) => r.transfersIn.units),
+      transfersInTrips: sum((r) => r.transfersIn.trips),
+      transfersOutUnits: sum((r) => r.transfersOut.units),
+      transfersOutTrips: sum((r) => r.transfersOut.trips),
+      revenueEur: sum((r) => r.revenueEur),
+      recommendedIn: sum((r) => r.recommendedIn),
+      recommendedOut: sum((r) => r.recommendedOut),
+      salesL7d: sum((r) => r.salesL7d),
+      salesL30d: sum((r) => r.salesL30d),
+      forecastPerWk: sum((r) => r.forecastPerWk),
+      stockouts: { from: sum((r) => r.stockouts.from), to: sum((r) => r.stockouts.to) },
+      overstocks: { from: sum((r) => r.overstocks.from), to: sum((r) => r.overstocks.to) },
+      understocks: { from: sum((r) => r.understocks.from), to: sum((r) => r.understocks.to) },
+      depth: { from: sum((r) => r.depth.from), to: sum((r) => r.depth.to) },
+    };
+  }, [rows]);
 
   const renderDataRow = (row: LocationTableRow) => (
     <tr
