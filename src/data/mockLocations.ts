@@ -151,9 +151,9 @@ export const MOCK_LOCATION_ROWS: LocationTableRow[] = [
     salesL7d: 8,
     salesL30d: 32,
     forecastPerWk: 5.5,
-    stockouts: { from: 15, to: 3 },
-    overstocks: { from: 4, to: 2 },
-    understocks: { from: 22, to: 5 },
-    depth: { from: 1.8, to: 2.4 },
+    stockouts: { from: 0, to: 3 },
+    overstocks: { from: 0, to: 2 },
+    understocks: { from: 0, to: 5 },
+    depth: { from: 0, to: 2.4 },
   },
 ];
