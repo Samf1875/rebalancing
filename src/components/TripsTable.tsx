@@ -133,6 +133,7 @@ export function TripsTable() {
           <div className="flex min-w-0 flex-nowrap items-center gap-1.5">
             <div className={`min-w-0 truncate ${tableCellLocationName}`}>{row.sendingName}</div>
             {row.sendingWarehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+            {row.sendingWarehouseRole === 'fulfilment' ? <LocationBadge>Warehouse</LocationBadge> : null}
           </div>
           <div className={tableCellSecondary}>{row.sendingId}</div>
         </div>
@@ -142,6 +143,7 @@ export function TripsTable() {
           <div className="flex min-w-0 flex-nowrap items-center gap-1.5">
             <div className={`min-w-0 truncate ${tableCellLocationName}`}>{row.receivingName}</div>
             {row.receivingWarehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+            {row.receivingWarehouseRole === 'fulfilment' ? <LocationBadge>Warehouse</LocationBadge> : null}
           </div>
           <div className={tableCellSecondary}>{row.receivingId}</div>
         </div>

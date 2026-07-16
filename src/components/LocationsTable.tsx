@@ -174,6 +174,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
             <div className="flex min-w-0 flex-nowrap items-center gap-1.5">
               <div className={`min-w-0 truncate ${tableCellPrimary}`}>{row.name}</div>
               {row.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+              {row.warehouseRole === 'fulfilment' ? <LocationBadge>Warehouse</LocationBadge> : null}
             </div>
             <div className={`mt-0.5 ${tableCellSecondary}`}>{row.code}</div>
           </div>

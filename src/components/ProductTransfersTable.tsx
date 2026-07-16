@@ -920,6 +920,7 @@ export function ProductTransfersTable({
             <div className="flex min-w-0 flex-nowrap items-center gap-1.5">
               <div className={`min-w-0 truncate ${tableCellPrimary}`}>{row.name}</div>
               {row.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+              {row.warehouseRole === 'fulfilment' ? <LocationBadge>Warehouse</LocationBadge> : null}
             </div>
             <span className="ml-auto flex shrink-0 items-center gap-1.5 pl-3">
               <RowFilterButton rowName={row.name} />
@@ -1477,6 +1478,9 @@ export function ProductTransfersTable({
                         {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.warehouseRole === 'selling' ? (
                           <LocationBadge>Selling</LocationBadge>
                         ) : null}
+                        {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.warehouseRole === 'fulfilment' ? (
+                          <LocationBadge>Warehouse</LocationBadge>
+                        ) : null}
                       </span>
                       <TransitionArrowSeparator className="mx-0 shrink-0" />
                       <span className="inline-flex min-w-0 items-center gap-1.5">
@@ -1485,6 +1489,9 @@ export function ProductTransfersTable({
                         </span>
                         {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.warehouseRole === 'selling' ? (
                           <LocationBadge>Selling</LocationBadge>
+                        ) : null}
+                        {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.warehouseRole === 'fulfilment' ? (
+                          <LocationBadge>Warehouse</LocationBadge>
                         ) : null}
                       </span>
                     </h2>
@@ -1593,6 +1600,9 @@ export function ProductTransfersTable({
                         {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.warehouseRole === 'selling' ? (
                           <LocationBadge>Selling</LocationBadge>
                         ) : null}
+                        {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.warehouseRole === 'fulfilment' ? (
+                          <LocationBadge>Warehouse</LocationBadge>
+                        ) : null}
                       </span>
                     }
                     receivingLabel={
@@ -1602,6 +1612,9 @@ export function ProductTransfersTable({
                         </span>
                         {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.warehouseRole === 'selling' ? (
                           <LocationBadge>Selling</LocationBadge>
+                        ) : null}
+                        {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.warehouseRole === 'fulfilment' ? (
+                          <LocationBadge>Warehouse</LocationBadge>
                         ) : null}
                       </span>
                     }
@@ -1634,6 +1647,9 @@ export function ProductTransfersTable({
                           </span>
                           {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.warehouseRole === 'selling' ? (
                             <LocationBadge>Selling</LocationBadge>
+                          ) : null}
+                          {GREEN_TRUCK_RECOMMENDED_TRANSFER.sending.warehouseRole === 'fulfilment' ? (
+                            <LocationBadge>Warehouse</LocationBadge>
                           ) : null}
                         </span>
                       </p>
@@ -1693,6 +1709,9 @@ export function ProductTransfersTable({
                           </span>
                           {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.warehouseRole === 'selling' ? (
                             <LocationBadge>Selling</LocationBadge>
+                          ) : null}
+                          {GREEN_TRUCK_RECOMMENDED_TRANSFER.receiving.warehouseRole === 'fulfilment' ? (
+                            <LocationBadge>Warehouse</LocationBadge>
                           ) : null}
                         </span>
                       </p>
@@ -1794,6 +1813,7 @@ export function ProductTransfersTable({
                       <span className="inline-flex min-w-0 items-center gap-1.5">
                         <span className="min-w-0 truncate">{warehouseDetail.rowName}</span>
                         {warehouseDetail.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+                        {warehouseDetail.warehouseRole === 'fulfilment' ? <LocationBadge>Warehouse</LocationBadge> : null}
                       </span>
                     </h2>
                   </div>
@@ -1834,6 +1854,7 @@ export function ProductTransfersTable({
                           <span className="inline-flex min-w-0 items-center gap-1.5">
                             <span className="min-w-0 truncate">{warehouseDetail.rowName}</span>
                             {warehouseDetail.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+                            {warehouseDetail.warehouseRole === 'fulfilment' ? <LocationBadge>Warehouse</LocationBadge> : null}
                           </span>
                         </p>
                         <ul className="ml-1 flex flex-col gap-1 border-l border-[#E3E8F0] pl-2.5">
@@ -1917,6 +1938,7 @@ export function ProductTransfersTable({
                                 <span className="inline-flex min-w-0 items-center gap-1.5">
                                   <span>Receiving store: {card.store}</span>
                                   {card.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+                                  {card.warehouseRole === 'fulfilment' ? <LocationBadge>Warehouse</LocationBadge> : null}
                                   <LocationBadge>{priorityDisplayLabel(card.priority)}</LocationBadge>
                                 </span>
                               </p>
@@ -1948,6 +1970,7 @@ export function ProductTransfersTable({
                                 <span className="inline-flex min-w-0 items-center gap-1.5">
                                   <span>Receiving store: {card.store}</span>
                                   {card.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+                                  {card.warehouseRole === 'fulfilment' ? <LocationBadge>Warehouse</LocationBadge> : null}
                                   <LocationBadge>{priorityDisplayLabel(card.priority)}</LocationBadge>
                                 </span>
                               </p>
@@ -2092,12 +2115,18 @@ export function ProductTransfersTable({
                         {transferDetail.source?.warehouseRole === 'selling' ? (
                           <LocationBadge>Selling</LocationBadge>
                         ) : null}
+                        {transferDetail.source?.warehouseRole === 'fulfilment' ? (
+                          <LocationBadge>Warehouse</LocationBadge>
+                        ) : null}
                       </span>
                       <TransitionArrowSeparator className="mx-0 shrink-0" />
                       <span className="inline-flex min-w-0 items-center gap-1.5">
                         <span className="min-w-0 truncate">{transferDetail.destinationName}</span>
                         {transferDetail.destination?.warehouseRole === 'selling' ? (
                           <LocationBadge>Selling</LocationBadge>
+                        ) : null}
+                        {transferDetail.destination?.warehouseRole === 'fulfilment' ? (
+                          <LocationBadge>Warehouse</LocationBadge>
                         ) : null}
                       </span>
                     </h2>
@@ -2199,6 +2228,9 @@ export function ProductTransfersTable({
                         {transferDetail.source?.warehouseRole === 'selling' ? (
                           <LocationBadge>Selling</LocationBadge>
                         ) : null}
+                        {transferDetail.source?.warehouseRole === 'fulfilment' ? (
+                          <LocationBadge>Warehouse</LocationBadge>
+                        ) : null}
                       </span>
                     }
                     receivingLabel={
@@ -2206,6 +2238,9 @@ export function ProductTransfersTable({
                         <span>Receiving store: {transferDetail.destinationName}</span>
                         {transferDetail.destination?.warehouseRole === 'selling' ? (
                           <LocationBadge>Selling</LocationBadge>
+                        ) : null}
+                        {transferDetail.destination?.warehouseRole === 'fulfilment' ? (
+                          <LocationBadge>Warehouse</LocationBadge>
                         ) : null}
                       </span>
                     }
@@ -2229,6 +2264,9 @@ export function ProductTransfersTable({
                               <span className="min-w-0 truncate">{transferDetail.sourceName}</span>
                               {transferDetail.source?.warehouseRole === 'selling' ? (
                                 <LocationBadge>Selling</LocationBadge>
+                              ) : null}
+                              {transferDetail.source?.warehouseRole === 'fulfilment' ? (
+                                <LocationBadge>Warehouse</LocationBadge>
                               ) : null}
                             </span>
                           </div>
@@ -2292,6 +2330,9 @@ export function ProductTransfersTable({
                               <span className="min-w-0 truncate">{transferDetail.destinationName}</span>
                               {transferDetail.destination?.warehouseRole === 'selling' ? (
                                 <LocationBadge>Selling</LocationBadge>
+                              ) : null}
+                              {transferDetail.destination?.warehouseRole === 'fulfilment' ? (
+                                <LocationBadge>Warehouse</LocationBadge>
                               ) : null}
                             </span>
                           </div>
@@ -2368,6 +2409,9 @@ export function ProductTransfersTable({
                               {transferDetail.source.warehouseRole === 'selling' ? (
                                 <LocationBadge>Selling</LocationBadge>
                               ) : null}
+                              {transferDetail.source.warehouseRole === 'fulfilment' ? (
+                                <LocationBadge>Warehouse</LocationBadge>
+                              ) : null}
                             </span>
                           }
                           value={formatWeeksCoverageArrow(
@@ -2385,6 +2429,9 @@ export function ProductTransfersTable({
                               <span className="min-w-0 truncate">{transferDetail.destinationName}</span>
                               {transferDetail.destination.warehouseRole === 'selling' ? (
                                 <LocationBadge>Selling</LocationBadge>
+                              ) : null}
+                              {transferDetail.destination.warehouseRole === 'fulfilment' ? (
+                                <LocationBadge>Warehouse</LocationBadge>
                               ) : null}
                             </span>
                           }
