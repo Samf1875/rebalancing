@@ -215,7 +215,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
           <span className={`tabular-nums ${tableCellNumeric}`}>
-            {row.warehouseRole ? '0' : formatEurK(row.revenueEur)}
+            {row.warehouseRole === 'fulfilment' ? '0' : formatEurK(row.revenueEur)}
           </span>
         </CellGripInset>
       </td>

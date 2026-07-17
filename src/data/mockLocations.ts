@@ -145,7 +145,7 @@ export const MOCK_LOCATION_ROWS: LocationTableRow[] = [
     warehouseRole: 'selling',
     transfersIn: { units: 15, trips: 1, max: 15 },
     transfersOut: { units: 0, trips: 0, max: 2 },
-    revenueEur: 0,
+    revenueEur: 720,
     recommendedIn: 15,
     recommendedOut: 0,
     salesL7d: 8,
