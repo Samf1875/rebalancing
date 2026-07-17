@@ -27,11 +27,11 @@ const tripThRowH = 'min-h-[72px]';
 const tripThCell = `${tripThRowH} box-border py-2 align-middle`;
 /** After checkbox (`left-14` = 3.5rem). */
 const tripLocCol =
-  'w-[200px] min-w-[200px] max-w-[200px] box-border';
+  'w-[280px] min-w-[280px] max-w-[280px] box-border';
 const stickySendingTh = `sticky left-14 z-20 ${tripLocCol} ${theadBg} text-left ${tripThCell} ${stickyColShadow}`;
 const stickySendingTd = `sticky left-14 z-20 ${tripLocCol} bg-white ${stickyColShadow}`;
-const stickyReceivingTh = `sticky left-[calc(3.5rem+200px)] z-[15] ${tripLocCol} ${theadBg} text-left ${tripThCell} ${stickyColShadow}`;
-const stickyReceivingTd = `sticky left-[calc(3.5rem+200px)] z-[15] ${tripLocCol} bg-white ${stickyColShadow}`;
+const stickyReceivingTh = `sticky left-[calc(3.5rem+280px)] z-[15] ${tripLocCol} ${theadBg} text-left ${tripThCell} ${stickyColShadow}`;
+const stickyReceivingTd = `sticky left-[calc(3.5rem+280px)] z-[15] ${tripLocCol} bg-white ${stickyColShadow}`;
 /** Label row typography — grip wrapper uses the same so `1lh` matches the text span. */
 const tripThLabelRowEnd =
   "inline-flex items-center justify-end gap-2 font-['Inter',sans-serif] text-[14px] font-semibold leading-normal text-[#101828]";
@@ -67,6 +67,17 @@ function formatEurMin(eur: number): string {
   return `€${eur.toLocaleString('en-US')}`;
 }
 
+/** Warehouse → Selling split on the same location code (virtual internal allocation). */
+const isInternalAllocation = (t: TripTableRow) =>
+  t.sendingId === t.receivingId &&
+  t.sendingWarehouseRole === 'fulfilment' &&
+  t.receivingWarehouseRole === 'selling';
+
+/** Display plain 0 for Warehouse→Selling and Store→Warehouse trips. */
+const isRevenueZero = (t: TripTableRow) =>
+  (t.sendingWarehouseRole === 'fulfilment' && t.receivingWarehouseRole === 'selling') ||
+  t.receivingWarehouseRole === 'fulfilment';
+
 export function TripsTable() {
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const selectAllRef = useRef<HTMLInputElement>(null);
@@ -74,9 +85,13 @@ export function TripsTable() {
   const rows = MOCK_TRIP_ROWS;
 
   const tripHeaderTotals = useMemo(() => {
-    const transfersSum = rows.reduce((s, r) => s + r.transfers, 0);
+    const transfersSum = rows
+      .filter((r) => !isInternalAllocation(r))
+      .reduce((s, r) => s + r.transfers, 0);
     const revenueSumEur = rows.reduce((s, r) => s + r.revenueEur, 0);
-    const recommendedSum = rows.reduce((s, r) => s + r.recommended, 0);
+    const recommendedSum = rows
+      .filter((r) => !isInternalAllocation(r))
+      .reduce((s, r) => s + r.recommended, 0);
     const productsSummable = rows.length > 0 && rows.every((r) => r.productCount != null);
     const productsTotal = productsSummable
       ? rows.reduce((s, r) => s + (r.productCount as number), 0)
@@ -133,6 +148,7 @@ export function TripsTable() {
           <div className="flex min-w-0 flex-nowrap items-center gap-1.5">
             <div className={`min-w-0 truncate ${tableCellLocationName}`}>{row.sendingName}</div>
             {row.sendingWarehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+            {row.sendingWarehouseRole === 'fulfilment' ? <LocationBadge>Warehouse</LocationBadge> : null}
           </div>
           <div className={tableCellSecondary}>{row.sendingId}</div>
         </div>
@@ -142,27 +158,34 @@ export function TripsTable() {
           <div className="flex min-w-0 flex-nowrap items-center gap-1.5">
             <div className={`min-w-0 truncate ${tableCellLocationName}`}>{row.receivingName}</div>
             {row.receivingWarehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+            {row.receivingWarehouseRole === 'fulfilment' ? <LocationBadge>Warehouse</LocationBadge> : null}
           </div>
           <div className={tableCellSecondary}>{row.receivingId}</div>
         </div>
       </td>
       <td className="min-w-[140px] px-4 py-3 align-middle text-right">
         <div className="inline-flex flex-col items-end gap-0.5 tabular-nums">
-          <span className={tableCellPrimary}>{row.transfers}</span>
+          <span className={tableCellPrimary}>{row.transfers.toLocaleString('en-US')}</span>
           <span className={tableCellSecondary}>(max {row.transfersMax.toLocaleString('en-US')})</span>
         </div>
       </td>
       <td className="min-w-[160px] px-4 py-3 align-middle text-right">
         <div className="inline-flex flex-col items-end gap-0.5 tabular-nums">
-          <span className={tableCellPrimary}>{formatEurK(row.revenueEur)}</span>
-          <span className={tableCellSecondary}>(min {formatEurMin(row.revenueMinEur)})</span>
+          {isRevenueZero(row) ? (
+            <span className={tableCellPrimary}>0</span>
+          ) : (
+            <>
+              <span className={tableCellPrimary}>{formatEurK(row.revenueEur)}</span>
+              <span className={tableCellSecondary}>(min {formatEurMin(row.revenueMinEur)})</span>
+            </>
+          )}
         </div>
       </td>
       <td className="min-w-[260px] px-4 py-3 align-middle text-right">
         <div className="flex w-full items-center justify-end gap-3">
           {renderBadges(row.badges)}
           <div className="inline-flex min-w-0 flex-col items-end gap-0.5 tabular-nums">
-            <span className={tableCellPrimary}>{row.recommended}</span>
+            <span className={tableCellPrimary}>{row.recommended.toLocaleString('en-US')}</span>
             <span className={tableCellSecondary}>(max {row.recommendedMax.toLocaleString('en-US')})</span>
           </div>
         </div>
@@ -171,7 +194,7 @@ export function TripsTable() {
         {row.productCount == null ? (
           <span className={tableCellProductsNa}>N/A</span>
         ) : (
-          <span className={tableCellProducts}>{row.productCount}</span>
+          <span className={tableCellProducts}>{row.productCount.toLocaleString('en-US')}</span>
         )}
       </td>
     </tr>

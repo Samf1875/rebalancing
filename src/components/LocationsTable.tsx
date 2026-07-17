@@ -123,25 +123,29 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
     setSelected((prev) => ({ ...prev, [id]: checked }));
   };
 
-  const summary = useMemo(
-    () => ({
-      transfersInUnits: 797,
-      transfersInTrips: 30,
-      transfersOutUnits: 797,
-      transfersOutTrips: 23,
-      revenueEur: 24_100,
-      recommendedIn: 797,
-      recommendedOut: 797,
-      salesL7d: 76,
-      salesL30d: 231,
-      forecastPerWk: 53.24,
-      stockouts: { from: 387, to: 314 },
-      overstocks: { from: 1031, to: 302 },
-      understocks: { from: 534, to: 34 },
-      depth: { from: 2.1, to: 1.9 },
-    }),
-    []
-  );
+  const summary = useMemo(() => {
+    const stores = rows.filter((r) => !r.warehouseRole);
+    const sumStores = (fn: (r: LocationTableRow) => number) =>
+      stores.reduce((s, r) => s + fn(r), 0);
+    const sumAll = (fn: (r: LocationTableRow) => number) =>
+      rows.reduce((s, r) => s + fn(r), 0);
+    return {
+      transfersInUnits: sumStores((r) => r.transfersIn.units),
+      transfersInTrips: sumStores((r) => r.transfersIn.trips),
+      transfersOutUnits: sumStores((r) => r.transfersOut.units),
+      transfersOutTrips: sumStores((r) => r.transfersOut.trips),
+      revenueEur: sumAll((r) => r.revenueEur),
+      recommendedIn: sumStores((r) => r.recommendedIn),
+      recommendedOut: sumStores((r) => r.recommendedOut),
+      salesL7d: sumStores((r) => r.salesL7d),
+      salesL30d: sumStores((r) => r.salesL30d),
+      forecastPerWk: sumStores((r) => r.forecastPerWk),
+      stockouts: { from: sumStores((r) => r.stockouts.from), to: sumStores((r) => r.stockouts.to) },
+      overstocks: { from: sumStores((r) => r.overstocks.from), to: sumStores((r) => r.overstocks.to) },
+      understocks: { from: sumStores((r) => r.understocks.from), to: sumStores((r) => r.understocks.to) },
+      depth: { from: sumStores((r) => r.depth.from), to: sumStores((r) => r.depth.to) },
+    };
+  }, [rows]);
 
   const renderDataRow = (row: LocationTableRow) => (
     <tr
@@ -167,13 +171,14 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
         />
       </td>
       <td
-        className={`sticky left-14 z-20 h-[86px] min-h-[86px] w-[180px] min-w-[180px] max-w-[180px] box-border bg-white px-4 py-3 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
+        className={`sticky left-14 z-20 h-[86px] min-h-[86px] w-[280px] min-w-[280px] max-w-[280px] box-border bg-white px-4 py-3 align-middle shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)] ${tableRowHoverTd}`}
       >
         <CellGripInset align="left">
           <div>
             <div className="flex min-w-0 flex-nowrap items-center gap-1.5">
               <div className={`min-w-0 truncate ${tableCellPrimary}`}>{row.name}</div>
               {row.warehouseRole === 'selling' ? <LocationBadge>Selling</LocationBadge> : null}
+              {row.warehouseRole === 'fulfilment' ? <LocationBadge>Warehouse</LocationBadge> : null}
             </div>
             <div className={`mt-0.5 ${tableCellSecondary}`}>{row.code}</div>
           </div>
@@ -197,7 +202,9 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
-          <span className={`tabular-nums ${tableCellNumeric}`}>{formatEurK(row.revenueEur)}</span>
+          <span className={`tabular-nums ${tableCellNumeric}`}>
+            {row.warehouseRole ? '0' : formatEurK(row.revenueEur)}
+          </span>
         </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] min-w-[200px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
@@ -308,7 +315,7 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
                 </div>
               </th>
               <th
-                className="sticky left-14 z-20 min-h-[72px] w-[180px] min-w-[180px] max-w-[180px] box-border bg-white px-4 py-2 text-left align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
+                className="sticky left-14 z-20 min-h-[72px] w-[280px] min-w-[280px] max-w-[280px] box-border bg-white px-4 py-2 text-left align-top shadow-[4px_0_12px_-6px_rgba(15,23,42,0.12)]"
                 scope="col"
               >
                 <span className="inline-flex items-center gap-2 whitespace-nowrap">
