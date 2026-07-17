@@ -73,6 +73,11 @@ const isInternalAllocation = (t: TripTableRow) =>
   t.sendingWarehouseRole === 'fulfilment' &&
   t.receivingWarehouseRole === 'selling';
 
+/** Display plain 0 for Warehouse→Selling and Store→Warehouse trips. */
+const isRevenueZero = (t: TripTableRow) =>
+  (t.sendingWarehouseRole === 'fulfilment' && t.receivingWarehouseRole === 'selling') ||
+  t.receivingWarehouseRole === 'fulfilment';
+
 export function TripsTable() {
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const selectAllRef = useRef<HTMLInputElement>(null);
@@ -160,21 +165,27 @@ export function TripsTable() {
       </td>
       <td className="min-w-[140px] px-4 py-3 align-middle text-right">
         <div className="inline-flex flex-col items-end gap-0.5 tabular-nums">
-          <span className={tableCellPrimary}>{row.transfers}</span>
+          <span className={tableCellPrimary}>{row.transfers.toLocaleString('en-US')}</span>
           <span className={tableCellSecondary}>(max {row.transfersMax.toLocaleString('en-US')})</span>
         </div>
       </td>
       <td className="min-w-[160px] px-4 py-3 align-middle text-right">
         <div className="inline-flex flex-col items-end gap-0.5 tabular-nums">
-          <span className={tableCellPrimary}>{formatEurK(row.revenueEur)}</span>
-          <span className={tableCellSecondary}>(min {formatEurMin(row.revenueMinEur)})</span>
+          {isRevenueZero(row) ? (
+            <span className={tableCellPrimary}>0</span>
+          ) : (
+            <>
+              <span className={tableCellPrimary}>{formatEurK(row.revenueEur)}</span>
+              <span className={tableCellSecondary}>(min {formatEurMin(row.revenueMinEur)})</span>
+            </>
+          )}
         </div>
       </td>
       <td className="min-w-[260px] px-4 py-3 align-middle text-right">
         <div className="flex w-full items-center justify-end gap-3">
           {renderBadges(row.badges)}
           <div className="inline-flex min-w-0 flex-col items-end gap-0.5 tabular-nums">
-            <span className={tableCellPrimary}>{row.recommended}</span>
+            <span className={tableCellPrimary}>{row.recommended.toLocaleString('en-US')}</span>
             <span className={tableCellSecondary}>(max {row.recommendedMax.toLocaleString('en-US')})</span>
           </div>
         </div>
@@ -183,7 +194,7 @@ export function TripsTable() {
         {row.productCount == null ? (
           <span className={tableCellProductsNa}>N/A</span>
         ) : (
-          <span className={tableCellProducts}>{row.productCount}</span>
+          <span className={tableCellProducts}>{row.productCount.toLocaleString('en-US')}</span>
         )}
       </td>
     </tr>

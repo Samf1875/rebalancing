@@ -124,24 +124,26 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
   };
 
   const summary = useMemo(() => {
-    const agg = rows.filter((r) => r.warehouseRole !== 'selling');
-    const sum = (fn: (r: LocationTableRow) => number) =>
-      agg.reduce((s, r) => s + fn(r), 0);
+    const stores = rows.filter((r) => !r.warehouseRole);
+    const sumStores = (fn: (r: LocationTableRow) => number) =>
+      stores.reduce((s, r) => s + fn(r), 0);
+    const sumAll = (fn: (r: LocationTableRow) => number) =>
+      rows.reduce((s, r) => s + fn(r), 0);
     return {
-      transfersInUnits: sum((r) => r.transfersIn.units),
-      transfersInTrips: sum((r) => r.transfersIn.trips),
-      transfersOutUnits: sum((r) => r.transfersOut.units),
-      transfersOutTrips: sum((r) => r.transfersOut.trips),
-      revenueEur: sum((r) => r.revenueEur),
-      recommendedIn: sum((r) => r.recommendedIn),
-      recommendedOut: sum((r) => r.recommendedOut),
-      salesL7d: sum((r) => r.salesL7d),
-      salesL30d: sum((r) => r.salesL30d),
-      forecastPerWk: sum((r) => r.forecastPerWk),
-      stockouts: { from: sum((r) => r.stockouts.from), to: sum((r) => r.stockouts.to) },
-      overstocks: { from: sum((r) => r.overstocks.from), to: sum((r) => r.overstocks.to) },
-      understocks: { from: sum((r) => r.understocks.from), to: sum((r) => r.understocks.to) },
-      depth: { from: sum((r) => r.depth.from), to: sum((r) => r.depth.to) },
+      transfersInUnits: sumStores((r) => r.transfersIn.units),
+      transfersInTrips: sumStores((r) => r.transfersIn.trips),
+      transfersOutUnits: sumStores((r) => r.transfersOut.units),
+      transfersOutTrips: sumStores((r) => r.transfersOut.trips),
+      revenueEur: sumAll((r) => r.revenueEur),
+      recommendedIn: sumStores((r) => r.recommendedIn),
+      recommendedOut: sumStores((r) => r.recommendedOut),
+      salesL7d: sumStores((r) => r.salesL7d),
+      salesL30d: sumStores((r) => r.salesL30d),
+      forecastPerWk: sumStores((r) => r.forecastPerWk),
+      stockouts: { from: sumStores((r) => r.stockouts.from), to: sumStores((r) => r.stockouts.to) },
+      overstocks: { from: sumStores((r) => r.overstocks.from), to: sumStores((r) => r.overstocks.to) },
+      understocks: { from: sumStores((r) => r.understocks.from), to: sumStores((r) => r.understocks.to) },
+      depth: { from: sumStores((r) => r.depth.from), to: sumStores((r) => r.depth.to) },
     };
   }, [rows]);
 
@@ -200,7 +202,9 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
       </td>
       <td className={`h-[86px] min-h-[86px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
         <CellGripInset align="right">
-          <span className={`tabular-nums ${tableCellNumeric}`}>{formatEurK(row.revenueEur)}</span>
+          <span className={`tabular-nums ${tableCellNumeric}`}>
+            {row.warehouseRole ? '0' : formatEurK(row.revenueEur)}
+          </span>
         </CellGripInset>
       </td>
       <td className={`h-[86px] min-h-[86px] min-w-[200px] px-4 py-3 align-middle ${tableRowHoverTd}`}>
