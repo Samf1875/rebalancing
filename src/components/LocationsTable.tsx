@@ -124,26 +124,38 @@ export function LocationsTable({ onOpenLocationProducts }: LocationsTableProps =
   };
 
   const summary = useMemo(() => {
-    const stores = rows.filter((r) => !r.warehouseRole);
-    const sumStores = (fn: (r: LocationTableRow) => number) =>
-      stores.reduce((s, r) => s + fn(r), 0);
+    const nonWarehouse = rows.filter((r) => r.warehouseRole !== 'fulfilment');
     const sumAll = (fn: (r: LocationTableRow) => number) =>
       rows.reduce((s, r) => s + fn(r), 0);
+    const sumNonWarehouse = (fn: (r: LocationTableRow) => number) =>
+      nonWarehouse.reduce((s, r) => s + fn(r), 0);
     return {
-      transfersInUnits: sumStores((r) => r.transfersIn.units),
-      transfersInTrips: sumStores((r) => r.transfersIn.trips),
-      transfersOutUnits: sumStores((r) => r.transfersOut.units),
-      transfersOutTrips: sumStores((r) => r.transfersOut.trips),
+      transfersInUnits: sumAll((r) => r.transfersIn.units),
+      transfersInTrips: sumAll((r) => r.transfersIn.trips),
+      transfersOutUnits: sumAll((r) => r.transfersOut.units),
+      transfersOutTrips: sumAll((r) => r.transfersOut.trips),
       revenueEur: sumAll((r) => r.revenueEur),
-      recommendedIn: sumStores((r) => r.recommendedIn),
-      recommendedOut: sumStores((r) => r.recommendedOut),
-      salesL7d: sumStores((r) => r.salesL7d),
-      salesL30d: sumStores((r) => r.salesL30d),
-      forecastPerWk: sumStores((r) => r.forecastPerWk),
-      stockouts: { from: sumStores((r) => r.stockouts.from), to: sumStores((r) => r.stockouts.to) },
-      overstocks: { from: sumStores((r) => r.overstocks.from), to: sumStores((r) => r.overstocks.to) },
-      understocks: { from: sumStores((r) => r.understocks.from), to: sumStores((r) => r.understocks.to) },
-      depth: { from: sumStores((r) => r.depth.from), to: sumStores((r) => r.depth.to) },
+      recommendedIn: sumAll((r) => r.recommendedIn),
+      recommendedOut: sumAll((r) => r.recommendedOut),
+      salesL7d: sumNonWarehouse((r) => r.salesL7d),
+      salesL30d: sumNonWarehouse((r) => r.salesL30d),
+      forecastPerWk: sumNonWarehouse((r) => r.forecastPerWk),
+      stockouts: {
+        from: sumNonWarehouse((r) => r.stockouts.from),
+        to: sumNonWarehouse((r) => r.stockouts.to),
+      },
+      overstocks: {
+        from: sumNonWarehouse((r) => r.overstocks.from),
+        to: sumNonWarehouse((r) => r.overstocks.to),
+      },
+      understocks: {
+        from: sumNonWarehouse((r) => r.understocks.from),
+        to: sumNonWarehouse((r) => r.understocks.to),
+      },
+      depth: {
+        from: sumNonWarehouse((r) => r.depth.from),
+        to: sumNonWarehouse((r) => r.depth.to),
+      },
     };
   }, [rows]);
 
